@@ -1,0 +1,20 @@
+package Domain;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+// ============================================================
+// PROVIDER_RELATION
+// ============================================================
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class ProviderRelation {
+
+    private Long accountProviderPk;
+    private SocialAccount socialAccount;
+    private Provider socialProvider;
+}

@@ -1,0 +1,19 @@
+package Domain;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+// ============================================================
+// SOCIAL_ACCOUNT
+// ============================================================
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class SocialAccount {
+
+    private Long socialAccountPk;
+    private AppUser user;
+}
