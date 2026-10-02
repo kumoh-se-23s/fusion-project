@@ -5,9 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-// ============================================================
-// SOCIAL_ACCOUNT
-// ============================================================
+
 @Getter
 @Setter
 @NoArgsConstructor

@@ -8,9 +8,7 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-// ============================================================
-// FUNDING
-// ============================================================
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -27,7 +25,7 @@ public class Funding {
     private LocalDateTime endDate;
     private BigDecimal purposeAmount;
     private BigDecimal donateAmount;
-    private String fundingState;
+    private FundingState fundingState;
     private String fundingText;
     private byte[] fundingImgFile;
 }

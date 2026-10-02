@@ -5,9 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-// ============================================================
-// FUNDING_CATEGORY
-// ============================================================
+
 @Getter
 @Setter
 @NoArgsConstructor

@@ -7,9 +7,6 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-// ============================================================
-// APP_USERS
-// ============================================================
 @Getter
 @Setter
 @NoArgsConstructor

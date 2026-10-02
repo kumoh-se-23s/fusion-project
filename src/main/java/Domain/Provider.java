@@ -1,13 +1,12 @@
 package Domain;
 
+import Domain.Enum.SocialProvider;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-// ============================================================
-// PROVIDER
-// ============================================================
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -15,5 +14,5 @@ import lombok.Setter;
 public class Provider {
 
     private Long socialProviderPk;
-    private String socialName;
+    private SocialProvider socialName;
 }

@@ -8,9 +8,7 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-// ============================================================
-// DONATE
-// ============================================================
+
 @Getter
 @Setter
 @NoArgsConstructor
