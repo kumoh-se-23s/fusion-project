@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
+//클로드가 짜줌
 public class CategoryDTOTest {
 
     static {
