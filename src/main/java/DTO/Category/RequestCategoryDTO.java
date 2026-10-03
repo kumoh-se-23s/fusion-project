@@ -18,8 +18,5 @@ public class RequestCategoryDTO extends BaseDTO {
 
     @DomainField("description")
     private String description;
-
-    public static void main(String[] args) {
-
-    }
+    
 }
