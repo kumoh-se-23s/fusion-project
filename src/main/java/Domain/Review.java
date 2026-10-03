@@ -1,25 +1,21 @@
 package Domain;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-
+@Builder
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class FundingReview implements BaseDomain {
+public class Review implements BaseDomain {
 
-    private Long reviewPk;
+    private Long pk;
     private Funding funding;
     private AppUser user;
-    private String reviewText;
-    private BigDecimal reviewRating;
+    private String text;
+    private BigDecimal rating;
     private Long likeCount;
     private Long dislikeCount;
     private LocalDateTime createdAt;
