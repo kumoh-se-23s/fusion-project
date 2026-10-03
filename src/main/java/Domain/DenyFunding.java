@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class DenyFunding {
+public class DenyFunding implements BaseDomain {
     private Long denyFundingPk;
     private Funding funding;
     private String denyReason;

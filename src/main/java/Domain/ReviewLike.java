@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ReviewLike {
+public class ReviewLike implements BaseDomain {
 
     private Long reviewLikePk;
     private FundingReview review;

@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class FundingLike {
+public class FundingLike implements BaseDomain {
 
     private Long fundingLikePk;
     private Funding funding;

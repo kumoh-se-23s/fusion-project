@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserRole {
+public class UserRole implements BaseDomain {
 
     private Long rolePk;
     private String roleName;

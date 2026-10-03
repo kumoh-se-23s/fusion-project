@@ -1,5 +1,6 @@
 package Domain;
 
+import Domain.Enum.FundingState;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,7 +14,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Funding {
+public class Funding implements BaseDomain {
 
     private Long fundingPk;
     private AppUser maker;

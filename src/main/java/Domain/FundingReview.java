@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class FundingReview {
+public class FundingReview implements BaseDomain {
 
     private Long reviewPk;
     private Funding funding;

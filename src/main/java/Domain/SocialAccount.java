@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class SocialAccount {
+public class SocialAccount implements BaseDomain {
 
     private Long socialAccountPk;
     private AppUser user;

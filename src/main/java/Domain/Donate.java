@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Donate {
+public class Donate implements BaseDomain {
 
     private Long donatePk;
     private AppUser user;

@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Reward {
+public class Reward implements BaseDomain {
     private Long rewardPk;
     private Funding funding;
     private String rewardName;

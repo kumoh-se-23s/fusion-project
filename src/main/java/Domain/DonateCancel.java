@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class DonateCancel {
+public class DonateCancel implements BaseDomain {
 
     private Long cancelDonate;
     private BigDecimal donateAmount;

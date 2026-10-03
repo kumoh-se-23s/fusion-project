@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class FundingCategory {
+public class FundingCategory implements BaseDomain {
 
     private Long fundingCategoryPk;
     private Category category;

@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProviderRelation {
+public class ProviderRelation implements BaseDomain {
 
     private Long accountProviderPk;
     private SocialAccount socialAccount;

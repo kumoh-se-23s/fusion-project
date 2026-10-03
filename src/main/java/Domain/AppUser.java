@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class AppUser {
+public class AppUser implements BaseDomain {
 
     private Long userPk;
     private String userName;

@@ -11,7 +11,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Provider {
+public class Provider implements BaseDomain {
 
     private Long socialProviderPk;
     private SocialProvider socialName;
