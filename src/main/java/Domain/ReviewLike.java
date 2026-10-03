@@ -1,19 +1,16 @@
 package Domain;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 
 @Getter
-@Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class ReviewLike implements BaseDomain {
 
-    private Long reviewLikePk;
-    private FundingReview review;
+    private Long pk;
+    private Review review;
     private AppUser user;
     private Boolean likeType;
 }

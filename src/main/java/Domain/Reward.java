@@ -1,27 +1,24 @@
 package Domain;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 
 @Getter
-@Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Reward implements BaseDomain {
-    private Long rewardPk;
+    private Long pk;
     private Funding funding;
-    private String rewardName;
-    private String rewardText;
-    private String rewardImgUrl;
+    private String name;
+    private String text;
+    private Byte[] imgFile;
     private BigDecimal requiredAmount;
-    private Long rewardMaxQuantity;
-    private Long rewardRemainQuantity;
-    private LocalDateTime serveDate;
+    private Long maxQuantity;
+    private Long remainQuantity;
+    private LocalDateTime provideDate;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

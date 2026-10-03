@@ -1,20 +1,17 @@
 package Domain;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 
 @Getter
-@Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class LocalAccount implements BaseDomain {
 
-    private Long localAccountPk;
+    private Long pk;
     private AppUser user;
-    private String localAccountId;
-    private String localAccountPassword;
-    private String localAccountSalt;
+    private String id;
+    private String password;
+    private String salt;
 }

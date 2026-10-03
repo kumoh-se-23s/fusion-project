@@ -12,7 +12,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class UserRoleRelation implements BaseDomain {
 
-    private Long userRolePk;
+    private Long pk;
     private UserRole role;
     private AppUser user;
 }

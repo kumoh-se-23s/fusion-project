@@ -1,23 +1,20 @@
 package Domain;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
+@Builder
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class AppUser implements BaseDomain {
 
-    private Long userPk;
-    private String userName;
-    private String userEmail;
-    private String userPostal;
-    private String userAddress;
-    private String userPhone;
+    private Long pk;
+    private String name;
+    private String email;
+    private String postal;
+    private String address;
+    private String phone;
     private LocalDateTime createdAt;
 }
