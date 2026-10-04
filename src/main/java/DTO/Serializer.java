@@ -4,13 +4,11 @@ import Annotation.*;
 
 import java.lang.reflect.*;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+
+import Exception.SerializeException;
 
 public abstract class Serializer {
-
-    //오류출력 Logger
-    private static final Logger LOGGER = Logger.getLogger(Serializer.class.getName());
 
     //원시형 -> 래퍼클래스     아마 필요 없을듯?
     private static final Map<Class<?>, Class<?>> WRAPPERS = Map.of(
@@ -25,32 +23,18 @@ public abstract class Serializer {
     public static <T extends Serializer> T fromDomain(Object domain, Class<T> dtoType) {
         if (domain == null) return null;
 
-        try {
-            checkBound(dtoType, domain.getClass());
+        checkBound(dtoType, domain.getClass());
 
-            Constructor<T> constructor = dtoType.getDeclaredConstructor();
-            constructor.setAccessible(true);
-            T dto = constructor.newInstance();
+        T dto = newInstance(dtoType);
+        copyFields(dto, domain, true);
+        return dto;
 
-            copyFields(dto, domain, true);
-            return dto;
-
-        } catch (IllegalArgumentException e) {
-            LOGGER.warning(e.getMessage());
-
-        } catch (NoSuchMethodException e) {
-            LOGGER.warning(dtoType.getName() + " 클래스에 기본 생성자가 없습니다.");
-
-        } catch (ReflectiveOperationException e) {
-            LOGGER.log(Level.SEVERE, "리플렉션 과정에서 에러가 발생하였습니다.", e);
-        }
-
-        return null;
     }
 
     //Domain -> DTOs
     public static <T extends Serializer> List<T> fromDomains(Collection<?> domains, Class<T> dtoType) {
         List<T> result = new ArrayList<>();
+        if (domains == null) return result;
 
         for (Object domain : domains) {
             T dto = fromDomain(domain, dtoType);
@@ -63,41 +47,23 @@ public abstract class Serializer {
     // DTO -> Domain
 
     public <D> D toDomain(Class<D> domainType) {
-        try {
-            checkBound(this.getClass(), domainType);
+        checkBound(this.getClass(), domainType);
 
-            Constructor<D> constructor = domainType.getDeclaredConstructor();
-            constructor.setAccessible(true);
-            D domain = constructor.newInstance();
+        D domain = newInstance(domainType);
+        copyFields(this, domain, false);
+        return domain;
 
-            copyFields(this, domain, false);
-            return domain;
-
-        } catch (IllegalArgumentException e) {
-            LOGGER.warning(e.getMessage());
-
-        } catch (NoSuchMethodException e) {
-            LOGGER.warning(domainType.getName() + " 클래스에 기본 생성자가 없습니다.");
-
-        } catch (ReflectiveOperationException e) {
-            LOGGER.log(Level.SEVERE, "리플렉션 과정에서 에러가 발생하였습니다.", e);
-        }
-
-        return null;
     }
 
     //DTOs -> Domain
 
     public static <D> List<D> toDomains(Collection<? extends Serializer> dtos, Class<D> domainType) {
         List<D> result = new ArrayList<>();
+        if (dtos == null) return result;
 
         for (Serializer dto : dtos) {
-            if (dto == null) continue;
-
-            D domain = dto.toDomain(domainType);
-            if (domain != null) result.add(domain);
+            if (dto != null) result.add(dto.toDomain(domainType));
         }
-
         return result;
     }
 
@@ -105,14 +71,12 @@ public abstract class Serializer {
     private static void checkBound(Class<?> dtoType, Class<?> domainType) {
         BindDomain bind = dtoType.getAnnotation(BindDomain.class);
         if (bind == null) {
-            throw new IllegalArgumentException(
-                dtoType.getName() + " 클래스에 @BindDomain이 선언되지 않았습니다."
-            );
+            throw new SerializeException(dtoType.getName() + " 클래스에 @BindDomain이 선언되지 않았습니다.");
         }
 
         boolean bound = Arrays.stream(bind.value()).anyMatch(m -> m.isAssignableFrom(domainType));
         if (!bound) {
-            throw new IllegalArgumentException(
+            throw new SerializeException(
                 dtoType.getSimpleName() + "는 " + domainType.getSimpleName() + "를 변환할 수 없습니다.\n" +
                 "허용된 타입: " + Arrays.stream(bind.value()).map(Class::getSimpleName).toList()
             );
@@ -121,52 +85,110 @@ public abstract class Serializer {
 
 
     //필드 복사
-    private static void copyFields(Object dto, Object domain, boolean domainToDto) throws IllegalAccessException {
+    private static void copyFields(Object dto, Object domain, boolean domainToDto) {
         for (Class<?> c = dto.getClass(); c != null && c != Serializer.class; c = c.getSuperclass()) {
             for (Field dtoField : c.getDeclaredFields()) {
                 if (Modifier.isStatic(dtoField.getModifiers())) continue;
 
-                DomainField mapping = dtoField.getAnnotation(DomainField.class);
-                String domainFieldName = (mapping != null) ? mapping.value() : dtoField.getName();
+                DomainField mapping = dtoField.getAnnotation(DomainField.class);  //어노테이션 존재 시 어노테이션 값으로 조회
+                String path = (mapping != null) ? mapping.value() : dtoField.getName();
 
-                Field domainField = findField(domain.getClass(), domainFieldName);
-                if (domainField == null) {
-                    throw new IllegalArgumentException(
-                        domain.getClass().getSimpleName() + "에 '" + domainFieldName + "' 필드가 없습니다."
-                    );
-                }
+                Field domainField = resolveField(domain.getClass(), path);
 
                 Field sourceField = domainToDto ? domainField : dtoField;
                 Field targetField = domainToDto ? dtoField : domainField;
 
                 if (!wrap(targetField.getType()).isAssignableFrom(wrap(sourceField.getType()))) {
-                    throw new IllegalArgumentException(
+                    throw new SerializeException(
                         "'" + dtoField.getName() + "' 필드의 타입이 일치하지 않습니다.\n" +
                         "dto: " + dtoField.getType().getSimpleName() +
                         ", domain: " + domainField.getType().getSimpleName()
                     );
                 }
 
-                dtoField.setAccessible(true);
-                domainField.setAccessible(true);
+                if (!domainToDto && path.contains(".")) continue;
 
-                Object value = domainToDto ? domainField.get(domain) : dtoField.get(dto);
+                Object value = domainToDto ? readPath(domain, path) : get(dtoField, dto);
 
-                if (value == null && (isNotNull(dtoField) || targetField.getType().isPrimitive())) {
-                    throw new IllegalArgumentException(
-                        "'" + dtoField.getName() + "' 필드는 null일 수 없습니다.\n" +
+                if (value == null && targetField.getType().isPrimitive()) {
+                    throw new SerializeException(
+                        "'" + dtoField.getName() + "' 필드는 " + targetField.getType().getSimpleName() +
+                        " 타입이라 null을 넣을 수 없습니다.\n" +
                         "domain: " + domain.getClass().getSimpleName()
                     );
                 }
 
-                if (domainToDto) dtoField.set(dto, value);
-                else domainField.set(domain, value);
+                if (domainToDto) set(dtoField, dto, value);
+                else set(domainField, domain, value);
             }
         }
     }
-    //NotNull 체크
-    private static boolean isNotNull(Field field) {
-        return field.getType().isPrimitive() || field.isAnnotationPresent(NotNull.class);
+    //다른 객체를 필드로 받는 경우     @DomainField에 ("Object.FieldName")와 같이 작성하여 사용
+    private static Field resolveField(Class<?> domainType, String path) {
+        Field field = null;
+        Class<?> current = domainType;
+
+        for (String name : path.split("\\.")) {
+            field = findField(current, name);
+            if (field == null) {
+                throw new SerializeException(
+                    current.getSimpleName() + "에 '" + name + "' 필드가 없습니다. (경로: " + path + ")"
+                );
+            }
+            current = field.getType();
+        }
+
+        return field;
+    }
+    private static Object readPath(Object domain, String path) {
+        Object current = domain;
+
+        for (String name : path.split("\\.")) {
+            if (current == null) return null;
+            Field field = findField(current.getClass(), name);
+
+            if (field == null) {
+                throw new SerializeException(
+                    current.getClass().getSimpleName() +
+                    "에 '" + name + "' 필드가 없습니다. (경로: " + path + ")"
+                );
+            }
+            current = get(field, current);
+
+        }
+
+        return current;
+    }
+    private static <C> C newInstance(Class<C> type) {
+        try {
+            Constructor<C> constructor = type.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            return constructor.newInstance();
+
+        } catch (NoSuchMethodException e) {
+            throw new SerializeException(type.getName() + " 클래스에 기본 생성자가 없습니다.", e);
+
+        } catch (ReflectiveOperationException e) {
+            throw new SerializeException(type.getName() + " 인스턴스 생성에 실패했습니다.", e);
+        }
+    }
+
+    private static Object get(Field field, Object target) {
+        try {
+            field.setAccessible(true);
+            return field.get(target);
+        } catch (IllegalAccessException e) {
+            throw new SerializeException("'" + field.getName() + "' 필드를 읽지 못했습니다.", e);
+        }
+    }
+
+    private static void set(Field field, Object target, Object value) {
+        try {
+            field.setAccessible(true);
+            field.set(target, value);
+        } catch (IllegalAccessException e) {
+            throw new SerializeException("'" + field.getName() + "' 필드에 값을 넣지 못했습니다.", e);
+        }
     }
 
     //필드 찾기
