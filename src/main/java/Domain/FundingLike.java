@@ -2,7 +2,7 @@ package Domain;
 
 import lombok.*;
 
-@Builder
+@Builder(toBuilder = true)
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor

@@ -4,7 +4,7 @@ import lombok.*;
 
 
 @Getter
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserRole implements BaseDomain {
