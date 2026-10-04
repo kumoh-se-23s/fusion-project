@@ -9,3 +9,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface NotNull {
 }
+
+//NotNull은 dto보다는 도메인에서 사용하는게 맞다고 판단
