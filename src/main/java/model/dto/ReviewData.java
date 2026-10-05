@@ -1,6 +1,5 @@
 package model.dto;
 
-import constant.FundingState;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,22 +14,12 @@ public class ReviewData {
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class ReviewDataRequest extends BaseData {
-        private Long makerPK;
-
-        private LocalDateTime startDate;
-
-        private LocalDateTime endDate;
-
-        private BigDecimal purposeAmount;
-
-        private BigDecimal donateAmount;
+    public static class Request extends BaseData {
+        private Long fundingPK;
 
         private String text;
 
-        private byte[] imgFile;
-
-        private List<Long> categoryPKs;
+        private BigDecimal rating;
 
     }
 
@@ -38,71 +27,28 @@ public class ReviewData {
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class FundingDataResponse extends BaseData {
+    public static class Response extends BaseData {
         private Long pk;
 
-        private Long makerPK;
+        private Long fundingFK;
+
+        private Long userFK;
+
+        private String text;
+
+        private BigDecimal rating;
 
         private Long likeCount;
 
         private Long dislikeCount;
 
-        private LocalDateTime startDate;
-
-        private LocalDateTime endDate;
-
-        private BigDecimal purposeAmount;
-
-        private BigDecimal donateAmount;
-
-        private FundingState state;
-
-        private String text;
-
-        private byte[] imgFile;
     }
-
     @Getter
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class AdminCreateFundingData extends BaseData {
-
-        private FundingData.FundingDataRequest fundingDataRequest;
-
-        private FundingState state;
-
-    }
-
-    @Getter
-    @Builder
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class EditFundingData extends BaseData {
-
-        private String text;
-
-        private Byte[] imgFile;
-
-        private List<Long> categoryPKs;
-    }
-
-    @Getter
-    @Builder
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class AdminEditFundingData extends BaseData {
-        private FundingData.FundingDataRequest fundingDataRequest;
-
-        private FundingState state;
-    }
-
-    @Getter
-    @Builder
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class ListFundingDataResponse extends BaseData {
-        private List<FundingData.FundingDataResponse> fundingDatumResponses;
+    public static class ListResponse extends BaseData {
+        private List<Response> ListResponses;
 
         private Long amount;
     }
@@ -111,21 +57,48 @@ public class ReviewData {
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class AdminFundingDataResponse extends BaseData {
-        private FundingData.FundingDataResponse fundingDataResponse;
+    public static class PKResponse extends BaseData {
+
+        private Long PK;
+
+    }
+
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class DeleteResponse extends BaseData {
+
+        private Boolean isDeleted;
+
+    }
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class AdminResponse extends BaseData {
+
+        private Response response;
 
         private LocalDateTime createdAt;
 
         private LocalDateTime updatedAt;
     }
 
+    public static class AdminListResponse extends BaseData {
+        private List<AdminResponse> adminResponses;
+
+        private Long amount;
+    }
+
     @Getter
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class AdminListFundingDataResponse extends BaseData {
-        private List<FundingData.AdminFundingDataResponse> adminFundingDatumResponses;
+    public static class EditReview extends BaseData {
 
-        private Long amount;
+        private String text;
+
+        private BigDecimal rating;
     }
 }
