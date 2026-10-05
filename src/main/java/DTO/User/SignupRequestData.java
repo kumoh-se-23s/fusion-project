@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class LocalSignupRequestData extends BaseDTO {
+public class SignupRequestData extends BaseDTO {
 
     @DomainField("name")
     private String name;

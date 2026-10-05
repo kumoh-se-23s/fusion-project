@@ -1,6 +1,7 @@
 package DTO.User;
 
 import Annotation.DomainField;
+import DTO.BaseDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -10,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class AdminUserResponseData {
+public class AdminUserResponseData extends BaseDTO {
 
     @DomainField("user_pk")
     private String userPK;
@@ -35,4 +36,7 @@ public class AdminUserResponseData {
 
     @DomainField("phone")
     private String phone;
+
+    @DomainField("created_at")
+    private String createdAt;
 }

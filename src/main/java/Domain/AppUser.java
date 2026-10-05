@@ -13,7 +13,7 @@ public class AppUser implements BaseDomain {
     private Long pk;
     private String name;
     private String email;
-    private String postal;
+    private String postalCode;
     private String address;
     private String phone;
     private LocalDateTime createdAt;

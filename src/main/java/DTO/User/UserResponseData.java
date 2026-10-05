@@ -29,4 +29,7 @@ public class UserResponseData extends BaseDTO {
     @DomainField("phone")
     private String phone;
 
+    @DomainField("created_at")
+    private String createdAt;
+
 }
