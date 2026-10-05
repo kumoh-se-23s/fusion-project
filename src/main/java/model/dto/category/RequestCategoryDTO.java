@@ -12,7 +12,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class RequestCategoryDTO extends BaseDTO {
-    @NotNull
+
     @DomainField("name")
     private String name;
 
