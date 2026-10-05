@@ -1,12 +1,8 @@
 package DTO.User;
 
 import Annotation.DomainField;
-import Annotation.NotNull;
 import DTO.BaseDTO;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -16,26 +12,26 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class LocalSignupRequestDTO extends BaseDTO {
 
-    @NotNull
+    @NonNull
     @DomainField("name")
     private String name;
 
-    @NotNull
+    @NonNull
     @DomainField("email")
     private String email;
 
-    @NotNull
+    @NonNull
     @DomainField("postalCode")
     private String postalCode;
 
-    @NotNull
+    @NonNull
     @DomainField("address")
     private String address;
 
     @DomainField("phone")
     private String phone;
 
-    @NotNull
+    @NonNull
     @DomainField("createdAt")
     private LocalDateTime createdAt;
 

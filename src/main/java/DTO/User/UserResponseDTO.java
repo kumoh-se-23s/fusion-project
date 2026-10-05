@@ -2,10 +2,7 @@ package DTO.User;
 
 import Annotation.DomainField;
 import Annotation.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Getter
 @Builder
@@ -13,27 +10,27 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UserResponseDTO {
 
-    @NotNull
+    @NonNull
     @DomainField("localAccountPK")
     private String localAccountPK;
 
-    @NotNull
+    @NonNull
     @DomainField("name")
     private String name;
 
-    @NotNull
+    @NonNull
     @DomainField("email")
     private String email;
 
-    @NotNull
+    @NonNull
     @DomainField("postalCode")
     private String postalCode;
 
-    @NotNull
+    @NonNull
     @DomainField("address")
     private String address;
 
-    @NotNull
+    @NonNull
     @DomainField("phone")
     private String phone;
 
