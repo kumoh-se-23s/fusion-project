@@ -1,4 +1,4 @@
-package dto;
+package DTO;
 
 import model.dto.Serializer;
 import model.dto.category.RequestCategoryDTO;
