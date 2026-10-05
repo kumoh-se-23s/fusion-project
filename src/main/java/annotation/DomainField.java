@@ -1,4 +1,4 @@
-package Annotation;
+package annotation;
 
 import java.lang.annotation.*;
 
