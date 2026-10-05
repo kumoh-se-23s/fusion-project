@@ -1,7 +1,6 @@
 package model.dto;
 
 import lombok.*;
-
 import java.util.List;
 
 public class CategoryData extends BaseData {
@@ -9,7 +8,7 @@ public class CategoryData extends BaseData {
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class CategoryDataRequest extends BaseData {
+    public static class Request extends BaseData {
 
         private String name;
 
@@ -20,7 +19,7 @@ public class CategoryData extends BaseData {
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class CategoryDataResponse extends BaseData {
+    public static class Response extends BaseData {
         private Long pk;
 
         private String name;
@@ -31,17 +30,8 @@ public class CategoryData extends BaseData {
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class PKResponse extends BaseData {
-
-        private Long categoryPK;
-
-    }
-    @Getter
-    @Builder
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class ListCategoryDataResponse extends BaseData {
-        private List<CategoryDataResponse> fundingDatumResponses;
+    public static class ListResponse extends BaseData {
+        private List<Response> ListResponses;
 
         private Long amount;
     }
@@ -50,11 +40,38 @@ public class CategoryData extends BaseData {
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class BindCategoryDataRequest extends BaseData {
+    public static class PKResponse extends BaseData {
+
+        private Long PK;
+
+    }
+
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class DeleteResponse extends BaseData {
+
+        private Boolean isDeleted;
+
+    }
+
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class BindRequest extends BaseData {
         private Long fundingPKs;
 
         private List<Long> categoryPKs;
     }
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class BindResponse extends BaseData {
 
-
+        private List<Long> fundingCategoryPKs;
+    }
 }
+

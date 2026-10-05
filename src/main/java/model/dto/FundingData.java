@@ -15,7 +15,7 @@ public class FundingData extends BaseData {
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class FundingDataRequest extends BaseData {
+    public static class Request extends BaseData {
         private Long makerPK;
 
         private LocalDateTime startDate;
@@ -38,7 +38,7 @@ public class FundingData extends BaseData {
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class FundingDataResponse extends BaseData {
+    public static class Response extends BaseData {
         private Long pk;
 
         private Long makerPK;
@@ -66,20 +66,19 @@ public class FundingData extends BaseData {
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class AdminCreateFundingDataRequest extends BaseData {
+    public static class ListResponse extends BaseData {
+        private List<Response> ListResponses;
 
-        private FundingDataRequest fundingDataRequest;
-
-        private FundingState state;
-
+        private Long amount;
     }
+
     @Getter
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
     public static class PKResponse extends BaseData {
 
-        private Long fundingPK;
+        private Long PK;
 
     }
 
@@ -87,7 +86,30 @@ public class FundingData extends BaseData {
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class EditFundingDataRequest extends BaseData {
+    public static class DeleteResponse extends BaseData {
+
+        private Boolean isDeleted;
+
+    }
+
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class AdminCreateRequest extends BaseData {
+
+        private Request request;
+
+        private FundingState state;
+
+    }
+
+
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class EditRequest extends BaseData {
 
         private String text;
 
@@ -100,28 +122,20 @@ public class FundingData extends BaseData {
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class AdminEditFundingData extends BaseData {
-        private FundingDataRequest fundingDataRequest;
+    public static class AdminEditRequest extends BaseData {
+        private Request request;
 
         private FundingState state;
     }
 
-    @Getter
-    @Builder
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class ListFundingDataResponse extends BaseData {
-        private List<FundingDataResponse> fundingDatumResponses;
 
-        private Long amount;
-    }
 
     @Getter
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class AdminFundingDataResponse extends BaseData {
-        private FundingDataResponse fundingDataResponse;
+    public static class AdminResponse extends BaseData {
+        private Response response;
 
         private LocalDateTime createdAt;
 
@@ -132,19 +146,11 @@ public class FundingData extends BaseData {
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class AdminListFundingDataResponse extends BaseData {
-        private List<AdminFundingDataResponse> adminFundingDatumResponses;
+    public static class AdminListResponse extends BaseData {
+        private List<AdminResponse> adminResponses;
 
         private Long amount;
     }
 
-    @Getter
-    @Builder
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class DeleteResponse extends BaseData {
 
-        private Boolean isDeleted;
-
-    }
 }
