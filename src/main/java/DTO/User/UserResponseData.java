@@ -6,6 +6,9 @@ import DTO.BaseDTO;
 import lombok.*;
 
 @Getter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class UserResponseData extends BaseDTO {
 
     @DomainField("localAccountPK")
