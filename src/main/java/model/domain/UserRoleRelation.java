@@ -8,8 +8,12 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserRoleRelation implements BaseDomain {
-
+    @NonNull
     private Long pk;
+
+    @NonNull
     private UserRole role;
+
+    @NonNull
     private AppUser user;
 }

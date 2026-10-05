@@ -10,12 +10,24 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Donate implements BaseDomain {
-
+    @NonNull
     private Long pk;
+
+    @NonNull
     private AppUser user;
+
+    @NonNull
     private Reward reward;
+
+    @NonNull
     private BigDecimal amount;
+
+    @NonNull
     private Long quantity;
+
+    @NonNull
     private LocalDateTime createdAt;
+
+    @NonNull
     private Boolean state;
 }

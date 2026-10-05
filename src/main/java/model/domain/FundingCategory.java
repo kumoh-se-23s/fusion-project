@@ -7,8 +7,12 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FundingCategory implements BaseDomain {
-
+    @NonNull
     private Long pk;
+
+    @NonNull
     private Category category;
+
+    @NonNull
     private Funding funding;
 }

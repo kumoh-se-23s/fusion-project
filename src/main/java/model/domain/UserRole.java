@@ -8,7 +8,9 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserRole implements BaseDomain {
-
+    @NonNull
     private Long pk;
+
+    @NonNull
     private String roleName;
 }

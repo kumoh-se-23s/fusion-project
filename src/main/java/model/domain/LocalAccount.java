@@ -8,10 +8,18 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LocalAccount implements BaseDomain {
-
+    @NonNull
     private Long pk;
+
+    @NonNull
     private AppUser user;
+
+    @NonNull
     private String id;
+
+    @NonNull
     private String password;
+
+    @NonNull
     private String salt;
 }

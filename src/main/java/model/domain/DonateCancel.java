@@ -10,10 +10,18 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DonateCancel implements BaseDomain {
-
+    @NonNull
     private Long pk;
+
+    @NonNull
     private BigDecimal amount;
+
+    @NonNull
     private LocalDateTime createdAt;
+
+    @NonNull
     private Reward reward;
+
+    @NonNull
     private AppUser user;
 }

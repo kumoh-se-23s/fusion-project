@@ -7,8 +7,11 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Category implements BaseDomain {
-
+    @NonNull
     private Long pk;
+
+    @NonNull
     private String name;
+
     private String description;
 }
