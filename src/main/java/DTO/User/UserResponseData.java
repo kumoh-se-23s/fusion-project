@@ -1,29 +1,35 @@
 package DTO.User;
 
 import Annotation.DomainField;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import Annotation.NotNull;
+import DTO.BaseDTO;
+import lombok.*;
 
 @Getter
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
-public class UserUpdateRequestDTO {
+public class UserResponseData extends BaseDTO {
 
+    @NonNull
+    @DomainField("localAccountPK")
+    private String localAccountPK;
+
+    @NonNull
     @DomainField("name")
     private String name;
 
+    @NonNull
     @DomainField("email")
     private String email;
 
+    @NonNull
     @DomainField("postalCode")
     private String postalCode;
 
+    @NonNull
     @DomainField("address")
     private String address;
 
+    @NonNull
     @DomainField("phone")
     private String phone;
+
 }
