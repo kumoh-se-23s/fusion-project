@@ -8,27 +8,21 @@ import lombok.*;
 @Getter
 public class UserResponseData extends BaseDTO {
 
-    @NonNull
     @DomainField("localAccountPK")
     private String localAccountPK;
 
-    @NonNull
     @DomainField("name")
     private String name;
 
-    @NonNull
     @DomainField("email")
     private String email;
 
-    @NonNull
     @DomainField("postalCode")
     private String postalCode;
 
-    @NonNull
     @DomainField("address")
     private String address;
 
-    @NonNull
     @DomainField("phone")
     private String phone;
 

@@ -12,26 +12,21 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class LocalSignupRequestData extends BaseDTO {
 
-    @NonNull
     @DomainField("name")
     private String name;
 
-    @NonNull
     @DomainField("email")
     private String email;
 
-    @NonNull
     @DomainField("postalCode")
     private String postalCode;
 
-    @NonNull
     @DomainField("address")
     private String address;
 
     @DomainField("phone")
     private String phone;
 
-    @NonNull
     @DomainField("createdAt")
     private LocalDateTime createdAt;
 
