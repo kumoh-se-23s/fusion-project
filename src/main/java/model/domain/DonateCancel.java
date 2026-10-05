@@ -1,4 +1,4 @@
-package Domain;
+package model.domain;
 
 import lombok.*;
 
@@ -9,13 +9,11 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Donate implements BaseDomain {
+public class DonateCancel implements BaseDomain {
 
     private Long pk;
-    private AppUser user;
-    private Reward reward;
     private BigDecimal amount;
-    private Long quantity;
     private LocalDateTime createdAt;
-    private Boolean state;
+    private Reward reward;
+    private AppUser user;
 }

@@ -1,4 +1,4 @@
-package Domain.Enum;
+package constant;
 
 public enum FundingState {
 }

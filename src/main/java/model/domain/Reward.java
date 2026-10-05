@@ -1,4 +1,4 @@
-package Domain;
+package model.domain;
 import lombok.*;
 
 import java.math.BigDecimal;

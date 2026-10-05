@@ -1,15 +1,16 @@
-package Domain;
+package model.domain;
 
 import lombok.*;
 
-@Builder(toBuilder = true)
+
 @Getter
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class FundingLike implements BaseDomain {
+public class ReviewLike implements BaseDomain {
 
     private Long pk;
-    private Funding funding;
+    private Review review;
     private AppUser user;
     private Boolean likeType;
 }

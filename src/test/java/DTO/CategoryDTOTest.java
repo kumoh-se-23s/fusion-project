@@ -1,7 +1,8 @@
-package DTO;
+package dto;
 
-import DTO.Category.RequestCategoryDTO;
-import Domain.Category;
+import model.dto.Serializer;
+import model.dto.category.RequestCategoryDTO;
+import model.domain.Category;
 
 import java.util.Arrays;
 import java.util.List;

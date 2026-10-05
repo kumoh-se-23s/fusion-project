@@ -1,6 +1,6 @@
-package Domain;
+package model.domain;
 
-import Domain.Enum.FundingState;
+import constant.FundingState;
 import lombok.*;
 
 import java.math.BigDecimal;

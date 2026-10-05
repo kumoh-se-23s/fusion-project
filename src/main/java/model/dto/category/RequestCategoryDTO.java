@@ -1,9 +1,9 @@
-package DTO.Category;
+package model.dto.category;
 
 
 import Annotation.*;
-import DTO.BaseDTO;
-import Domain.Category;
+import model.dto.BaseDTO;
+import model.domain.Category;
 import lombok.*;
 
 @Getter

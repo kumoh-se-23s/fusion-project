@@ -1,4 +1,4 @@
-package DTO;
+package model.dto;
 
 import java.util.Collection;
 import java.util.List;

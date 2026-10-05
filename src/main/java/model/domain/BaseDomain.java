@@ -1,4 +1,4 @@
-package Domain;
+package model.domain;
 
 public interface BaseDomain {
 }
