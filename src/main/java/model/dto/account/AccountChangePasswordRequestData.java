@@ -1,11 +1,11 @@
-package DTO.Account;
+package model.dto.account;
 
 import Annotation.DomainField;
-import DTO.BaseDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import model.dto.BaseDTO;
 
 @Getter
 @Builder
