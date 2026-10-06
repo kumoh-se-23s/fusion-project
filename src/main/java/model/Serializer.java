@@ -2,11 +2,13 @@ package model;
 
 import annotation.BindDataObject;
 import annotation.BindDomain;
+import annotation.DataField;
 import exception.SerializeException;
 import lombok.NonNull;
 import model.domain.BaseDomain;
 import model.dto.BaseData;
 
+import java.lang.classfile.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -17,6 +19,7 @@ import java.util.Map;
 import java.util.Optional;
 
 public final class Serializer {
+    private static Map<Class<?>, Map<String, Class<?>>> SERIALIZE_MAP;
 
     public static <DataObject extends BaseData, Domain extends BaseDomain> DataObject serialize(@NonNull Domain anyDomain, @NonNull Class<DataObject> targetClass) {
         // fast-fail
@@ -24,7 +27,7 @@ public final class Serializer {
 
         Class<?> domainClass = anyDomain.getClass();
 
-        List<Class<?>> dtoClassList = List.of(domainClass.getDeclaredAnnotation(BindDataObject.class).values());
+        List<Class<?>> dtoClassList = List.of(domainClass.getAnnotation(BindDataObject.class).values());
 
         if (!dtoClassList.contains(targetClass)) {
             throw new SerializeException("Attempted to serialize to an unregistered Data Object");
@@ -90,6 +93,16 @@ public final class Serializer {
         }
     }
 
+    private static boolean isExpectedTypeBound(@NonNull Field anyField) {
+        return anyField.isAnnotationPresent(DataField.class);
+    }
+
+    public static void requireExpectedTypeBound(@NonNull Field anyField) {
+        if (!isExpectedTypeBound(anyField)) {
+            throw new SerializeException("Attempted to serialize an object that is not bound to an expected type");
+        }
+    }
+
     private static <T> Constructor<T> findDefaultConstructor(@NonNull Class<T> targetClass) {
         try {
             Constructor<T> constructor = targetClass.getDeclaredConstructor();
@@ -142,6 +155,25 @@ public final class Serializer {
         }
 
         return fieldMap;
+    }
+
+    private static boolean isRegisteredType(@NonNull Class<?> expectedType) {
+        return SERIALIZE_MAP.containsKey(expectedType);
+    }
+
+    private static void registerSerializeMap(@NonNull Class<?> targetClass) {
+//        Map<String, Field> fieldMap
+    }
+
+    private static Class<?> readFieldMapAnnotation(@NonNull Field anyField) {
+//        Serializer.requireExpectedTypeBound(anyField);
+        anyField.setAccessible(true);
+
+        Optional<DataField> maybeFieldMeta = Optional.ofNullable(anyField.getAnnotation(DataField.class));
+
+        if (maybeFieldMeta.isPresent() && maybeFieldMeta.get().to() != void.class) {
+
+        }
     }
 
 }
