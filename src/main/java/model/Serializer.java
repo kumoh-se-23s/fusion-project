@@ -2,6 +2,7 @@ package model;
 
 import annotation.BindDataObject;
 import annotation.BindDomain;
+import annotation.BindSchema;
 import annotation.DataField;
 import exception.SerializeException;
 import lombok.NonNull;
@@ -17,9 +18,31 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 public final class Serializer {
     private static Map<Class<?>, Map<String, Class<?>>> SERIALIZE_MAP;
+
+    private record Task(Object src, Object target) {}
+
+
+    public static <SourceObject, DestObject> DestObject advSerialize(@NonNull SourceObject anySource, @NonNull Class<DestObject> expectedType) throws RuntimeException{
+        Serializer.requireSchemaBound(anySource);
+
+        Class<?> sourceClass = anySource.getClass();
+        List<Class<?>> expectedClassList = List.of(sourceClass.getAnnotation(BindSchema.class).bound());
+
+        if (!expectedClassList.contains(expectedType)) {
+            throw new SerializeException("Attempted to serialize to an unregistered Type");
+        }
+
+        try {
+            DestObject destObject = Serializer.createInstance(Serializer.findDefaultConstructor(expectedType));
+
+        }
+
+    }
+
 
     public static <DataObject extends BaseData, Domain extends BaseDomain> DataObject serialize(@NonNull Domain anyDomain, @NonNull Class<DataObject> targetClass) {
         // fast-fail
@@ -73,6 +96,16 @@ public final class Serializer {
         }
     }
 
+    private static boolean isSchemaBound(@NonNull Object anyObject) {
+        return anyObject.getClass().isAnnotationPresent(BindSchema.class);
+    }
+
+    public static void requireSchemaBound(@NonNull Object anyObject) {
+        if (!isSchemaBound(anyObject)) {
+            throw new SerializeException("Attempted to serialize an object that is not bound to a schema.");
+        }
+    }
+
     private static <DataObject extends BaseData> boolean isDomainBound(@NonNull DataObject anyData) {
         return anyData.getClass().isAnnotationPresent(BindDomain.class);
     }
@@ -114,9 +147,9 @@ public final class Serializer {
         }
     }
 
-    private static <T> T createInstance(@NonNull Constructor<T> constructor) {
+    private static <T> T createInstance(Supplier<Constructor<T>> constructorSupplier) {
         try {
-            return constructor.newInstance();
+            return constructorSupplier.get().newInstance();
 
         } catch (InvocationTargetException exception) {
             throw new SerializeException(

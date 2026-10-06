@@ -6,4 +6,5 @@ import java.lang.annotation.*;
 @Target(ElementType.FIELD)
 public @interface DataField {
     Class<?> to() default void.class;
+    String name() default "";
 }
