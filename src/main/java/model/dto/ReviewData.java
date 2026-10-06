@@ -81,7 +81,7 @@ public class ReviewData {
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class EditReview extends BaseData {
+    public static class EditRequest extends BaseData {
 
         private String text;
 

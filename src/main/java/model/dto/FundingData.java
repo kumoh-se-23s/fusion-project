@@ -100,7 +100,7 @@ public class FundingData extends BaseData {
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class AdminCreateRequest extends BaseData {
+    public static class AdminRequest extends BaseData {
 
         private Request request;
 
@@ -122,15 +122,6 @@ public class FundingData extends BaseData {
         private List<Long> categoryPKs;
     }
 
-    @Getter
-    @Builder
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class AdminEditRequest extends BaseData {
-        private Request request;
-
-        private FundingState state;
-    }
 
 
 }
