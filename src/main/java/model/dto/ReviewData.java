@@ -38,6 +38,10 @@ public class ReviewData {
 
         private BigDecimal rating;
 
+        private LocalDateTime createdAt;
+
+        private LocalDateTime updatedAt;
+
         private Long likeCount;
 
         private Long dislikeCount;
@@ -71,24 +75,6 @@ public class ReviewData {
 
         private Boolean isDeleted;
 
-    }
-    @Getter
-    @Builder
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class AdminResponse extends BaseData {
-
-        private Response response;
-
-        private LocalDateTime createdAt;
-
-        private LocalDateTime updatedAt;
-    }
-
-    public static class AdminListResponse extends BaseData {
-        private List<AdminResponse> adminResponses;
-
-        private Long amount;
     }
 
     @Getter

@@ -43,6 +43,10 @@ public class FundingData extends BaseData {
 
         private Long makerPK;
 
+        private LocalDateTime createdAt;
+
+        private LocalDateTime updatedAt;
+
         private Long likeCount;
 
         private Long dislikeCount;
@@ -126,30 +130,6 @@ public class FundingData extends BaseData {
         private Request request;
 
         private FundingState state;
-    }
-
-
-
-    @Getter
-    @Builder
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class AdminResponse extends BaseData {
-        private Response response;
-
-        private LocalDateTime createdAt;
-
-        private LocalDateTime updatedAt;
-    }
-
-    @Getter
-    @Builder
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class AdminListResponse extends BaseData {
-        private List<AdminResponse> adminResponses;
-
-        private Long amount;
     }
 
 
