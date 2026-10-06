@@ -1,7 +1,6 @@
-package DTO.RewardDatas;
+package model.dto.RewardDatas;
 import java.time.LocalDateTime;
 import model.dto.BaseDTO;
-import annotation.*;
 import lombok.*;
 
 @Getter//값을 읽는 메서드 생성
@@ -45,4 +44,14 @@ public class CreateRewardRequestData extends BaseDTO {
     @NotNull
     @DomainField("rewardRemainQuantity")
     private Integer rewardReminQuantity;//리워드 현재 남은 수량
+
+    @Getter//값을 읽는 메서드 생성
+    @Builder//필드 이름을 지정하면서 객체 생성
+    @AllArgsConstructor//모든 필드 값을 받는 생성자 생성
+    @NoArgsConstructor//빈 괄호로 객체를 만드느 생성자 생성
+    @BindDomain(Reward.class)//클래스가 연결할 도메인 지정
+
+    public static class RewardList extends BaseDTO{
+        //음 전체 조회는 파라미텅가 없는데 DTO를 어떻게 작성?
+    }
 }
