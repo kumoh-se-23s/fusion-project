@@ -4,6 +4,6 @@ import java.lang.annotation.*;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface DomainField {
-    String value();
+public @interface DataField {
+    Class<?> to() default void.class;
 }
