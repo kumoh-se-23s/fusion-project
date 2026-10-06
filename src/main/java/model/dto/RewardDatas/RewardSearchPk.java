@@ -11,4 +11,8 @@ import lombok.*;
 @NoArgsConstructor//빈 괄호로 객체를 만드느 생성자 생성
 @BindDomain(Reward.class)//클래스가 연결할 도메인 지정
 public class RewardSearchPk extends BaseDTO{
+
+@Annotation.NotNull
+@Annotation.DomainField("fundingPk")
+    private Funding fundingPk;
 }
