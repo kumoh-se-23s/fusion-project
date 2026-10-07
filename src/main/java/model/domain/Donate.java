@@ -17,5 +17,5 @@ public class Donate implements BaseDomain {
     private BigDecimal amount;
     private Long quantity;
     private LocalDateTime createdAt;
-    private Boolean state;
+    private Boolean state;//물품 배송 여부
 }
