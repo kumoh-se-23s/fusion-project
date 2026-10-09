@@ -6,8 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
-public @interface NotNull {
+@Target(ElementType.TYPE)
+public @interface BindDataObject {
+    Class<?>[] values();
 }
-
-//NotNull은 dto보다는 도메인에서 사용하는게 맞다고 판단

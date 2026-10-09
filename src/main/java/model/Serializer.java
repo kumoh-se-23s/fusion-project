@@ -1,0 +1,213 @@
+package model;
+
+import annotation.BindDataObject;
+import annotation.BindDomain;
+import annotation.BindSchema;
+import annotation.DataField;
+import exception.SerializeException;
+import lombok.NonNull;
+import model.domain.BaseDomain;
+import model.dto.BaseData;
+
+import java.lang.classfile.Annotation;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Supplier;
+
+public final class Serializer {
+    private static Map<Class<?>, Map<String, Class<?>>> SERIALIZE_MAP;
+
+    private record Task(Object src, Object target) {}
+
+
+    public static <SourceObject, DestObject> DestObject advSerialize(@NonNull SourceObject anySource, @NonNull Class<DestObject> expectedType) throws RuntimeException{
+        Serializer.requireSchemaBound(anySource);
+
+        Class<?> sourceClass = anySource.getClass();
+        List<Class<?>> expectedClassList = List.of(sourceClass.getAnnotation(BindSchema.class).bound());
+
+        if (!expectedClassList.contains(expectedType)) {
+            throw new SerializeException("Attempted to serialize to an unregistered Type");
+        }
+
+        try {
+            DestObject destObject = Serializer.createInstance(Serializer.findDefaultConstructor(expectedType));
+
+        }
+
+    }
+
+
+    public static <DataObject extends BaseData, Domain extends BaseDomain> DataObject serialize(@NonNull Domain anyDomain, @NonNull Class<DataObject> targetClass) {
+        // fast-fail
+        Serializer.requireDataObjectBound(anyDomain);
+
+        Class<?> domainClass = anyDomain.getClass();
+
+        List<Class<?>> dtoClassList = List.of(domainClass.getAnnotation(BindDataObject.class).values());
+
+        if (!dtoClassList.contains(targetClass)) {
+            throw new SerializeException("Attempted to serialize to an unregistered Data Object");
+        }
+
+        try {
+            Constructor<DataObject> dataObjectConstructor = Serializer.findDefaultConstructor(targetClass);
+            DataObject dataObject = Serializer.createInstance(dataObjectConstructor);
+            Map<String, Field> fieldMap = Serializer.getFieldMap(targetClass);
+
+            for (Field srcField : domainClass.getDeclaredFields()) {
+                int srcMod = srcField.getModifiers();
+                if (Modifier.isStatic(srcMod) || srcField.isSynthetic()) {
+                    continue;
+                }
+
+                Field dstField = fieldMap.get(srcField.getName());
+                if (dstField == null) {
+                    continue; // 대상에 같은 이름의 필드가 없음
+                }
+
+                int dstMod = dstField.getModifiers();
+                if (Modifier.isStatic(dstMod) || Modifier.isFinal(dstMod)) {
+                    continue;
+                }
+
+                if (!dstField.getType().isAssignableFrom(srcField.getType())) {
+                    continue; // 타입 불일치 (필요하면 예외 또는 변환 로직)
+                }
+
+                srcField.setAccessible(true);
+                dstField.setAccessible(true);
+                dstField.set(dataObject, srcField.get(anyDomain));
+            }
+
+            return dataObject;
+
+        } catch (IllegalAccessException exception) {
+            throw new SerializeException(
+                    "Failed to access the field due to restricted visibility.",
+                    exception
+            );
+        }
+    }
+
+    private static boolean isSchemaBound(@NonNull Object anyObject) {
+        return anyObject.getClass().isAnnotationPresent(BindSchema.class);
+    }
+
+    public static void requireSchemaBound(@NonNull Object anyObject) {
+        if (!isSchemaBound(anyObject)) {
+            throw new SerializeException("Attempted to serialize an object that is not bound to a schema.");
+        }
+    }
+
+    private static <DataObject extends BaseData> boolean isDomainBound(@NonNull DataObject anyData) {
+        return anyData.getClass().isAnnotationPresent(BindDomain.class);
+    }
+
+    public static <DataObject extends BaseData> void requireDomainBound(@NonNull DataObject anyData) {
+        if (!isDomainBound(anyData)) {
+            throw new SerializeException("Attempted to serialize an object that is not bound to a domain.");
+        }
+    }
+
+    private static <Domain extends BaseDomain> boolean isDataObjectBound(@NonNull Domain anyDomain) {
+        return anyDomain.getClass().isAnnotationPresent(BindDataObject.class);
+    }
+
+    public static <Domain extends BaseDomain> void requireDataObjectBound(@NonNull Domain anyDomain) {
+        if (!isDataObjectBound(anyDomain)) {
+            throw new SerializeException("Attempted to serialize an object that is not bound to a data object.");
+        }
+    }
+
+    private static boolean isExpectedTypeBound(@NonNull Field anyField) {
+        return anyField.isAnnotationPresent(DataField.class);
+    }
+
+    public static void requireExpectedTypeBound(@NonNull Field anyField) {
+        if (!isExpectedTypeBound(anyField)) {
+            throw new SerializeException("Attempted to serialize an object that is not bound to an expected type");
+        }
+    }
+
+    private static <T> Constructor<T> findDefaultConstructor(@NonNull Class<T> targetClass) {
+        try {
+            Constructor<T> constructor = targetClass.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            return constructor;
+
+        } catch (NoSuchMethodException e) {
+            throw new IllegalArgumentException("There is no default constructor for type" + targetClass.getName(), e);
+        }
+    }
+
+    private static <T> T createInstance(Supplier<Constructor<T>> constructorSupplier) {
+        try {
+            return constructorSupplier.get().newInstance();
+
+        } catch (InvocationTargetException exception) {
+            throw new SerializeException(
+                    "An exception occurred while invoking the constructor of "
+                            + constructor.getDeclaringClass().getName(),
+                    exception
+            );
+        } catch (InstantiationException exception) {
+            throw new SerializeException(
+                    "Failed to instantiate the class "
+                            + constructor.getDeclaringClass().getName()
+                            + " because it is abstract, an interface, or lacks a default constructor.",
+                    exception
+            );
+        } catch (IllegalAccessException exception) {
+            throw new SerializeException(
+                    "Failed to access the constructor of "
+                            + constructor.getDeclaringClass().getName()
+                            + " due to restricted visibility.",
+                    exception
+            );
+        }
+    }
+
+    private static Map<String, Field> getFieldMap(@NonNull Class<?> anyClass) {
+        Map<String, Field> fieldMap = new HashMap<>();
+        for (Optional<Class<?>> maybeClass = Optional.of(anyClass);
+             maybeClass.isPresent() && maybeClass.get() != Object.class;
+             maybeClass = maybeClass.map(Class::getSuperclass)
+        ) {
+            for (Field field : maybeClass.get().getDeclaredFields()) {
+                if (Modifier.isStatic(field.getModifiers()) || field.isSynthetic()) continue;
+                field.setAccessible(true);
+                fieldMap.putIfAbsent(field.getName(), field);
+            }
+        }
+
+        return fieldMap;
+    }
+
+    private static boolean isRegisteredType(@NonNull Class<?> expectedType) {
+        return SERIALIZE_MAP.containsKey(expectedType);
+    }
+
+    private static void registerSerializeMap(@NonNull Class<?> targetClass) {
+//        Map<String, Field> fieldMap
+    }
+
+    private static Class<?> readFieldMapAnnotation(@NonNull Field anyField) {
+//        Serializer.requireExpectedTypeBound(anyField);
+        anyField.setAccessible(true);
+
+        Optional<DataField> maybeFieldMeta = Optional.ofNullable(anyField.getAnnotation(DataField.class));
+
+        if (maybeFieldMeta.isPresent() && maybeFieldMeta.get().to() != void.class) {
+
+        }
+    }
+
+}
+
