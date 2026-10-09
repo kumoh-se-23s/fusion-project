@@ -1,6 +1,6 @@
 package repository.manager;
 
-import repository.EntityTransaction;
+import repository.manager.EntityTransaction;
 
 public interface EntityManager extends AutoCloseable {
     void persist(Object entity);

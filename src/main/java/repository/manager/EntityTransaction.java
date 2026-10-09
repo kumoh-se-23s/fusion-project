@@ -1,4 +1,4 @@
-package repository;
+package repository.manager;
 
 public interface EntityTransaction {
     void begin();
