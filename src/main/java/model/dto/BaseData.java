@@ -10,7 +10,7 @@ import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.function.Supplier;
 
-public abstract class BaseData {
+public abstract class BaseData implements DataObject{
     public String toJsonString() {
         List<Field> fields = new ArrayList<>();
 
