@@ -1,6 +1,8 @@
 package model.dto.response;
 
-public abstract class Response {
+import model.dto.BaseData;
+
+public abstract class Response extends BaseData {
 }
 
 
