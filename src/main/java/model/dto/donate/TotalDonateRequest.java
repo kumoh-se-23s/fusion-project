@@ -7,7 +7,8 @@ import lombok.*;
 @AllArgsConstructor//모든 필드 값을 받는 생성자 생성
 @NoArgsConstructor//빈 괄호로 객체를 만드느 생성자 생성
 
-public class TotalDonateRequest {
+public class TotalDonateRequest extends BaseData{
+    //패스 파라미터 respose없음
     private Long userFk;
     private Long donate;
     private Long fundingFk;

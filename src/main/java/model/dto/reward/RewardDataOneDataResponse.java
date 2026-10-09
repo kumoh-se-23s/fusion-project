@@ -9,8 +9,8 @@ import lombok.*;
 
 
 
-public class RewardListDataOneDataResponse extends BaseData{
-//이건 전체 조회 관리자용 내부
+public class RewardDataOneDataResponse extends BaseData{
+//이건 리워드 조회respose용
 
     private Long rewardPk;
 
