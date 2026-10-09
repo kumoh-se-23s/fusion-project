@@ -1,30 +1,21 @@
-package model.dto;
+package model.dto.request.funding;
 
-import constant.FundingState;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import model.dto.request.Request;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class FundingData {
-    private Long pk;
-
+public class CreateFundingRequest extends Request {
     private Long makerPK;
-
-    private LocalDateTime createdAt;
-
-    private LocalDateTime updatedAt;
-
-    private Long likeCount;
-
-    private Long dislikeCount;
 
     private LocalDateTime startDate;
 
@@ -34,9 +25,9 @@ public class FundingData {
 
     private BigDecimal donateAmount;
 
-    private FundingState state;
-
     private String text;
 
     private byte[] imgFile;
+
+    private List<Long> categoryPKs;
 }

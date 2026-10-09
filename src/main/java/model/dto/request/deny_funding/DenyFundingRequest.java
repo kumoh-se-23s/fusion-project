@@ -1,18 +1,15 @@
-package model.dto;
+package model.dto.request.deny_funding;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import model.dto.request.Request;
 
 @Getter
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
-public class DenyFundingData {
-    private Long pk;
-
-    private Long categoryPK;
-
+@AllArgsConstructor
+public class DenyFundingRequest extends Request {
     private String denyReason;
 }

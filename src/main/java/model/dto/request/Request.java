@@ -1,10 +1,8 @@
 package model.dto.request;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import model.dto.BaseData;
 
-public abstract class Request {
+public abstract class Request extends BaseData {
 
 }
 

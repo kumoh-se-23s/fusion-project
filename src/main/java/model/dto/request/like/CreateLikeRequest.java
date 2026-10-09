@@ -1,15 +1,15 @@
-package model.dto.response;
+package model.dto.request.like;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import model.dto.BaseData;
+import model.dto.request.Request;
 
-@Getter
 @Builder
+@Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class PKResponse extends Response {
-    private Long pk;
+public class CreateLikeRequest extends Request {
+    private Boolean likeType;
 }
