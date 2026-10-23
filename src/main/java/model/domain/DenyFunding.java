@@ -12,7 +12,6 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DenyFunding extends BaseDomain {
-    @NonNull
     @PK
     @Column(name = "deny_funding_pk")
     private Long pk;

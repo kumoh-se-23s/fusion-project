@@ -12,7 +12,6 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ReviewLike extends BaseDomain {
-    @NonNull
     @PK
     @Column(name = "review_like_pk")
     private Long pk;
@@ -25,7 +24,8 @@ public class ReviewLike extends BaseDomain {
     @JoinColumn(name = "user_fk")
     private AppUser user;
 
+    @Builder.Default
     @NonNull
     @Column(name = "like_type")
-    private Boolean likeType;
+    private Boolean likeType = true;
 }

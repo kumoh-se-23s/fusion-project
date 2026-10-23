@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AppUser extends BaseDomain {
-    @NonNull
     @PK
     @Column(name = "user_pk")
     private Long pk;
@@ -34,7 +33,8 @@ public class AppUser extends BaseDomain {
     @Column(name = "user_phone")
     private String phone;
 
+    @Builder.Default
     @NonNull
     @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    private LocalDateTime createdAt = LocalDateTime.now();
 }

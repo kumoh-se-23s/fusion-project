@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Review extends BaseDomain {
-    @NonNull
     @PK
     @Column(name = "review_pk")
     private Long pk;
@@ -30,23 +29,28 @@ public class Review extends BaseDomain {
     @Column(name = "review_text")
     private String text;
 
+    @Builder.Default
     @NonNull
     @Column(name = "review_rating")
-    private BigDecimal rating;
+    private BigDecimal rating = BigDecimal.valueOf(5.0);
 
+    @Builder.Default
     @NonNull
     @Column(name = "like_count")
-    private Long likeCount;
+    private Long likeCount = 0L;
 
+    @Builder.Default
     @NonNull
     @Column(name = "dislike_count")
-    private Long dislikeCount;
+    private Long dislikeCount = 0L;
 
+    @Builder.Default
     @NonNull
     @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    private LocalDateTime createdAt = LocalDateTime.now();
 
+    @Builder.Default
     @NonNull
     @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    private LocalDateTime updatedAt = LocalDateTime.now();
 }

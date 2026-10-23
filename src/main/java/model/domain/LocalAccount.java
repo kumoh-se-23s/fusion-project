@@ -12,7 +12,6 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LocalAccount extends BaseDomain {
-    @NonNull
     @PK
     @Column(name = "local_account_pk")
     private Long pk;

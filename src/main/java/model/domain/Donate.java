@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Donate extends BaseDomain {
-    @NonNull
     @PK
     @Column(name = "donate_pk")
     private Long pk;
@@ -35,11 +34,13 @@ public class Donate extends BaseDomain {
     @Column(name = "donate_quantity")
     private Long quantity;
 
+    @Builder.Default
     @NonNull
     @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    private LocalDateTime createdAt = LocalDateTime.now();
 
+    @Builder.Default
     @NonNull
     @Column(name = "donate_state")
-    private Boolean state;
+    private Boolean state = false;
 }

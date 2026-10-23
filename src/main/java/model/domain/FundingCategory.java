@@ -12,7 +12,6 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FundingCategory extends BaseDomain {
-    @NonNull
     @PK
     @Column(name = "funding_category_pk")
     private Long pk;

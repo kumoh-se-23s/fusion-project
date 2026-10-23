@@ -12,7 +12,6 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserRoleRelation extends BaseDomain {
-    @NonNull
     @PK
     @Column(name = "user_role_pk")
     private Long pk;

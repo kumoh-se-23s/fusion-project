@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DonateCancel extends BaseDomain {
-    @NonNull
     @PK
     @Column(name = "cancel_donate_pk")
     private Long pk;
@@ -23,9 +22,10 @@ public class DonateCancel extends BaseDomain {
     @Column(name = "donate_amount")
     private BigDecimal amount;
 
+    @Builder.Default
     @NonNull
     @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     @NonNull
     @JoinColumn(name = "reward_fk")
