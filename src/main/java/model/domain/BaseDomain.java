@@ -1,4 +1,4 @@
 package model.domain;
 
-public interface BaseDomain {
+public abstract class BaseDomain implements Domain{
 }
