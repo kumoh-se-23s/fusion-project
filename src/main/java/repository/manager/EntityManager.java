@@ -1,5 +1,6 @@
 package repository.manager;
 
+import repository.manager.query_dsl.CriteriaQuery;
 import repository.manager.transaction.EntityTransaction;
 
 import java.util.List;
@@ -15,9 +16,9 @@ public interface EntityManager extends AutoCloseable {
 
     <T> T findWithLock(Class<T> entityClass, Object primaryKey, LockModeType lockMode);
 
-    <T> List<T> findBy(Class<T> entityClass, Object primaryKey);
+    <T> List<T> findBy(Class<T> entityClass, CriteriaQuery<T> criteriaQuery, Object primaryKey);
 
-    <T> List<T> findByWithLock(Class<T> entityClass, Object primaryKey, LockModeType lockMode);
+    <T> List<T> findByWithLock(Class<T> entityClass, CriteriaQuery<T> criteriaQuery, Object primaryKey, LockModeType lockMode);
 
     void remove(Object entity);
 
