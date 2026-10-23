@@ -71,5 +71,5 @@ public class Funding extends BaseDomain {
     private String text;
 
     @Column(name = "funding_img_file")
-    private Byte[] imgFile;
+    private byte[] imgFile;
 }

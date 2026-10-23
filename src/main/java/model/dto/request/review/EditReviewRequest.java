@@ -16,4 +16,6 @@ public class EditReviewRequest extends Request {
     private String text;
 
     private BigDecimal rating;
+
+    private byte[] imgFile;
 }

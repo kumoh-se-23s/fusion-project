@@ -8,6 +8,7 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+//TODO reward DTO 카테고리 추가 필요
 @Table(name = "REWARD")
 @Builder(toBuilder = true)
 @Getter
@@ -34,7 +35,7 @@ public class Reward extends BaseDomain {
     private String text;
 
     @Column(name = "reward_img_file")
-    private Byte[] imgFile;
+    private byte[] imgFile;
 
     @Builder.Default
     @NonNull

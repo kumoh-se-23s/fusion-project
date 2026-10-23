@@ -15,13 +15,15 @@ import java.time.LocalDateTime;
 public class ReviewData extends BaseData {
     private Long pk;
 
-    private Long fundingFK;
+    private Long fundingPK;
 
-    private Long userFK;
+    private Long userPK;
 
     private String text;
 
     private BigDecimal rating;
+
+    private byte[] imgFile;
 
     private LocalDateTime createdAt;
 

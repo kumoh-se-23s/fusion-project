@@ -53,4 +53,7 @@ public class Review extends BaseDomain {
     @NonNull
     @Column(name = "updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();
+
+    @Column(name = "review_img_file")
+    private byte[] imgFile;
 }

@@ -18,4 +18,6 @@ public class CreateReviewRequest extends Request {
     private String text;
 
     private BigDecimal rating;
+
+    private byte[] imgFile;
 }
