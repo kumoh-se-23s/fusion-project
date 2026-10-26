@@ -51,16 +51,21 @@ public EntityManagerImpl(Class<?> resultClass, Connection connection) {
     }
 
     @Override
+    public void merge(Object entity) {
+    }
+
+    @Override
     public <T> T find(Class<T> entityClass, Object primaryKey) {
         if (primaryKey == null) {
             return null;
         }
         String sql = metadata.getSelectByPkSql();
-        Object resultSet = executeQuery(sql, primaryKey);
-        if (resultSet == null) {
-            return null;
-        }
-        return resultSet
+//        Object resultSet = executeQuery(sql, primaryKey);
+//        if (resultSet == null) {
+//            return null;
+//        }
+//        return resultSet;
+        return null;
 
     }
 
@@ -96,7 +101,7 @@ public EntityManagerImpl(Class<?> resultClass, Connection connection) {
 
     @Override
     public EntityTransaction getTransaction() {
-        return EntityTransaction
+        return null;
     }
 
     @Override
