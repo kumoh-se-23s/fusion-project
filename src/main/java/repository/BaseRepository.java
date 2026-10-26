@@ -16,7 +16,7 @@ public interface BaseRepository<T extends BaseDomain, PK> {
     //필터를 통해 모든 객체를 조회
     List<T> find(Filter filter);
 
-    z//Pk로 객체를 단건 조회
+    //Pk로 객체를 단건 조회
     Optional<T> findById(PK pk);
 
     //사용 조회하고 수정 후 수정한 객체를 그대로 파라미터
