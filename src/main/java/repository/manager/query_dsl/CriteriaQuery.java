@@ -1,7 +1,7 @@
 package repository.manager.query_dsl;
 
 import annotation.Table;
-import constant.OrderType;
+import constant.OrderDirection;
 import exception.LimitNumberOutException;
 
 import java.util.ArrayList;
@@ -42,11 +42,11 @@ public class CriteriaQuery<T> {
     }
 
     public CriteriaQuery<T> orderByDesc(String column) {
-        return this.orderBy(column, OrderType.DESC.name());
+        return this.orderBy(column, OrderDirection.DESC.name());
     }
 
     public CriteriaQuery<T> orderByAsc(String column) {
-        return this.orderBy(column, OrderType.ASC.name());
+        return this.orderBy(column, OrderDirection.ASC.name());
     }
     private CriteriaQuery<T> orderBy(String column, String orderType) {
         if (column != null && !column.isBlank()) {
