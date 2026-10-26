@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class DenyFundingData {
+public class DenyFundingData extends BaseData {
     private Long pk;
 
     private Long categoryPK;

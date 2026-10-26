@@ -9,5 +9,5 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class LikeData {
+public class LikeData extends BaseData {
 }

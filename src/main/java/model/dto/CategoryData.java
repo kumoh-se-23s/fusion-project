@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class CategoryData {
+public class CategoryData extends BaseData {
     private Long pk;
 
     private String name;
