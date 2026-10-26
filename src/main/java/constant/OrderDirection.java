@@ -1,5 +1,5 @@
 package constant;
 
-public enum OrderType {
+public enum OrderDirection {
     ASC, DESC
 }
