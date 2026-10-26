@@ -3,16 +3,18 @@ package repository;
 import model.domain.BaseDomain;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
-public abstract class BaseRepositoryImpl<T extends BaseDomain, ID> implements BaseRepository<T, ID> {
+
+public abstract class BaseRepositoryImpl<T extends BaseDomain, PK> implements BaseRepository<T, PK> {
     @Override
-    public T save(T entity) {
+    public T create(T entity) {
         return null;
     }
 
     @Override
-    public List<T> saveAll(List<T> entities) {
+    public List<T> createAll(List<T> entities) {
         return List.of();
     }
 
@@ -22,12 +24,17 @@ public abstract class BaseRepositoryImpl<T extends BaseDomain, ID> implements Ba
     }
 
     @Override
-    public Optional<T> findById(ID id) {
+    public Optional<T> findById(PK pk) {
         return Optional.empty();
     }
 
     @Override
-    public boolean delete(T entity) {
+    public Optional<T> update(PK pk, Map<String, Object> updateData) {
+        return Optional.empty();
+    }
+
+    @Override
+    public boolean delete(PK pk) {
         return false;
     }
 }
