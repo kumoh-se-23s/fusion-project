@@ -20,6 +20,8 @@ public interface EntityManager extends AutoCloseable {
 
     <T> List<T> findByWithLock(Class<T> entityClass, CriteriaQuery<T> criteriaQuery, Object primaryKey, LockModeType lockMode);
 
+    void merge(Object entity);
+
     void remove(Object entity);
 
     void flush();
