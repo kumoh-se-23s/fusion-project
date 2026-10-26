@@ -1,44 +1,68 @@
 package model.domain;
-import lombok.*;
 
+import annotation.Column;
+import annotation.JoinColumn;
+import annotation.PK;
+import annotation.Table;
+import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-
-@Getter
+//TODO reward DTO 카테고리 추가 필요
+@Table(name = "REWARD")
 @Builder(toBuilder = true)
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Reward implements BaseDomain {
-
-    @NonNull
+public class Reward extends BaseDomain {
+    @PK
+    @Column(name = "reward_pk")
     private Long pk;
 
     @NonNull
+    @JoinColumn(name = "funding_fk")
     private Funding funding;
 
     @NonNull
+    @JoinColumn(name = "category_fk")
+    private Category category;
+
+    @NonNull
+    @Column(name = "reward_name")
     private String name;
 
+    @Column(name = "reward_text")
     private String text;
-    private Byte[] imgFile;
+
+    @Column(name = "reward_img_file")
+    private byte[] imgFile;
+
+    @Builder.Default
+    @NonNull
+    @Column(name = "required_amount")
+    private BigDecimal requiredAmount = BigDecimal.ZERO;
+
+    @Builder.Default
+    @NonNull
+    @Column(name = "reward_max_quantity")
+    private Long maxQuantity = 0L;
+
+    @Builder.Default
+    @NonNull
+    @Column(name = "reward_remain_quantity")
+    private Long remainQuantity = 0L;
 
     @NonNull
-    private BigDecimal requiredAmount;
-
-    @NonNull
-    private Long maxQuantity;
-
-    @NonNull
-    private Long remainQuantity;
-
-    @NonNull
+    @Column(name = "provide_date")
     private LocalDateTime provideDate;
 
+    @Builder.Default
     @NonNull
-    private LocalDateTime createdAt;
+    @Column(name = "created_at")
+    private LocalDateTime createdAt = LocalDateTime.now();
 
+    @Builder.Default
     @NonNull
-    private LocalDateTime updatedAt;
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt = LocalDateTime.now();
 }
-

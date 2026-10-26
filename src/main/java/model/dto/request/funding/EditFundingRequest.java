@@ -15,7 +15,7 @@ import java.util.List;
 public class EditFundingRequest extends Request {
     private String text;
 
-    private Byte[] imgFile;
+    private byte[] imgFile;
 
     private List<Long> categoryPKs;
 }
