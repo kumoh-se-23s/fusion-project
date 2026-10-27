@@ -16,6 +16,6 @@ public class UserRole extends BaseDomain {
     private Long pk;
 
     @NonNull
-    @Column(name = "role_name")
+    @Column(name = "role_name", nullable = false, unique = true, length = 50)
     private String roleName;
 }

@@ -2,6 +2,7 @@ package model.domain;
 
 import annotation.Column;
 import annotation.JoinColumn;
+import repository.manager.Lazy;
 import annotation.PK;
 import annotation.Table;
 import lombok.*;
@@ -17,10 +18,10 @@ public class DenyFunding extends BaseDomain {
     private Long pk;
 
     @NonNull
-    @JoinColumn(name = "funding_fk")
-    private Funding funding;
+    @JoinColumn(name = "funding_fk", nullable = false)
+    private Lazy<Funding> funding;
 
     @NonNull
-    @Column(name = "deny_reason")
+    @Column(name = "deny_reason", nullable = false, length = 500)
     private String reason;
 }

@@ -2,6 +2,7 @@ package model.domain;
 
 import annotation.Column;
 import annotation.JoinColumn;
+import repository.manager.Lazy;
 import annotation.PK;
 import annotation.Table;
 import lombok.*;
@@ -20,18 +21,18 @@ public class Reward extends BaseDomain {
     private Long pk;
 
     @NonNull
-    @JoinColumn(name = "funding_fk")
-    private Funding funding;
+    @JoinColumn(name = "funding_fk", nullable = false)
+    private Lazy<Funding> funding;
 
     @NonNull
-    @JoinColumn(name = "category_fk")
-    private Category category;
+    @JoinColumn(name = "category_fk", nullable = false)
+    private Lazy<Category> category;
 
     @NonNull
-    @Column(name = "reward_name")
+    @Column(name = "reward_name", nullable = false)
     private String name;
 
-    @Column(name = "reward_text")
+    @Column(name = "reward_text", columnDefinition = "TEXT")
     private String text;
 
     @Column(name = "reward_img_file")
@@ -39,30 +40,30 @@ public class Reward extends BaseDomain {
 
     @Builder.Default
     @NonNull
-    @Column(name = "required_amount")
+    @Column(name = "required_amount", nullable = false)
     private BigDecimal requiredAmount = BigDecimal.ZERO;
 
     @Builder.Default
     @NonNull
-    @Column(name = "reward_max_quantity")
+    @Column(name = "reward_max_quantity", nullable = false)
     private Long maxQuantity = 0L;
 
     @Builder.Default
     @NonNull
-    @Column(name = "reward_remain_quantity")
+    @Column(name = "reward_remain_quantity", nullable = false)
     private Long remainQuantity = 0L;
 
     @NonNull
-    @Column(name = "provide_date")
+    @Column(name = "provide_date", nullable = false)
     private LocalDateTime provideDate;
 
     @Builder.Default
     @NonNull
-    @Column(name = "created_at")
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @Builder.Default
     @NonNull
-    @Column(name = "updated_at")
+    @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt = LocalDateTime.now();
 }

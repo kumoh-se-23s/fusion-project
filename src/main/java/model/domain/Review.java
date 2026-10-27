@@ -2,6 +2,7 @@ package model.domain;
 
 import annotation.Column;
 import annotation.JoinColumn;
+import repository.manager.Lazy;
 import annotation.PK;
 import annotation.Table;
 import lombok.*;
@@ -19,39 +20,39 @@ public class Review extends BaseDomain {
     private Long pk;
 
     @NonNull
-    @JoinColumn(name = "funding_fk")
-    private Funding funding;
+    @JoinColumn(name = "funding_fk", nullable = false)
+    private Lazy<Funding> funding;
 
     @NonNull
-    @JoinColumn(name = "user_fk")
-    private AppUser user;
+    @JoinColumn(name = "user_fk", nullable = false)
+    private Lazy<AppUser> user;
 
-    @Column(name = "review_text")
+    @Column(name = "review_text", columnDefinition = "TEXT")
     private String text;
 
     @Builder.Default
     @NonNull
-    @Column(name = "review_rating")
+    @Column(name = "review_rating", nullable = false, precision = 2, scale = 1)
     private BigDecimal rating = BigDecimal.valueOf(5.0);
 
     @Builder.Default
     @NonNull
-    @Column(name = "like_count")
+    @Column(name = "like_count", nullable = false)
     private Long likeCount = 0L;
 
     @Builder.Default
     @NonNull
-    @Column(name = "dislike_count")
+    @Column(name = "dislike_count", nullable = false)
     private Long dislikeCount = 0L;
 
     @Builder.Default
     @NonNull
-    @Column(name = "created_at")
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @Builder.Default
     @NonNull
-    @Column(name = "updated_at")
+    @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt = LocalDateTime.now();
 
     @Column(name = "review_img_file")

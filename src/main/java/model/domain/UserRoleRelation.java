@@ -2,6 +2,7 @@ package model.domain;
 
 import annotation.Column;
 import annotation.JoinColumn;
+import repository.manager.Lazy;
 import annotation.PK;
 import annotation.Table;
 import lombok.*;
@@ -17,10 +18,10 @@ public class UserRoleRelation extends BaseDomain {
     private Long pk;
 
     @NonNull
-    @JoinColumn(name = "role_fk")
-    private UserRole role;
+    @JoinColumn(name = "role_fk", nullable = false, uniqueGroup = "user_role")
+    private Lazy<UserRole> role;
 
     @NonNull
-    @JoinColumn(name = "user_fk")
-    private AppUser user;
+    @JoinColumn(name = "user_fk", nullable = false, uniqueGroup = "user_role")
+    private Lazy<AppUser> user;
 }
