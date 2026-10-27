@@ -1,15 +1,12 @@
 package repository;
 
-import java.util.ArrayList;
 import java.util.List;
+
+import annotation.BindDomain;
 import model.domain.Reward;
 import model.dto.RewardData;
-import repository.BaseRepositoryImpl;
+import model.dto.Serializer;
 import repository.Filter;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 
 public class RewardRepository extends BaseRepositoryImpl<Reward, Long> {
@@ -22,18 +19,25 @@ public class RewardRepository extends BaseRepositoryImpl<Reward, Long> {
     */
 
     public List<RewardData> findByFundingPk(Long fundingPk){
-        Filter filter = new Filter("funding_fk", fundingPk);
-        List<Reward> rewards = find(filter);
+        Filter filter = new Filter("funding_fk", fundingPk);// 인자로 받은 펀딩pk를 필터로 추가
+        List<Reward> rewards = find(filter);//해당 펀딩pk의 리워드들을 리스트안에 저장
 
+        return Serializer.fromDomains(rewards, RewardData.class);//전부 dto로 변환
     }
 
 
     public abstract List<RewardData> findByUserPk(Long userPk){
+        Filter filter = new Filter("user_fk", userPk);// 인자로 받은 펀딩pk를 필터로 추가
+        List<Reward> rewards = find(filter);//해당 펀딩pk의 리워드들을 리스트안에 저장
 
+        return Serializer.fromDomains(rewards, RewardData.class);//전부 dto로 변환
     }
 
     public abstract List<RewardData> findMaker(Long  userPk){
+        Filter filter = new Filter("user_fk", userPk);// 인자로 받은 펀딩pk를 필터로 추가
+        List<Reward> rewards = find(filter);//해당 펀딩pk의 리워드들을 리스트안에 저장
 
+        return Serializer.fromDomains(rewards, RewardData.class);//전부 dto로 변환
     }
 
 

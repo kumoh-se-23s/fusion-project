@@ -1,9 +1,11 @@
 package model.dto;
 
+import annotation.BindDomain;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import model.domain.Reward;
 import model.dto.BaseData;
 
 import java.math.BigDecimal;

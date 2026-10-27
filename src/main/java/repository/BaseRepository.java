@@ -5,6 +5,7 @@ import model.domain.BaseDomain;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.logging.Filter;
 
 public interface BaseRepository<T extends BaseDomain, PK> {
     //저장
