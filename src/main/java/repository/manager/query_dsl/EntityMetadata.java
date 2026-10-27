@@ -6,10 +6,14 @@ import annotation.PK;
 import annotation.Table;
 import annotation.Version;
 import exception.AnnotationMissingException;
+import exception.QueryErrorException;
 import lombok.Getter;
+import repository.manager.Lazy;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -29,9 +33,12 @@ public class EntityMetadata {
     private final Class<?> entityClass;
     private final String tableName;
     private final ColumnInfo pk;
+    private final boolean autoIncrement;
     private final ColumnInfo version;
     private final List<ColumnInfo> columns;
     private final List<ColumnInfo> updatableColumns;
+    private final List<ColumnInfo> insertColumns;
+    private final Map<String, ColumnInfo> columnsByField;
 
     private final String insertSql;
     private final String updateSql;
@@ -39,10 +46,7 @@ public class EntityMetadata {
     private final String deleteSql;
 
     public static EntityMetadata of(Class<?> entityClass) {
-        if (!CACHE.containsKey(entityClass)) { //없거나 비었으면
-            CACHE.put(entityClass, new EntityMetadata(entityClass));
-        }
-        return CACHE.get(entityClass);
+        return CACHE.computeIfAbsent(entityClass, EntityMetadata::new);
     }
 
     private EntityMetadata(Class<?> entityClass) {
@@ -83,10 +87,22 @@ public class EntityMetadata {
         }
 
         this.pk = pkInfo;
+        this.autoIncrement = pkInfo.field().getAnnotation(PK.class).autoIncrement();
         this.version = versionInfo;
         this.columns = List.copyOf(cols);
         final ColumnInfo v = versionInfo;
         this.updatableColumns = cols.stream().filter(col -> col != v).toList();
+
+        //PK를 DB가 생성하지 않으면 INSERT에 PK도 포함
+        List<ColumnInfo> inserts = new ArrayList<>();
+        if (!autoIncrement) inserts.add(pkInfo);
+        inserts.addAll(cols);
+        this.insertColumns = List.copyOf(inserts);
+
+        Map<String, ColumnInfo> byField = new HashMap<>();
+        byField.put(pkInfo.field().getName(), pkInfo);
+        cols.forEach(col -> byField.put(col.field().getName(), col));
+        this.columnsByField = Map.copyOf(byField);
 
         this.insertSql = buildInsertSql();
         this.updateSql = buildUpdateSql();
@@ -94,10 +110,23 @@ public class EntityMetadata {
         this.deleteSql = "DELETE FROM " + tableName + " WHERE " + pk.columnName() + " = ?";
     }
 
+    //필드명으로 컬럼 정보 조회 (Filter, Sort, update 맵의 키 검증용)
+    public ColumnInfo getColumnByField(String fieldName) {
+        ColumnInfo info = columnsByField.get(fieldName);
+        if (info == null) {
+            throw new QueryErrorException("Unknown field '" + fieldName + "' in " + entityClass.getSimpleName());
+        }
+        return info;
+    }
+
     private static ColumnInfo toColumnInfo(Field field) {
         JoinColumn join = field.getAnnotation(JoinColumn.class);
         Column column = field.getAnnotation(Column.class);
         if (join == null && column == null) return null;
+
+        if (join != null) {
+            requireLazyType(field);
+        }
 
         field.setAccessible(true);
         return join != null
@@ -105,9 +134,19 @@ public class EntityMetadata {
                 : new ColumnInfo(field, column.name(), false);
     }
 
+    //@JoinColumn 필드는 Lazy<연관 엔티티> 타입이어야 한다
+    private static void requireLazyType(Field field) {
+        boolean valid = field.getType() == Lazy.class
+                && field.getGenericType() instanceof ParameterizedType type
+                && type.getActualTypeArguments()[0] instanceof Class<?>;
+        if (!valid) {
+            throw new AnnotationMissingException("@JoinColumn field must be Lazy<Entity>: " + field);
+        }
+    }
+
     private String buildInsertSql() {
-        String names = columns.stream().map(ColumnInfo::columnName).collect(Collectors.joining(", "));
-        String marks = columns.stream().map(c -> "?").collect(Collectors.joining(", "));
+        String names = insertColumns.stream().map(ColumnInfo::columnName).collect(Collectors.joining(", "));
+        String marks = insertColumns.stream().map(c -> "?").collect(Collectors.joining(", "));
         return "INSERT INTO " + tableName + " (" + names + ") VALUES (" + marks + ")";
     }
 
