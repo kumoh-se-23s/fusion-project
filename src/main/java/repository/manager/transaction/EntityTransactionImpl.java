@@ -7,10 +7,16 @@ import java.sql.SQLException;
 
 public class EntityTransactionImpl implements EntityTransaction {
     private final Connection connection;
+    private final boolean readOnly;
     private boolean active = false;
 
     public EntityTransactionImpl(Connection connection) {
+        this(connection, false);
+    }
+
+    public EntityTransactionImpl(Connection connection, boolean readOnly) {
         this.connection = connection;
+        this.readOnly = readOnly;
     }
 
     @Override
@@ -19,6 +25,8 @@ public class EntityTransactionImpl implements EntityTransaction {
             throw new TransactionException("Transaction already active");
         }
         try {
+            //readOnly는 트랜잭션 시작 전에 지정해야 한다
+            connection.setReadOnly(readOnly);
             connection.setAutoCommit(false);
             active = true;
         } catch (SQLException e) {
@@ -29,6 +37,8 @@ public class EntityTransactionImpl implements EntityTransaction {
         active = false;
         try {
             connection.setAutoCommit(true);
+            //풀에 반납되는 커넥션에 readOnly가 남지 않도록 복구
+            connection.setReadOnly(false);
         } catch (SQLException e) {
             throw new TransactionException("Failed to restore auto commit", e);
         }
@@ -61,6 +71,11 @@ public class EntityTransactionImpl implements EntityTransaction {
     @Override
     public boolean isActive() {
         return active;
+    }
+
+    @Override
+    public boolean isReadOnly() {
+        return readOnly;
     }
 
     public void checkActive() {
