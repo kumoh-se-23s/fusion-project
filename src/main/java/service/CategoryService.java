@@ -1,18 +1,22 @@
 package service;
 
+import annotation.Transaction;
 import exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import model.domain.Category;
 import model.dto.CategoryData;
+import model.dto.request.PKQueryRequest;
 import model.dto.request.category.CreateCategoryRequest;
 import model.dto.response.PKResponse;
 import model.dto.response.SingleDataResponse;
 import repository.CategoryRepository;
 
+
 @RequiredArgsConstructor
 public class CategoryService extends BaseService {
     private final CategoryRepository categoryRepository;
 
+    @Transaction(name = "category.create")
     public PKResponse createCategory(CreateCategoryRequest dto) {
 
         Category category = new Category().toBuilder()
@@ -23,8 +27,9 @@ public class CategoryService extends BaseService {
         return new PKResponse(categoryPK);
     }
 
-    public SingleDataResponse<CategoryData> readCategory(Long categoryPK) {
-        Category category = categoryRepository.findById(categoryPK)
+    @Transaction(name = "category.read", readOnly = true)
+    public SingleDataResponse<CategoryData> readCategory(PKQueryRequest request) {
+        Category category = categoryRepository.findById(request.getPk())
                 .orElseThrow(NotFoundException::new);
 
         CategoryData dto = CategoryData.builder()
@@ -32,7 +37,6 @@ public class CategoryService extends BaseService {
                 .name(category.getName())
                 .description(category.getDescription())
                 .build();
-        //시리얼라이저 만들어 주세요......
 
         return new SingleDataResponse<>(dto);
     }

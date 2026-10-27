@@ -9,9 +9,6 @@ import java.util.Map;
 
 public class TestRepository extends BaseRepositoryImpl<Funding, Long> {
     public Funding createFunding(Funding funding) {
-        return this.create(funding);
-    }
-    public List<Funding> findByState(FundingState state) {
-        return this.find(new Filter(new HashMap<>(Map.of("state", state)), null, null));
+        return create(funding);
     }
 }
