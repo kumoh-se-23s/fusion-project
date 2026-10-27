@@ -13,28 +13,5 @@ public abstract class BaseRepositoryImpl<T extends BaseDomain, PK> implements Ba
         return null;
     }
 
-    @Override
-    public List<T> createAll(List<T> entities) {
-        return List.of();
-    }
 
-    @Override
-    public List<T> find(Filter filter) {
-        return List.of();
-    }
-
-    @Override
-    public Optional<T> findById(PK pk) {
-        return Optional.empty();
-    }
-
-    @Override
-    public Optional<T> update(PK pk, Map<String, Object> updateData) {
-        return Optional.empty();
-    }
-
-    @Override
-    public boolean delete(PK pk) {
-        return false;
-    }
 }
