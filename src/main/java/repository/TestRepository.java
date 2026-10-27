@@ -7,3 +7,4 @@ public class TestRepository extends BaseRepositoryImpl<Funding, Long> {
         return save(funding);
     }
 }
+
