@@ -1,34 +1,33 @@
 package repository;
 
 import constant.OrderDirection;
+import lombok.Getter;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public record Sort(List<Order> orders) {
+@Getter
+public class Sort {
+    public record Order(String field, OrderDirection direction) {
+        public static Order asc(String field) {
+            return new Order(field, OrderDirection.ASC);
+        }
 
-
-    public record Order(String field, OrderDirection direction) {}
-
-    public static Sort asc(String field) {
-        return new Sort(List.of(new Order(field, OrderDirection.ASC)));
+        public static Order desc(String field) {
+            return new Order(field, OrderDirection.DESC);
+        }
     }
 
-    public static Sort desc(String field) {
-        return new Sort(List.of(new Order(field, OrderDirection.DESC)));
+    private final List<Order> orders;
+
+    private Sort(List<Order> orders) {
+        this.orders = orders;
     }
 
-    public Sort thenAsc(String field) {
-        return and(new Order(field, OrderDirection.ASC));
+    public static Sort by(Order... orders) {
+        return new Sort(List.of(orders));
     }
 
-    public Sort thenDesc(String field) {
-        return and(new Order(field, OrderDirection.DESC));
-    }
-
-    private Sort and(Order order) {
-        List<Order> copy = new ArrayList<>(orders);
-        copy.add(order);
-        return new Sort(List.copyOf(copy));
+    public static Sort defaultSort() {
+        return new Sort(List.of());
     }
 }

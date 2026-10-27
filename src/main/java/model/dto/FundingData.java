@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class FundingData {
+public class FundingData extends BaseData {
     private Long pk;
 
     private Long makerPK;
