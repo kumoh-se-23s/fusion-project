@@ -4,6 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import model.dto.BaseData;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Getter//값을 읽는 메서드 생성
 @Builder//필드 이름을 지정하면서 객체 생성
@@ -12,7 +16,7 @@ import lombok.NoArgsConstructor;
 
 
 
-public class RewardData extends BaseData{
+public class RewardData extends BaseData {
 //이건 리워드 조회respose용
 
     private Long rewardPk;
@@ -35,7 +39,7 @@ public class RewardData extends BaseData{
 
     private BigDecimal requiredAmount;
 
-    private Long maxQuantity; 제공가능한 수량
+    private Long maxQuantity; //제공가능한 수량
 
     private Long remainQuantity;//남아있는 리워드 수량
 
