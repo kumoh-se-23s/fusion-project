@@ -10,7 +10,7 @@ import model.dto.BaseData;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class UpdateAccount extends BaseData {
+public class ChangePasswordRequest extends BaseData {
     private String currentPassword;
 
     private String newPassword;
