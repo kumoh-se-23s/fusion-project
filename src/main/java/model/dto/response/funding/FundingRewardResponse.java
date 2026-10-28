@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import model.dto.response.Response;
+import model.dto.response.reward.RewardResponse;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -19,23 +20,8 @@ import java.util.List;
 @AllArgsConstructor
 public class FundingRewardResponse extends Response {
     //후원 1건 = 배송 1건
-    public record DonateUserAddressResponse(
-            Long donatePk,
-            Long userPk,
-            String name,
-            String phone,
-            String postal,
-            String address,
-            Long quantity) {}
 
-    public record RewardResponse(
-            Long rewardPk,
-            String name,
-            BigDecimal requiredAmount,
-            Long maxQuantity,
-            Long remainQuantity,
-            LocalDateTime provideDate,
-            List<DonateUserAddressResponse> donors) {}
+
 
     private Long fundingPk;
     private BigDecimal purposeAmount;
