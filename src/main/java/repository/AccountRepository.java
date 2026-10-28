@@ -3,6 +3,7 @@ package repository;
 import model.domain.AppUser;
 import model.domain.LocalAccount;
 import model.dto.TokenPair;
+import util.JwtTokenProvider;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
@@ -16,6 +17,8 @@ import java.util.Map;
 import java.util.Optional;
 
 public class AccountRepository extends BaseRepositoryImpl<LocalAccount, Long> {
+
+    private JwtTokenProvider jwtTokenProvider;
     private final int ITERATIONS = 210_000;
     private final int KEY_LENGTH = 256;
 
@@ -25,16 +28,30 @@ public class AccountRepository extends BaseRepositoryImpl<LocalAccount, Long> {
         Optional<LocalAccount> resultLocalAccount = resultList.stream().findFirst();
 
         if(resultLocalAccount.isPresent()) {
-            String salt = resultLocalAccount.get().getSalt();
-            String savedPassword = resultLocalAccount.get().getPassword();
+            LocalAccount localAccount = resultLocalAccount.get();
+
+            String salt = localAccount.getSalt();
+            String savedPassword = localAccount.getPassword();
 
             if(matches(inputPassword, salt, savedPassword)) {
-                //토큰 발급 받는 로직 필요
+                String accessToken = jwtTokenProvider.createAccessToken(localAccount.getId());
+                String refreshToken = jwtTokenProvider.createRefreshToken(localAccount.getId());
+
+                //accessToken DB에 저장하는 로직 필요
+
+                return Optional.of(new TokenPair(accessToken, refreshToken));
+            }
+            else {
+                return Optional.empty();
             }
 
         } else {
             return Optional.empty();
         }
+    }
+
+    public Optional<TokenPair> signUp(String id, String password) {
+        
     }
 
     //Update 사용해도 상관없으나 salt를 받는 것을 명확하게 명시하기 위함
