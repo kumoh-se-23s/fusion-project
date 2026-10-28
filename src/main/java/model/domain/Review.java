@@ -2,7 +2,6 @@ package model.domain;
 
 import annotation.Column;
 import annotation.JoinColumn;
-import repository.manager.Lazy;
 import annotation.PK;
 import annotation.Table;
 import lombok.*;
@@ -21,11 +20,11 @@ public class Review extends BaseDomain {
 
     @NonNull
     @JoinColumn(name = "funding_fk", nullable = false)
-    private Lazy<Funding> funding;
+    private Funding funding;
 
     @NonNull
     @JoinColumn(name = "user_fk", nullable = false)
-    private Lazy<AppUser> user;
+    private AppUser user;
 
     @Column(name = "review_text", columnDefinition = "TEXT")
     private String text;

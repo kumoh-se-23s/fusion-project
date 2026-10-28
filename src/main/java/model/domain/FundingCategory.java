@@ -2,7 +2,6 @@ package model.domain;
 
 import annotation.Column;
 import annotation.JoinColumn;
-import repository.manager.Lazy;
 import annotation.PK;
 import annotation.Table;
 import lombok.*;
@@ -19,9 +18,9 @@ public class FundingCategory extends BaseDomain {
 
     @NonNull
     @JoinColumn(name = "category_fk", nullable = false, uniqueGroup = "funding_category")
-    private Lazy<Category> category;
+    private Category category;
 
     @NonNull
     @JoinColumn(name = "funding_fk", nullable = false, uniqueGroup = "funding_category")
-    private Lazy<Funding> funding;
+    private Funding funding;
 }

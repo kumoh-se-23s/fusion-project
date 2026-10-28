@@ -7,7 +7,7 @@ import java.util.StringJoiner;
 import java.util.logging.Logger;
 
 /**
- * 실행 SQL과 Lazy 로딩을 출력하는 로거 (java.util.logging)
+ * 실행 SQL을 출력하는 로거 (java.util.logging)
  * db.show-sql=false 로 끌 수 있다.
  */
 final class SqlLogger {
@@ -21,11 +21,6 @@ final class SqlLogger {
         if (!ENABLED) return;
         long elapsedMs = (System.nanoTime() - startNanos) / 1_000_000;
         LOG.info("[SQL] " + sql + " | params=" + format(params) + " | " + result + " | " + elapsedMs + "ms");
-    }
-
-    static void lazy(Class<?> type, Object pk) {
-        if (!ENABLED) return;
-        LOG.info("[LAZY] " + type.getSimpleName() + "#" + pk);
     }
 
     private static String format(List<?> params) {

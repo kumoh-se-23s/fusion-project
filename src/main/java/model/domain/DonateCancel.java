@@ -2,7 +2,6 @@ package model.domain;
 
 import annotation.Column;
 import annotation.JoinColumn;
-import repository.manager.Lazy;
 import annotation.PK;
 import annotation.Table;
 import lombok.*;
@@ -30,9 +29,9 @@ public class DonateCancel extends BaseDomain {
 
     @NonNull
     @JoinColumn(name = "reward_fk", nullable = false)
-    private Lazy<Reward> reward;
+    private Reward reward;
 
     @NonNull
     @JoinColumn(name = "user_fk", nullable = false)
-    private Lazy<AppUser> user;
+    private AppUser user;
 }

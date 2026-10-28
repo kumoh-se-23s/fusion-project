@@ -2,7 +2,6 @@ package model.domain;
 
 import annotation.Column;
 import annotation.JoinColumn;
-import repository.manager.Lazy;
 import annotation.PK;
 import annotation.Table;
 import lombok.*;
@@ -19,7 +18,7 @@ public class LocalAccount extends BaseDomain {
 
     @NonNull
     @JoinColumn(name = "user_fk", nullable = false, unique = true)
-    private Lazy<AppUser> user;
+    private AppUser user;
 
     @NonNull
     @Column(name = "local_account_id", nullable = false, unique = true)

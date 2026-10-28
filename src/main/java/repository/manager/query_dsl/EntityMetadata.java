@@ -8,11 +8,10 @@ import annotation.Version;
 import exception.AnnotationMissingException;
 import exception.QueryErrorException;
 import lombok.Getter;
-import repository.manager.Lazy;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -119,13 +118,19 @@ public class EntityMetadata {
         return info;
     }
 
+    //PK 여러 개로 한 번에 조회 (연관 엔티티 일괄 로딩용)
+    public String getSelectByPksSql(int count) {
+        String marks = String.join(", ", Collections.nCopies(count, "?"));
+        return "SELECT * FROM " + tableName + " WHERE " + pk.columnName() + " IN (" + marks + ")";
+    }
+
     private static ColumnInfo toColumnInfo(Field field) {
         JoinColumn join = field.getAnnotation(JoinColumn.class);
         Column column = field.getAnnotation(Column.class);
         if (join == null && column == null) return null;
 
         if (join != null) {
-            requireLazyType(field);
+            requireEntityType(field);
         }
 
         field.setAccessible(true);
@@ -134,13 +139,10 @@ public class EntityMetadata {
                 : new ColumnInfo(field, column.name(), false);
     }
 
-    //@JoinColumn 필드는 Lazy<연관 엔티티> 타입이어야 한다
-    private static void requireLazyType(Field field) {
-        boolean valid = field.getType() == Lazy.class
-                && field.getGenericType() instanceof ParameterizedType type
-                && type.getActualTypeArguments()[0] instanceof Class<?>;
-        if (!valid) {
-            throw new AnnotationMissingException("@JoinColumn field must be Lazy<Entity>: " + field);
+    //@JoinColumn 필드는 @Table 엔티티 타입이어야 한다
+    private static void requireEntityType(Field field) {
+        if (!field.getType().isAnnotationPresent(Table.class)) {
+            throw new AnnotationMissingException("@JoinColumn field must be an @Table entity: " + field);
         }
     }
 

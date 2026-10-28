@@ -1,7 +1,6 @@
 package repository.manager.mapper;
 
 import annotation.Table;
-import repository.manager.Lazy;
 import repository.manager.query_dsl.EntityMetadata;
 
 import java.sql.ResultSet;
@@ -9,7 +8,7 @@ import java.sql.SQLException;
 
 /**
  * 자바 값 <-> JDBC 값 변환
- * enum은 name()으로 저장하고, 연관 엔티티(Lazy, 엔티티 객체)는 PK로 저장한다.
+ * enum은 name()으로 저장하고, 연관 엔티티는 PK로 저장한다.
  */
 public final class JdbcValueConverter {
 
@@ -20,9 +19,6 @@ public final class JdbcValueConverter {
     public static Object toJdbc(Object value) {
         if (value == null) {
             return null;
-        }
-        if (value instanceof Lazy<?> lazy) {
-            return lazy.getPk();
         }
         if (value instanceof Enum<?> e) {
             return e.name();
