@@ -1,6 +1,5 @@
-package service;
+package service.internal;
 
-import annotation.Transaction;
 import exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import model.domain.Category;
@@ -10,35 +9,39 @@ import model.dto.request.category.CreateCategoryRequest;
 import model.dto.response.PKResponse;
 import model.dto.response.SingleDataResponse;
 import repository.CategoryRepository;
+import service.BaseService;
 
 
 @RequiredArgsConstructor
 public class CategoryService extends BaseService {
     private final CategoryRepository categoryRepository;
 
-    @Transaction(name = "category.create")
     public PKResponse createCategory(CreateCategoryRequest dto) {
-
-        Category category = new Category().toBuilder()
+        return tx.execute(() -> {
+            Category category = new Category().toBuilder()
                     .name(dto.getName())
                     .description(dto.getDescription())
                     .build();
-        Long categoryPK = this.categoryRepository.create(category).getPk();
-        return new PKResponse(categoryPK);
+            Long categoryPK = this.categoryRepository.create(category).getPk();
+            return new PKResponse(categoryPK);
+        });
     }
 
-    @Transaction(name = "category.read", readOnly = true)
     public SingleDataResponse<CategoryData> readCategory(PKQueryRequest request) {
-        Category category = categoryRepository.findById(request.getPk())
-                .orElseThrow(NotFoundException::new);
+        return tx.execute(true, () -> {
+            Category category = categoryRepository.findById(request.getPk())
+                    .orElseThrow(NotFoundException::new);
 
-        CategoryData dto = CategoryData.builder()
-                .pk(category.getPk())
-                .name(category.getName())
-                .description(category.getDescription())
-                .build();
+            CategoryData dto = CategoryData.builder()
+                    .pk(category.getPk())
+                    .name(category.getName())
+                    .description(category.getDescription())
+                    .build();
 
-        return new SingleDataResponse<>(dto);
+            return new SingleDataResponse<>(dto);
+        });
     }
+
+
 
 }
