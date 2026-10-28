@@ -1,11 +1,11 @@
 package repository;
 
 import constant.OrderDirection;
+import exception.NotFoundException;
 import exception.QueryErrorException;
 import model.domain.BaseDomain;
 import repository.manager.EntityManager;
 import repository.manager.EntityManagerImpl;
-import repository.manager.Lazy;
 import repository.manager.query_dsl.ColumnInfo;
 import repository.manager.query_dsl.CriteriaQuery;
 import repository.manager.query_dsl.EntityMetadata;
@@ -13,6 +13,7 @@ import repository.manager.transaction.TransactionTemplate;
 
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -53,6 +54,7 @@ public abstract class BaseRepositoryImpl<T extends BaseDomain, PK> implements Ba
     }
 
     //updateData의 키는 도메인 필드명. PK와 버전은 수정할 수 없다
+    //연관 필드의 값으로는 PK, 엔티티 모두 사용 가능
     @Override
     public Optional<T> update(PK pk, Map<String, Object> updateData) {
         return transactionTemplate.execute(() -> {
@@ -76,11 +78,15 @@ public abstract class BaseRepositoryImpl<T extends BaseDomain, PK> implements Ba
         if (column == metadata.getPk() || column == metadata.getVersion()) {
             throw new QueryErrorException("'" + field + "' cannot be updated");
         }
-        Object fieldValue = (column.isRelation() && value != null && !(value instanceof Lazy<?>))
-                ? Lazy.of(value)
-                : value;
+        //연관 필드에 PK가 들어오면 해당 엔티티를 조회해서 넣는다
+        if (column.isRelation() && value != null && !column.getRelationClass().isInstance(value)) {
+            Object pk = value;
+            value = Optional.ofNullable(entityManager.find(column.getRelationClass(), pk))
+                    .orElseThrow(() -> new NotFoundException(
+                            column.getRelationClass().getSimpleName() + "#" + pk + " not found"));
+        }
         try {
-            column.setValue(entity, fieldValue);
+            column.setValue(entity, value);
         } catch (IllegalArgumentException e) {
             throw new QueryErrorException("Invalid value type for '" + field + "': " + value, e);
         }
@@ -92,10 +98,16 @@ public abstract class BaseRepositoryImpl<T extends BaseDomain, PK> implements Ba
         if (filter == null) {
             return query;
         }
-        filter.getConditions().forEach((field, value) ->
-                query.whereEqual(metadata.getColumnByField(field).columnName(), value));
+        filter.getConditions().forEach((field, value) -> {
+            String column = metadata.getColumnByField(field).columnName();
+            if (value instanceof Collection<?> values) {
+                query.whereIn(column, values);
+            } else {
+                query.whereEqual(column, value);
+            }
+        });
 
-        for (Sort.Order order : filter.getSort().getOrders()) {
+        for (Order order : filter.getSort().getOrders()) {
             String column = metadata.getColumnByField(order.field()).columnName();
             if (order.direction() == OrderDirection.DESC) {
                 query.orderByDesc(column);

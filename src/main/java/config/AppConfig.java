@@ -1,6 +1,5 @@
 package config;
 
-import handler.RequestHandler;
 import lombok.Getter;
 import repository.CategoryRepository;
 import repository.DenyFundingRepository;
@@ -12,19 +11,16 @@ import repository.ReviewRepository;
 import repository.RewardRepository;
 import repository.UserRepository;
 import repository.manager.schema.SchemaGenerator;
-import repository.manager.transaction.TransactionTemplate;
-import service.CategoryService;
+import service.internal.CategoryService;
 import service.FundingCategoryService;
-import service.FundingService;
+import service.external.FundingService;
 
 /**
- * 앱 시작 시 리포지토리, 서비스, 요청 핸들러를 한 번 생성하고 주입하는 조립 클래스
+ * 앱 시작 시 리포지토리, 서비스를 한 번 생성하고 주입하는 조립 클래스
  * 새 서비스를 만들면 여기에 등록한다.
  */
 @Getter
 public class AppConfig {
-    private final TransactionTemplate transactionTemplate = new TransactionTemplate();
-
     private final CategoryRepository categoryRepository = new CategoryRepository();
     private final DenyFundingRepository denyFundingRepository = new DenyFundingRepository();
     private final DonateRepository donateRepository = new DonateRepository();
@@ -39,10 +35,6 @@ public class AppConfig {
     private final FundingCategoryService fundingCategoryService = new FundingCategoryService();
     private final FundingService fundingService =
             new FundingService(fundingRepository, donateRepository, rewardRepository);
-
-    //서비스의 @Command 메서드를 자동 등록. 새 서비스를 만들면 여기에 추가한다
-    private final RequestHandler requestHandler = new RequestHandler(transactionTemplate)
-            .registerAll(categoryService, fundingCategoryService, fundingService);
 
     public AppConfig() {
         //db.ddl-auto 설정에 따라 도메인 기준으로 테이블 생성

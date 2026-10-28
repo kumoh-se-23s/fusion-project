@@ -1,7 +1,6 @@
 package repository.manager;
 
 import config.PooledDataSource;
-import exception.LazyInitializationException;
 import exception.NotFoundException;
 import exception.OptimisticLockException;
 import exception.TransactionException;
@@ -14,13 +13,20 @@ import repository.manager.transaction.ConnectionHolder;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 public class EntityManagerImpl implements EntityManager {
     private static final String FOR_UPDATE = " FOR UPDATE";
+    //연관 엔티티 IN 조회 시 한 쿼리에 넣는 최대 PK 개수
+    private static final int BATCH_SIZE = 1000;
 
-    private final EntityMapper mapper = new EntityMapper(this::createReference);
+    private final EntityMapper mapper = new EntityMapper();
 
     @Override
     public void persist(Object entity) {
@@ -56,8 +62,7 @@ public class EntityManagerImpl implements EntityManager {
             return null;
         }
         String sql = withLock(EntityMetadata.of(entityClass).getSelectByPkSql(), lockMode);
-        List<T> result = withConnection(c ->
-                SQLExecutor.query(c, sql, List.of(primaryKey), rs -> mapper.map(rs, entityClass)));
+        List<T> result = withConnection(c -> load(c, sql, List.of(primaryKey), entityClass, new HashMap<>()));
         return result.isEmpty() ? null : result.get(0);
     }
 
@@ -70,8 +75,7 @@ public class EntityManagerImpl implements EntityManager {
     public <T> List<T> findByWithLock(CriteriaQuery<T> criteriaQuery, LockModeType lockMode) {
         Class<T> entityClass = criteriaQuery.getResultClass();
         String sql = withLock(criteriaQuery.toSql(), lockMode);
-        return withConnection(c ->
-                SQLExecutor.query(c, sql, criteriaQuery.getParameters(), rs -> mapper.map(rs, entityClass)));
+        return withConnection(c -> load(c, sql, criteriaQuery.getParameters(), entityClass, new HashMap<>()));
     }
 
     @Override
@@ -108,18 +112,69 @@ public class EntityManagerImpl implements EntityManager {
         return withConnection(c -> SQLExecutor.update(c, sql, List.of(primaryKey))) > 0;
     }
 
-    //Lazy 참조 생성. 엔티티를 조회한 트랜잭션 안에서만 get()으로 로딩할 수 있다
-    private <T> Lazy<T> createReference(Class<T> type, Object pk) {
-        ConnectionHolder.Scope scope = ConnectionHolder.currentScope();
-        return Lazy.reference(type, pk, () -> {
-            if (scope == null || ConnectionHolder.currentScope() != scope) {
-                throw new LazyInitializationException(
-                        "Cannot load " + type.getSimpleName() + "#" + pk
-                                + " outside of the transaction it was loaded in");
+    //조회 후 연관 엔티티를 같은 커넥션으로 즉시 로딩
+    //loaded : 한 번의 조회 안에서 같은 엔티티를 다시 조회하지 않기 위한 캐시 (키: [타입, PK])
+    private <T> List<T> load(Connection c, String sql, List<?> params, Class<T> entityClass,
+                             Map<List<Object>, Object> loaded) {
+        List<T> entities = SQLExecutor.query(c, sql, params, rs -> mapper.map(rs, entityClass));
+        for (T entity : entities) {
+            loaded.putIfAbsent(cacheKey(entity), entity);
+        }
+        loadRelations(c, entityClass, entities, loaded);
+        return entities;
+    }
+
+    //매퍼가 넣어둔 PK만 있는 연관 엔티티를 실제 엔티티로 교체
+    //엔티티마다 조회하지 않고(N+1), 연관 타입별로 PK를 모아 IN 쿼리로 한 번에 조회한다
+    private void loadRelations(Connection c, Class<?> entityClass, List<?> entities, Map<List<Object>, Object> loaded) {
+        if (entities.isEmpty()) {
+            return;
+        }
+        List<ColumnInfo> relations = EntityMetadata.of(entityClass).getColumns().stream()
+                .filter(ColumnInfo::isRelation)
+                .toList();
+
+        //아직 불러오지 않은 연관 엔티티의 PK를 타입별로 수집
+        Map<Class<?>, Set<Object>> missing = new LinkedHashMap<>();
+        for (ColumnInfo column : relations) {
+            for (Object entity : entities) {
+                Object stub = column.getValue(entity);
+                if (stub != null && !loaded.containsKey(cacheKey(stub))) {
+                    Object pk = EntityMetadata.of(stub.getClass()).getPk().getValue(stub);
+                    missing.computeIfAbsent(column.getRelationClass(), k -> new LinkedHashSet<>()).add(pk);
+                }
             }
-            SqlLogger.lazy(type, pk);
-            return find(type, pk);
-        });
+        }
+        missing.forEach((type, pks) -> loadByPks(c, type, new ArrayList<>(pks), loaded));
+
+        for (ColumnInfo column : relations) {
+            for (Object entity : entities) {
+                Object stub = column.getValue(entity);
+                if (stub == null) {
+                    continue;
+                }
+                Object found = loaded.get(cacheKey(stub));
+                if (found == null) {
+                    throw new NotFoundException(stub.getClass().getSimpleName() + "#"
+                            + EntityMetadata.of(stub.getClass()).getPk().getValue(stub) + " referenced by "
+                            + entityClass.getSimpleName() + "." + column.field().getName() + " not found");
+                }
+                column.setValue(entity, found);
+            }
+        }
+    }
+
+    //PK 목록을 BATCH_SIZE씩 나눠 IN 쿼리로 조회. 조회된 엔티티의 연관도 같은 방식으로 로딩된다
+    private void loadByPks(Connection c, Class<?> type, List<Object> pks, Map<List<Object>, Object> loaded) {
+        EntityMetadata metadata = EntityMetadata.of(type);
+        for (int from = 0; from < pks.size(); from += BATCH_SIZE) {
+            List<Object> chunk = pks.subList(from, Math.min(from + BATCH_SIZE, pks.size()));
+            load(c, metadata.getSelectByPksSql(chunk.size()), chunk, type, loaded);
+        }
+    }
+
+    private static List<Object> cacheKey(Object entity) {
+        return List.of(entity.getClass(), EntityMetadata.of(entity.getClass()).getPk().getValue(entity));
     }
 
     private String withLock(String sql, LockModeType lockMode) {
