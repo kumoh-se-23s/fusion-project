@@ -1,86 +1,41 @@
 package repository;
 
-import model.domain.AppUser;
 import model.domain.LocalAccount;
-import model.dto.TokenPair;
-import util.JwtTokenProvider;
 
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
-import javax.swing.text.html.Option;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
-import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 public class AccountRepository extends BaseRepositoryImpl<LocalAccount, Long> {
 
-    private JwtTokenProvider jwtTokenProvider;
-    private final int ITERATIONS = 210_000;
-    private final int KEY_LENGTH = 256;
+    public Optional<LocalAccount> checkID(String id) {
+        List<LocalAccount> result = find(Filter.eq("id", id).limit(1));
 
-    public Optional<TokenPair> login(String id, String inputPassword) throws NoSuchAlgorithmException, InvalidKeySpecException {
-        List<LocalAccount> resultList = find(Filter.eq("id", id).limit(1));
-
-        Optional<LocalAccount> resultLocalAccount = resultList.stream().findFirst();
-
-        if(resultLocalAccount.isPresent()) {
-            LocalAccount localAccount = resultLocalAccount.get();
-
-            String salt = localAccount.getSalt();
-            String savedPassword = localAccount.getPassword();
-
-            if(matches(inputPassword, salt, savedPassword)) {
-                String accessToken = jwtTokenProvider.createAccessToken(localAccount.getId());
-                String refreshToken = jwtTokenProvider.createRefreshToken(localAccount.getId());
-
-                //accessToken DB에 저장하는 로직 필요
-
-                return Optional.of(new TokenPair(accessToken, refreshToken));
-            }
-            else {
-                return Optional.empty();
-            }
-
-        } else {
+        if(result.isEmpty()){
             return Optional.empty();
+        } else {
+            return Optional.of(find(Filter.eq("id", id).limit(1)).getFirst());
         }
     }
 
-    public Optional<TokenPair> signUp(String id, String password) {
-        
+    public void signUp(String id, String password) {
+        LocalAccount localAccount = LocalAccount.builder()
+                .id(id)
+                .password(password)
+                .build();
+
+        create(localAccount);
     }
 
     //Update 사용해도 상관없으나 salt를 받는 것을 명확하게 명시하기 위함
-    public boolean changePassword(long accountPk, String hashedPassword, String salt) {
+    public boolean updatePassword(long accountPk, String hashedPassword, String salt) {
         return update(accountPk, Map.of(
                 "password", hashedPassword,
                 "salt", salt
         )).isPresent();
     }
 
-    private String hash(String password, String salt) throws NoSuchAlgorithmException, InvalidKeySpecException {
-            PBEKeySpec spec = new PBEKeySpec(
-                    password.toCharArray(),
-                    Base64.getDecoder().decode(salt),
-                    ITERATIONS,
-                    KEY_LENGTH);
-
-            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-
-            byte[] hashed = factory.generateSecret(spec).getEncoded();
-            spec.clearPassword();
-
-            return Base64.getEncoder().encodeToString(hashed);
+    public Optional<LocalAccount> findByUserPk(long userPk) {
+        return findById(userPk);
     }
-
-    private boolean matches(String inputPassword, String salt, String savedPassword) throws NoSuchAlgorithmException, InvalidKeySpecException {
-        byte[] input = Base64.getDecoder().decode(hash(inputPassword, salt));
-        byte[] saved = Base64.getDecoder().decode(savedPassword);
-        return MessageDigest.isEqual(input, saved);
-    }
-
 }
