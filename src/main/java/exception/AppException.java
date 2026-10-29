@@ -2,8 +2,10 @@ package exception;
 
 
 public abstract class AppException extends RuntimeException {
+
+
     public AppException(String message) {
-        super(message);
+        this(message, null);
     }
 
     public AppException(String message, Throwable cause) {
