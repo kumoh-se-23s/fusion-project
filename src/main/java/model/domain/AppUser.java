@@ -4,10 +4,11 @@ import annotation.Column;
 import annotation.PK;
 import annotation.Table;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import java.time.LocalDateTime;
 
 @Table(name = "APP_USERS")
-@Builder(toBuilder = true)
+@SuperBuilder(toBuilder = true)
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -21,7 +22,7 @@ public class AppUser extends BaseDomain {
     private String name;
 
     @NonNull
-    @Column(name = "user_email", unique = true)
+    @Column(name = "user_email", unique = true, nullable = false)
     private String email;
 
     @Column(name = "user_postal", length = 20)

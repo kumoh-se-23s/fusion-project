@@ -5,11 +5,12 @@ import annotation.JoinColumn;
 import annotation.PK;
 import annotation.Table;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Table(name = "DONATE")
-@Builder(toBuilder = true)
+@SuperBuilder(toBuilder = true)
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -39,6 +40,7 @@ public class Donate extends BaseDomain {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    //배송 완료 여부 (true: 배송 완료)
     @Builder.Default
     @NonNull
     @Column(name = "donate_state", nullable = false)

@@ -5,11 +5,12 @@ import annotation.JoinColumn;
 import annotation.PK;
 import annotation.Table;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Table(name = "REVIEW")
-@Builder(toBuilder = true)
+@SuperBuilder(toBuilder = true)
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -19,11 +20,11 @@ public class Review extends BaseDomain {
     private Long pk;
 
     @NonNull
-    @JoinColumn(name = "funding_fk", nullable = false)
+    @JoinColumn(name = "funding_fk", nullable = false, uniqueGroup = "review")
     private Funding funding;
 
     @NonNull
-    @JoinColumn(name = "user_fk", nullable = false)
+    @JoinColumn(name = "user_fk", nullable = false, uniqueGroup = "review")
     private AppUser user;
 
     @Column(name = "review_text", columnDefinition = "TEXT")
