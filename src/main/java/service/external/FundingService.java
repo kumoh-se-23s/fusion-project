@@ -1,21 +1,28 @@
 package service.external;
 
 import exception.NotFoundException;
+import exception.NotNullException;
+import exception.OutOfRangeException;
 import lombok.RequiredArgsConstructor;
 import model.domain.*;
+import model.dto.FundingData;
 import model.dto.request.PKQueryRequest;
 import model.dto.request.funding.CreateFundingRequest;
+import model.dto.request.funding.GetFundingByCategoryAndStateRequest;
+import model.dto.response.DataCollectionResponse;
 import model.dto.response.PKResponse;
 import model.dto.response.donate.DonateUserAddressResponse;
+import model.dto.response.funding.CreateFundingByCategoryResponse;
 import model.dto.response.funding.FundingRewardResponse;
+import model.dto.response.fundingCategory.BindCategoryResponse;
 import model.dto.response.reward.RewardResponse;
 import repository.*;
 import service.BaseService;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @RequiredArgsConstructor
 public class FundingService extends BaseService {
@@ -23,20 +30,17 @@ public class FundingService extends BaseService {
     private final DonateRepository donateRepository;
     private final RewardRepository rewardRepository;
     private final UserRepository userRepository;
+    private final CategoryRepository categoryRepository;
     private final FundingCategoryRepository fundingCategoryRepository;
 
-    //펀딩의 리워드 정보와 리워드별 후원자 배송지
+    //1.펀딩의 리워드 정보와 리워드별 후원자 배송지
     public FundingRewardResponse getFundingByReward(PKQueryRequest request) {
         return tx.execute(true, () -> {
             Funding funding = fundingRepository.findById(request.getPk())
                     .orElseThrow(NotFoundException::new);
 
-            List<Reward> rewardList = rewardRepository.findByFunding(funding.getPk());
-            List<Long> rewardPKs = new ArrayList<>();
-            for (Reward reward : rewardList) {
-                rewardPKs.add(reward.getPk());
-            }
-            List<Donate> donateList = donateRepository.findByRewards(rewardPKs);
+            List<Reward> rewardList = rewardRepository.findByFunding(funding);
+            List<Donate> donateList = donateRepository.findByRewards(rewardList);
             List<RewardResponse> rewardResponses = new ArrayList<>();
 
             for (Reward reward : rewardList) {
@@ -73,31 +77,134 @@ public class FundingService extends BaseService {
         });
     }
 
-    public PKResponse createFunding(CreateFundingRequest request) {
-        AppUser maker = userRepository.findById(request.getMakerPK())
-                .orElseThrow(NotFoundException::new);
+    //2. 프로젝트 기본 정보 등록
+    public CreateFundingByCategoryResponse createFunding(CreateFundingRequest request) {
+        return tx.execute(false, () -> {
+            AppUser maker = userRepository.findById(request.getMakerPK())
+                    .orElseThrow(NotFoundException::new);
 
-        Funding funding = Funding.builder()
-                .maker(maker)
-                .startDate(request.getStartDate())
-                .endDate(request.getEndDate())
-                .purposeAmount(request.getPurposeAmount())
-                .donateAmount(request.getDonateAmount())
-                .text(request.getText())
-                .imgFile(request.getImgFile())
-                .build();
+            Funding funding;
+            try {
+                funding = Funding.builder()
+                        .maker(maker)
+                        .startDate(request.getStartDate())
+                        .endDate(request.getEndDate())
+                        .purposeAmount(request.getPurposeAmount())
+                        .text(request.getText())
+                        .imgFile(request.getImgFile())
+                        .build();
+            } catch (NullPointerException e) {
+                throw new NotNullException("Funding has Null Value");
+            }
+            //build()를 통과했으므로 아래 값들은 null이 아님
+            if (funding.getPurposeAmount().signum() <= 0) {
+                throw new OutOfRangeException("purposeAmount must be greater than 0");
+            }
+            if (!funding.getEndDate().isAfter(funding.getStartDate())) {
+                throw new OutOfRangeException("endDate must be after startDate");
+            }
 
-        Funding resultFunding = fundingRepository.create(funding);
-        List<Category> categoryList = CategoryRepository.findByPKs(request.getCategoryPKs());
-        for (Category category : categoryList) {
-            FundingCategory fundingCategory = FundingCategory.builder()
-                    .category(category)
-                    .funding(resultFunding)
+            Funding resultFunding = fundingRepository.create(funding);
+
+            //카테고리를 지정하지 않으면 카테고리 없이 등록
+            List<Category> categoryList = request.getCategoryPKs() == null
+                    ? List.of()
+                    : categoryRepository.findByPKs(request.getCategoryPKs());
+
+            List<PKResponse> fundingCategoryDTOs = new ArrayList<>();
+            for (Category category : categoryList) {
+                FundingCategory fundingCategory = FundingCategory.builder()
+                        .category(category)
+                        .funding(resultFunding)
+                        .build();
+                fundingCategoryDTOs.add(
+                        new PKResponse(
+                                fundingCategoryRepository.create(fundingCategory).getPk()
+                        )
+                );
+            }
+            return CreateFundingByCategoryResponse.builder()
+                    .fundingPK(new PKResponse(resultFunding.getPk()))
+                    .fundingCategoryPKs(new BindCategoryResponse(fundingCategoryDTOs))
                     .build();
+        });
+    }
 
-        }
+    //6. 전체 펀딩 조회
+    public DataCollectionResponse<FundingData> getAllFunding() {
+        return tx.execute(true, () -> {
+            List<FundingData> dtos = new ArrayList<>();
+            for (Funding funding : fundingRepository.findAll()) {
+                FundingData dto = FundingData.builder()
+                        .pk(funding.getPk())
+                        .makerPK(funding.getMaker().getPk())
+                        .text(funding.getText())
+                        .createdAt(funding.getCreatedAt())
+                        .updatedAt(funding.getUpdatedAt())
+                        .purposeAmount(funding.getPurposeAmount())
+                        .donateAmount(funding.getDonateAmount())
+                        .startDate(funding.getStartDate())
+                        .endDate(funding.getEndDate())
+                        .state(funding.getState())
+                        .likeCount(funding.getLikeCount())
+                        .dislikeCount(funding.getDislikeCount())
+                        .imgFile(funding.getImgFile())
+                        .build();
+                dtos.add(dto);
+            }
 
+            return DataCollectionResponse.<FundingData>builder()
+                    .datas(dtos)
+                    .amount((long) dtos.size())
+                    .build();
+        });
+    }
 
+    //7. 펀딩 필터링
+    public DataCollectionResponse<FundingData> getByCategoryAndState(GetFundingByCategoryAndStateRequest dto)  {
+        return tx.execute(true, () -> {
+            List<FundingData> dtos = new ArrayList<>();
+            List<Funding> fundingList;
+            List<Category> categoryList;
+            try {
+                fundingList = fundingRepository.findByState(dto.getFundingStateList());
+                categoryList = categoryRepository.findByName(dto.getCategoryList());
+            } catch (NullPointerException e) {
+                throw new NotNullException("Filter condition has Null Value");
+            }
+
+            //한 펀딩이 여러 카테고리에 속하면 중복으로 조회되므로 한 번만 담는다
+            Set<Long> addedFundingPKs = new HashSet<>();
+            for (FundingCategory fundingCategory :
+                    fundingCategoryRepository.findByFundingAndCategoryPKs(
+                            fundingList, categoryList
+                    )
+            ) {
+                if (!addedFundingPKs.add(fundingCategory.getFunding().getPk())) {
+                    continue;
+                }
+                FundingData fundingDTO = FundingData.builder()
+                        .pk(fundingCategory.getFunding().getPk())
+                        .makerPK(fundingCategory.getFunding().getMaker().getPk())
+                        .text(fundingCategory.getFunding().getText())
+                        .createdAt(fundingCategory.getFunding().getCreatedAt())
+                        .updatedAt(fundingCategory.getFunding().getUpdatedAt())
+                        .purposeAmount(fundingCategory.getFunding().getPurposeAmount())
+                        .donateAmount(fundingCategory.getFunding().getDonateAmount())
+                        .startDate(fundingCategory.getFunding().getStartDate())
+                        .endDate(fundingCategory.getFunding().getEndDate())
+                        .state(fundingCategory.getFunding().getState())
+                        .likeCount(fundingCategory.getFunding().getLikeCount())
+                        .dislikeCount(fundingCategory.getFunding().getDislikeCount())
+                        .imgFile(fundingCategory.getFunding().getImgFile())
+                        .build();
+                dtos.add(fundingDTO);
+            }
+            return DataCollectionResponse.<FundingData>builder()
+                    .datas(dtos)
+                    .amount((long) dtos.size())
+                    .build();
+        });
     }
 
 }

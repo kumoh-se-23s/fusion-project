@@ -1,6 +1,7 @@
 package service.internal;
 
 import exception.NotFoundException;
+import exception.NotNullException;
 import lombok.RequiredArgsConstructor;
 import model.domain.Category;
 import model.dto.CategoryData;
@@ -18,10 +19,15 @@ public class CategoryService extends BaseService {
 
     public PKResponse createCategory(CreateCategoryRequest dto) {
         return tx.execute(() -> {
-            Category category = new Category().toBuilder()
-                    .name(dto.getName())
-                    .description(dto.getDescription())
-                    .build();
+            Category category;
+            try {
+                category = new Category().toBuilder()
+                        .name(dto.getName())
+                        .description(dto.getDescription())
+                        .build();
+            } catch (NullPointerException e) {
+                throw new NotNullException("Category has Null Value");
+            }
             Long categoryPK = this.categoryRepository.create(category).getPk();
             return new PKResponse(categoryPK);
         });
