@@ -9,8 +9,14 @@ public class CategoryRepository extends BaseRepositoryImpl<Category, Long>{
     public List<Category> findByPKs(List<Long> pks){
         return find(
                 Filter.builder()
-                        .conditions(Map.of("Category_pk", pks))
+                        .conditions(Map.of("pk", pks))
                         .build()
+        );
+    }
+    public List<Category> findByName(List<String> nameList) {
+        return find(Filter.builder()
+                .conditions(Map.of("name", nameList))
+                .build()
         );
     }
 }
