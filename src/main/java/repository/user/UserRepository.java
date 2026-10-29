@@ -12,6 +12,13 @@ import java.util.Map;
 import java.util.Optional;
 
 public class UserRepository extends BaseRepositoryImpl<AppUser,Long> {
+
+    private void putIfNotNull(Map<String, Object> resultMap, String key, Object value) {
+        if(value != null) {
+            resultMap.put(key, value);
+        }
+    }
+
     public Optional<AppUser> findUser(Long userPk) {
          List<AppUser> result = find(Filter.eq("pk", userPk).limit(1));
 
@@ -42,11 +49,5 @@ public class UserRepository extends BaseRepositoryImpl<AppUser,Long> {
         }
 
         return Optional.empty();
-    }
-
-    private void putIfNotNull(Map<String, Object> resultMap, String key, Object value) {
-        if(value != null) {
-            resultMap.put(key, value);
-        }
     }
 }
