@@ -3,13 +3,11 @@ package service;
 import annotation.PK;
 import exception.AccountException;
 import exception.BusinessException;
-import exception.PasswordHashException;
 import model.domain.LocalAccount;
 import model.dto.TokenPair;
 import model.dto.request.account.ChangePasswordRequest;
 import model.dto.request.account.DeleteAccountRequest;
 import model.dto.request.user.SignUpRequest;
-import model.dto.response.PKResponse;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import repository.AccountRepository;
@@ -56,14 +54,18 @@ public class AccountService {
 
                 return Optional.of(new TokenPair(accessToken, refreshToken));
             }
-        }  catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-            throw new PasswordHashException();
+        } catch () {
+
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        } catch (InvalidKeySpecException e) {
+            throw new RuntimeException(e);
         } catch (BusinessException e) {
 
         }
     }
 
-    public PKResponse changePassword(long userPk, ChangePasswordRequest request) {
+    public void changePassword(long userPk, ChangePasswordRequest request) {
         try {
             Optional<LocalAccount> result = accountRepository.findByUserPk(userPk);
 
