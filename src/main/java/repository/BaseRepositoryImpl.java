@@ -2,6 +2,7 @@ package repository;
 
 import constant.OrderDirection;
 import exception.NotFoundException;
+import exception.NotNullException;
 import exception.QueryErrorException;
 import model.domain.BaseDomain;
 import repository.manager.EntityManager;
@@ -47,7 +48,10 @@ public abstract class BaseRepositoryImpl<T extends BaseDomain, PK> implements Ba
     public List<T> find(Filter filter) {
         return entityManager.findBy(toCriteria(filter));
     }
-
+    @Override
+    public List<T> findAll() {
+        return entityManager.findBy(toCriteria(null));
+    }
     @Override
     public Optional<T> findById(PK pk) {
         return Optional.ofNullable(entityManager.find(entityClass, pk));
@@ -73,10 +77,23 @@ public abstract class BaseRepositoryImpl<T extends BaseDomain, PK> implements Ba
         return entityManager.remove(entityClass, pk);
     }
 
+    //filter가 null이면 조건 없이 행이 하나라도 있는지 확인 (find(null)과 동일한 의미)
+    @Override
+    public boolean isExist(Filter filter) {
+        return !find(Filter.builder()
+                .conditions(filter == null ? Map.of() : filter.getConditions())
+                .limit(1)
+                .build()).isEmpty();
+    }
+
     private void applyField(T entity, String field, Object value) {
         ColumnInfo column = metadata.getColumnByField(field);
         if (column == metadata.getPk() || column == metadata.getVersion()) {
             throw new QueryErrorException("'" + field + "' cannot be updated");
+        }
+        //NOT NULL 컬럼에 null을 넣으면 DB 오류 대신 400으로 응답
+        if (value == null && !column.isNullable()) {
+            throw new NotNullException("'" + field + "' cannot be null");
         }
         //연관 필드에 PK가 들어오면 해당 엔티티를 조회해서 넣는다
         if (column.isRelation() && value != null && !column.getRelationClass().isInstance(value)) {
@@ -92,6 +109,14 @@ public abstract class BaseRepositoryImpl<T extends BaseDomain, PK> implements Ba
         }
     }
 
+    //연관 필드에 엔티티가 들어오면 해당 엔티티의 PK로 바꾼다
+    private Object toQueryValue(ColumnInfo column, Object value) {
+        if (!column.isRelation() || !column.getRelationClass().isInstance(value)) {
+            return value;
+        }
+        return EntityMetadata.of(column.getRelationClass()).getPk().getValue(value);
+    }
+
     //필드명 기반 Filter -> 컬럼명 기반 CriteriaQuery. 메타데이터에 없는 필드는 거부된다
     private CriteriaQuery<T> toCriteria(Filter filter) {
         CriteriaQuery<T> query = new CriteriaQuery<>(entityClass);
@@ -99,11 +124,12 @@ public abstract class BaseRepositoryImpl<T extends BaseDomain, PK> implements Ba
             return query;
         }
         filter.getConditions().forEach((field, value) -> {
-            String column = metadata.getColumnByField(field).columnName();
+            ColumnInfo info = metadata.getColumnByField(field);
+            String column = info.columnName();
             if (value instanceof Collection<?> values) {
-                query.whereIn(column, values);
+                query.whereIn(column, values.stream().map(v -> toQueryValue(info, v)).toList());
             } else {
-                query.whereEqual(column, value);
+                query.whereEqual(column, toQueryValue(info, value));
             }
         });
 
