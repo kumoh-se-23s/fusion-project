@@ -23,8 +23,6 @@ public class CreateFundingRequest extends Request {
 
     private BigDecimal purposeAmount;
 
-    private BigDecimal donateAmount;
-
     private String text;
 
     private byte[] imgFile;

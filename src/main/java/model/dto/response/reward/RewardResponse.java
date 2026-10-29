@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import model.dto.response.Response;
 import model.dto.response.donate.DonateUserAddressResponse;
 
 import java.math.BigDecimal;
@@ -14,7 +15,7 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class RewardResponse {
+public class RewardResponse extends Response {
     private Long rewardPk;
     private String name;
     private BigDecimal requiredAmount;

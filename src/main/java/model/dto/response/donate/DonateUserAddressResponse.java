@@ -4,13 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import model.domain.Donate;
+import model.dto.response.Response;
 
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class DonateUserAddressResponse {
+public class DonateUserAddressResponse extends Response {
     private Long donatePK;
 
     private Long userPK;

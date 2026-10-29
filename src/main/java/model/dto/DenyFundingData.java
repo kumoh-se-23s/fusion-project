@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class DenyFundingData extends BaseData {
     private Long pk;
 
-    private Long categoryPK;
+    private Long fundingPK;
 
     private String denyReason;
 }

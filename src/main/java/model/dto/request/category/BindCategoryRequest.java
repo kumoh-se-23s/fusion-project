@@ -14,7 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 public class BindCategoryRequest extends Request {
 
-    private Long fundingPKs;
+    private Long fundingPK;
 
     private List<Long> categoryPKs;
 }

@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import model.dto.request.Request;
 
+import java.math.BigDecimal;
+
 @Getter
 @Builder
 @AllArgsConstructor
@@ -15,6 +17,8 @@ import model.dto.request.Request;
 public class AdminCreateFundingRequest extends Request {
 
     private CreateFundingRequest request;
+
+    private BigDecimal donateAmount;
 
     private FundingState state;
 
