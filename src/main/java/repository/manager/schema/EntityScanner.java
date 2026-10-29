@@ -67,6 +67,8 @@ final class EntityScanner {
     private static List<String> fromJar(URL url, String path) throws IOException {
         List<String> names = new ArrayList<>();
         JarURLConnection connection = (JarURLConnection) url.openConnection();
+        //캐시된 JarFile은 클래스 로더와 공유되므로, 닫아도 안전하도록 캐시를 쓰지 않는다
+        connection.setUseCaches(false);
         try (JarFile jar = connection.getJarFile()) {
             Enumeration<JarEntry> entries = jar.entries();
             while (entries.hasMoreElements()) {

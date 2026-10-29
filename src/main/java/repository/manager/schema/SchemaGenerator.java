@@ -79,7 +79,7 @@ public class SchemaGenerator {
                 lines.add(column.columnName() + " BIGINT NOT NULL DEFAULT 0");
                 continue;
             }
-            lines.add(column.columnName() + " " + sqlType(column) + (isNullable(column) ? "" : " NOT NULL"));
+            lines.add(column.columnName() + " " + sqlType(column) + (column.isNullable() ? "" : " NOT NULL"));
 
             if (isUnique(column)) {
                 constraints.add("UNIQUE KEY uk_" + table.toLowerCase() + "_" + column.columnName()
@@ -129,12 +129,6 @@ public class SchemaGenerator {
         if (type == byte[].class) return "LONGBLOB";
         throw new AnnotationMissingException(
                 "No SQL type for " + type.getSimpleName() + " (" + column.field() + "). Use @Column(columnDefinition = ...)");
-    }
-
-    private static boolean isNullable(ColumnInfo column) {
-        return column.isRelation()
-                ? column.field().getAnnotation(JoinColumn.class).nullable()
-                : column.field().getAnnotation(Column.class).nullable();
     }
 
     private static boolean isUnique(ColumnInfo column) {

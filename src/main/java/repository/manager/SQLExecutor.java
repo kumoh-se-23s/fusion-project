@@ -1,5 +1,6 @@
 package repository.manager;
 
+import exception.AlreadyExistException;
 import exception.QueryErrorException;
 import repository.manager.mapper.JdbcValueConverter;
 
@@ -16,6 +17,8 @@ import java.util.List;
  * 파라미터 변환, 리소스 정리, SQLException 변환, SQL 로깅을 한곳에서 처리한다.
  */
 public final class SQLExecutor {
+    //MySQL 에러 코드 1062 (ER_DUP_ENTRY): UNIQUE 제약 위반
+    private static final int MYSQL_DUPLICATE_ENTRY = 1062;
 
     @FunctionalInterface
     public interface RowMapper<T> {
@@ -53,7 +56,7 @@ public final class SQLExecutor {
             SqlLogger.query(sql, values, rows + " affected", start);
             return rows;
         } catch (SQLException e) {
-            throw new QueryErrorException("Query Fail\n" + sql, e);
+            throw translate("Query Fail\n" + sql, e);
         }
     }
 
@@ -76,8 +79,17 @@ public final class SQLExecutor {
             SqlLogger.query(sql, values, rows + " inserted" + (key != null ? ", key=" + key : ""), start);
             return key;
         } catch (SQLException e) {
-            throw new QueryErrorException("Insert Fail\n" + sql, e);
+            throw translate("Insert Fail\n" + sql, e);
         }
+    }
+
+    //UNIQUE 제약 위반(중복 키)은 비즈니스 예외(409)로, 나머지는 쿼리 오류로 변환
+    private static RuntimeException translate(String message, SQLException e) {
+        if (e.getErrorCode() == MYSQL_DUPLICATE_ENTRY) {
+            //DB 메시지에는 중복된 실제 값이 들어있으므로 메시지에 노출하지 않고 cause로만 보관
+            return new AlreadyExistException("Duplicate value", e);
+        }
+        return new QueryErrorException(message, e);
     }
 
     private static List<Object> toJdbc(List<?> params) {

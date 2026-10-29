@@ -1,5 +1,8 @@
 package repository.manager.query_dsl;
 
+import annotation.Column;
+import annotation.JoinColumn;
+
 import java.lang.reflect.Field;
 
 /**
@@ -17,6 +20,13 @@ public record ColumnInfo(Field field, String columnName, boolean isRelation) {
     //연관 엔티티 타입. 연관 컬럼이 아니면 null
     public Class<?> getRelationClass() {
         return isRelation ? field.getType() : null;
+    }
+
+    //@Column/@JoinColumn의 nullable 값. false면 DB 컬럼도 NOT NULL
+    public boolean isNullable() {
+        return isRelation
+                ? field.getAnnotation(JoinColumn.class).nullable()
+                : field.getAnnotation(Column.class).nullable();
     }
 
     public Object getValue(Object entity) { // 필드 getter
