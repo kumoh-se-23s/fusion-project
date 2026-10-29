@@ -3,6 +3,7 @@ package service;
 import model.domain.AppUser;
 import model.dto.UserData;
 import model.dto.request.user.UpdateUserRequest;
+import model.dto.response.DeleteResponse;
 import model.dto.response.PKResponse;
 import model.dto.response.user.UserResponse;
 import repository.user.UserRepository;
@@ -55,5 +56,9 @@ public class UserService {
             }
 
         } catch ()
+    }
+
+    public DeleteResponse deleteUser(long userPk) {
+        return new DeleteResponse(userRepository.delete(userPk));
     }
 }
