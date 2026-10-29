@@ -1,5 +1,6 @@
 package model.dto.request.donate;
 import lombok.*;
+import model.dto.BaseData;
 
 import java.math.BigDecimal;
 
@@ -8,7 +9,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor//모든 필드 값을 받는 생성자 생성
 @NoArgsConstructor//빈 괄호로 객체를 만드느 생성자 생성
 
-public class CreateDonateDataRequest {
+public class CreateDonateDataRequest extends BaseData{
     private Long userFk;
 
     private Long rewardFk;
