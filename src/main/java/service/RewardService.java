@@ -2,6 +2,7 @@ package service;
 
 import lombok.RequiredArgsConstructor;
 import model.domain.Donate;
+import model.domain.Funding;
 import model.domain.Reward;
 import model.dto.RewardData;
 import model.dto.request.reward.CreateRewardDataRequest;
@@ -10,6 +11,7 @@ import repository.FundingRepository;
 import repository.UserRepository;
 import repository.RewardRepository;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,8 +25,21 @@ public class RewardService {
 
     public void createReward(CreateRewardDataRequest request){
         //(리워드가 속할 펀딩의 Pk, 사용자가 입력한 리워드 정보)
+        Long fundingPk = request.getFundingFk();
 
+        Funding funding =  fundingRepository.findById(fundingPk).
+                orElseThrow(()-> new IllegalArgumentException("펀딩을 찾을 수 없습니다."));
 
+        Reward reward = Reward.builder()
+                .funding(funding)//펀딩에 유저pk가 있으니 여기서 안 받아도 되는 듯
+                .name(request.getRewardName())
+                .text(request.getRewardText())
+                .imgFile(request.getRewardImg())
+                .requiredAmount(BigDecimal.valueOf(request.getRequiredAmount()))
+                .maxQuantity(request.getRewardMaxQuantity())
+                .build();
+                //남아있는 리워드 수량은 입력x
+        rewardRepository.create(reward);
     }
 
 

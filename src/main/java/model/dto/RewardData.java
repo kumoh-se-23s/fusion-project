@@ -39,7 +39,7 @@ public class RewardData extends BaseData {
 
     private String text;
 
-    private BigDecimal requiredAmount;
+    private BigDecimal requiredAmount;//목표금액
 
     private Long maxQuantity; //제공가능한 수량
 

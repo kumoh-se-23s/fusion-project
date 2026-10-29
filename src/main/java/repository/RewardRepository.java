@@ -31,8 +31,11 @@ public class RewardRepository extends BaseRepositoryImpl<Reward, Long> {
 
     }
 
+    public List<Reward> findByMakerPk(Long fundingPk) {
+        /*
+            유저(제작자)>제작자가 만든 펀딩> 해당 펀딩 리워드
+        */
 
-    public List<Reward> findByUserPk(Long userPk) {
         return find(//해당 PK로 찾은 리워드 객체들의 목록 반환되는 것
                 Filter.builder()
                         .conditions(Map.of("funding", fundingPk))//펀딩 pk로 필터링
@@ -41,15 +44,20 @@ public class RewardRepository extends BaseRepositoryImpl<Reward, Long> {
         );
     }
 
-    public List<Reward> findMaker(Long userPk) {
+    public List<Reward> findByDonate(Long userPk) {//본인이 후원한 펀딩의 리워드
+        /*
+            본인후운내역>후원에 있는 리워드 외래키 사용
+         */
         return find(//해당 PK로 찾은 리워드 객체들의 목록 반환되는 것
                 Filter.builder()
-                        .conditions(Map.of("funding", fundingPk))//펀딩 pk로 필터링
+                        .conditions(Map.of("funding", userPk))//펀딩 pk로 필터링
                         .sort(Sort.by(Sort.Order.asc("created_at")))//생성일 기준 정렬
                         .build()//필터 객체 완성
         );
 
 
     }
+
+
 }
 
