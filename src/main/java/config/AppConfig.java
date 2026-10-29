@@ -4,6 +4,7 @@ import lombok.Getter;
 import repository.CategoryRepository;
 import repository.DenyFundingRepository;
 import repository.DonateRepository;
+import repository.FundingCategoryRepository;
 import repository.FundingLikeRepository;
 import repository.FundingRepository;
 import repository.ReviewLikeRepository;
@@ -11,9 +12,9 @@ import repository.ReviewRepository;
 import repository.RewardRepository;
 import repository.UserRepository;
 import repository.manager.schema.SchemaGenerator;
-import service.internal.CategoryService;
-import service.FundingCategoryService;
 import service.external.FundingService;
+import service.external.ReviewService;
+import service.internal.CategoryService;
 
 /**
  * 앱 시작 시 리포지토리, 서비스를 한 번 생성하고 주입하는 조립 클래스
@@ -24,6 +25,7 @@ public class AppConfig {
     private final CategoryRepository categoryRepository = new CategoryRepository();
     private final DenyFundingRepository denyFundingRepository = new DenyFundingRepository();
     private final DonateRepository donateRepository = new DonateRepository();
+    private final FundingCategoryRepository fundingCategoryRepository = new FundingCategoryRepository();
     private final FundingLikeRepository fundingLikeRepository = new FundingLikeRepository();
     private final FundingRepository fundingRepository = new FundingRepository();
     private final ReviewLikeRepository reviewLikeRepository = new ReviewLikeRepository();
@@ -32,9 +34,14 @@ public class AppConfig {
     private final UserRepository userRepository = new UserRepository();
 
     private final CategoryService categoryService = new CategoryService(categoryRepository);
-    private final FundingCategoryService fundingCategoryService = new FundingCategoryService();
-    private final FundingService fundingService =
-            new FundingService(fundingRepository, donateRepository, rewardRepository);
+    private final FundingService fundingService = new FundingService(
+            fundingRepository, donateRepository, rewardRepository,
+            userRepository, categoryRepository, fundingCategoryRepository);
+    //이름이 같은 external.FundingService와 구분하기 위해 전체 경로 사용
+    private final service.internal.FundingService adminFundingService =
+            new service.internal.FundingService(fundingRepository);
+    private final ReviewService reviewService = new ReviewService(
+            reviewRepository, fundingRepository, userRepository, donateRepository, rewardRepository);
 
     public AppConfig() {
         //db.ddl-auto 설정에 따라 도메인 기준으로 테이블 생성
