@@ -164,14 +164,11 @@ public class FundingService extends BaseService {
     public DataCollectionResponse<FundingData> getByCategoryAndState(GetFundingByCategoryAndStateRequest dto)  {
         return tx.execute(true, () -> {
             List<FundingData> dtos = new ArrayList<>();
-            List<Funding> fundingList;
-            List<Category> categoryList;
-            try {
-                fundingList = fundingRepository.findByState(dto.getFundingStateList());
-                categoryList = categoryRepository.findByName(dto.getCategoryList());
-            } catch (NullPointerException e) {
-                throw new NotNullException("Filter condition has Null Value");
-            }
+            List<Funding> fundingList = dto.getFundingStateList().isEmpty() ?
+                    List.of() : fundingRepository.findByState(dto.getFundingStateList());
+            List<Category> categoryList = dto.getCategoryList().isEmpty() ?
+                    List.of() : categoryRepository.findByName(dto.getCategoryList());
+
 
             //한 펀딩이 여러 카테고리에 속하면 중복으로 조회되므로 한 번만 담는다
             Set<Long> addedFundingPKs = new HashSet<>();
