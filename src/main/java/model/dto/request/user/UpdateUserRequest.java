@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import model.dto.AccountData;
 import model.dto.BaseData;
 import model.dto.UserData;
 
@@ -12,6 +11,6 @@ import model.dto.UserData;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class UpdateUser extends BaseData {
+public class UpdateUserRequest extends BaseData {
     private UserData userData;
 }
