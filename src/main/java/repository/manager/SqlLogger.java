@@ -8,11 +8,12 @@ import java.util.logging.Logger;
 
 /**
  * 실행 SQL을 출력하는 로거 (java.util.logging)
- * db.show-sql=false 로 끌 수 있다.
+ * 기본은 꺼져 있고 db.show-sql=true 로 켤 수 있다.
+ * 문자열 파라미터에는 비밀번호, 이메일 등이 들어갈 수 있으므로 값을 출력하지 않는다.
  */
 final class SqlLogger {
     private static final Logger LOG = Logger.getLogger("fusion.sql");
-    private static final boolean ENABLED = PropertieData.getBoolean("db.show-sql", true);
+    private static final boolean ENABLED = PropertieData.getBoolean("db.show-sql", false);
 
     private SqlLogger() {
     }
@@ -29,7 +30,7 @@ final class SqlLogger {
             if (param instanceof byte[] bytes) {
                 joiner.add("<BLOB " + bytes.length + " bytes>");
             } else if (param instanceof CharSequence) {
-                joiner.add("'" + param + "'");
+                joiner.add("'***'");
             } else {
                 joiner.add(String.valueOf(param));
             }
