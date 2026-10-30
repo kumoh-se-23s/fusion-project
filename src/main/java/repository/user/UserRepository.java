@@ -1,6 +1,7 @@
 package repository.user;
 
 import model.domain.AppUser;
+import model.domain.UserRole;
 import model.dto.UserData;
 import model.dto.request.user.UpdateUserRequest;
 import repository.BaseRepositoryImpl;
@@ -29,7 +30,7 @@ public class UserRepository extends BaseRepositoryImpl<AppUser,Long> {
          }
     }
 
-    public Optional<AppUser> findByUserPk(long userPk) {
+    public Optional<AppUser> findAppUserByUserPk(long userPk) {
         return findById(userPk);
     }
 
@@ -44,10 +45,6 @@ public class UserRepository extends BaseRepositoryImpl<AppUser,Long> {
 
         Optional<AppUser> updateResult = update(userPk, updateData);
 
-        if(updateResult.isPresent()) {
-            return Optional.of(updateResult.get().getPk());
-        }
-
-        return Optional.empty();
+        return updateResult.map(AppUser::getPk);
     }
 }

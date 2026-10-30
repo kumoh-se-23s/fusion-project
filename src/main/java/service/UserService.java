@@ -1,17 +1,23 @@
 package service;
 
 import model.domain.AppUser;
+import model.domain.UserRole;
+import model.domain.UserRoleRelation;
 import model.dto.UserData;
 import model.dto.request.user.UpdateUserRequest;
 import model.dto.response.DeleteResponse;
 import model.dto.response.PKResponse;
 import model.dto.response.user.UserResponse;
+import repository.UserRoleRelationRepository;
+import repository.UserRoleRepository;
 import repository.user.UserRepository;
 
 import java.util.Optional;
 
 public class UserService {
     private UserRepository userRepository;
+    private UserRoleRepository userRoleRepository;
+    private UserRoleRelationRepository userRoleRelationRepository;
 
     public UserResponse getMyInfo(long userPk) {
         try {
@@ -39,14 +45,14 @@ public class UserService {
 
     public PKResponse updateUser(long userPk, UpdateUserRequest request) {
         try {
-            Optional<AppUser> optionalAppUser = userRepository.findByUserPk(userPk);
+            Optional<AppUser> optionalAppUser = userRepository.findAppUserByUserPk(userPk);
 
-            if(optionalAppUser.isPresent()) {
+            if (optionalAppUser.isPresent()) {
                 UserData userData = request.getUserData();
 
                 Optional<Long> updateResult = userRepository.updateUser(userPk, userData);
 
-                if(updateResult.isPresent()) {
+                if (updateResult.isPresent()) {
                     return new PKResponse(updateResult.get());
                 } else {
                     throw
@@ -59,6 +65,27 @@ public class UserService {
     }
 
     public DeleteResponse deleteUser(long userPk) {
-        return new DeleteResponse(userRepository.delete(userPk));
+        try {
+            return new DeleteResponse(userRepository.delete(userPk));
+        } catch (Exception e) {
+
+        }
+    }
+
+    public UserRole getRoles(long userPk) {
+        try {
+            Optional<UserRoleRelation> found = userRoleRelationRepository.findUserRoleByUserPk(userPk);
+
+            if (found.isPresent()) {
+                UserRoleRelation relation = found.get();
+
+                return relation.getRole();
+
+            } else {
+
+            }
+        } catch () {
+
+        }
     }
 }
