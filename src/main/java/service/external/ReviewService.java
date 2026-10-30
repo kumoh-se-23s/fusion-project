@@ -44,7 +44,7 @@ public class ReviewService extends BaseService {
                     break;
                 }
             }
-            //완료되지 않은 펀딩이거나, 이 펀딩의 리워드를 배송받은 적이 없으면 오류 발생
+
             if (reward.getFunding().getState() != FundingState.COMPLETED || !isDelivered) {
                 throw new NotCompleteFundingException();
             }
@@ -66,7 +66,7 @@ public class ReviewService extends BaseService {
             } catch (NullPointerException e) {
                 throw new NotNullException("Review has Null Value");
             }
-            //build()를 통과했으므로 rating은 null이 아님
+
             if (review.getRating().compareTo(MIN_RATING) < 0 || review.getRating().compareTo(MAX_RATING) > 0) {
                 throw new OutOfRangeException("Rating must be between " + MIN_RATING + " and " + MAX_RATING);
             }
