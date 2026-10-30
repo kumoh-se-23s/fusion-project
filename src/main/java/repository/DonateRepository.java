@@ -16,11 +16,11 @@ public class DonateRepository extends BaseRepositoryImpl<Donate, Long>{
                 .build()
         );
     }
-    public List<Donate> findByUserAndRewardPK(AppUser user, List<Reward> rewards) {
+    public List<Donate> findByUserAndReward(AppUser user, Reward reward) {
         return find(Filter.builder()
                 .conditions(Map.of(
                         "user", user,
-                        "reward", rewards))
+                        "reward", reward))
                 .build()
         );
 

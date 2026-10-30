@@ -3,14 +3,15 @@ package repository;
 import model.domain.AppUser;
 import model.domain.Funding;
 import model.domain.Review;
+import model.domain.Reward;
 
 import java.util.Map;
 
 public class ReviewRepository extends BaseRepositoryImpl<Review, Long>{
-    public boolean isExistUserAndFunding(AppUser user, Funding funding ){
+    public boolean isExistUserAndReward(AppUser user, Reward reward ){
         return isExist(Filter.builder()
                 .conditions(Map.of(
-                        "funding", funding,
+                        "reward", reward,
                         "user", user))
                 .build()
         );

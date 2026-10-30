@@ -11,7 +11,6 @@ public class RewardRepository extends BaseRepositoryImpl<Reward, Long> {
         return find(
                     Filter.builder()
                             .conditions(Map.of("funding", funding))
-                            .sort(Sort.by(Order.asc("name")))
                             .build()
         );
     }
