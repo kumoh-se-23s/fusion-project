@@ -2,12 +2,13 @@ package repository;
 
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Filter;
 
 import annotation.BindDomain;
 import model.domain.Reward;
 import model.dto.RewardData;
-import model.dto.Serializer;
-import repository.Filter;
+
+
 
 
 public class RewardRepository extends BaseRepositoryImpl<Reward, Long> {
@@ -30,11 +31,11 @@ public class RewardRepository extends BaseRepositoryImpl<Reward, Long> {
 
 
     }
-
+/*
     public List<Reward> findByMakerPk(Long fundingPk) {
-        /*
+
             유저(제작자)>제작자가 만든 펀딩> 해당 펀딩 리워드
-        */
+
 
         return find(//해당 PK로 찾은 리워드 객체들의 목록 반환되는 것
                 Filter.builder()
@@ -45,9 +46,9 @@ public class RewardRepository extends BaseRepositoryImpl<Reward, Long> {
     }
 
     public List<Reward> findByDonate(Long userPk) {//본인이 후원한 펀딩의 리워드
-        /*
+
             본인후운내역>후원에 있는 리워드 외래키 사용
-         */
+
         return find(//해당 PK로 찾은 리워드 객체들의 목록 반환되는 것
                 Filter.builder()
                         .conditions(Map.of("funding", userPk))//펀딩 pk로 필터링
@@ -58,6 +59,6 @@ public class RewardRepository extends BaseRepositoryImpl<Reward, Long> {
 
     }
 
-
+*/
 }
 
