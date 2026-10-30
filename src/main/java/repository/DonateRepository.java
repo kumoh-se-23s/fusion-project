@@ -8,7 +8,7 @@ import model.dto.RewardData;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.logging.Filter;
+
 
 public class DonateRepository extends BaseRepositoryImpl<Donate, Long> {
 
@@ -23,6 +23,7 @@ public class DonateRepository extends BaseRepositoryImpl<Donate, Long> {
     }
 
     public boolean existsByUserPkAndFundingPk(Long userPk, Long fundingPk) {//하나의 펀딩에는 후원 한 번만 가능
+        //이미 구현하심
         List<Donate> donateList = findByUserPk(userPk);
 
         for (Donate donate : donateList) {

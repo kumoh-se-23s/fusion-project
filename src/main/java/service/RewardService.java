@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import model.domain.Donate;
 import model.domain.Funding;
 import model.domain.Reward;
-import model.dto.FundingData;
 import model.dto.RewardData;
 import model.dto.request.reward.CreateRewardDataRequest;
 import repository.DonateRepository;
@@ -23,15 +22,15 @@ public class RewardService {
     private final UserRepository userRepository;
     private final RewardRepository rewardRepository;
 
-/*
+ //펀딩에 리워드 등록
     public void createReward(CreateRewardDataRequest request){
         //(리워드가 속할 펀딩의 Pk, 사용자가 입력한 리워드 정보)
         Long fundingPk = request.getFundingFk();
 
         Funding funding =  fundingRepository.findById(fundingPk).
-                orElseThrow(()-> new IllegalArgumentException("펀딩을 찾을 수 없습니다."));
+                orElseThrow(()-> new IllegalArgumentException("펀딩을 찾을 수 없습니다."));//따로 만들어 놓은 예외처리 쓰기
 
-        Reward reward = Reward.builder()
+        Reward reward = Reward.builder()//나중에 바뀜 Serializer
                 .funding(funding)//펀딩에 유저pk가 있으니 여기서 안 받아도 되는 듯
                 .name(request.getRewardName())
                 .text(request.getRewardText())
@@ -42,7 +41,7 @@ public class RewardService {
                 //남아있는 리워드 수량은 입력x
         rewardRepository.create(reward);
     }
-*/
+
 
 
     public List<RewardData> getRewardByFunding(Long fundingPk){
@@ -77,7 +76,7 @@ public class RewardService {
     //유저>후원한 펀딩>리워드
     public List<List<RewardData>> getRewardfindByMaker(Long makerPk){
         List<Funding> fundingList = fundingRepository.findByUserPk(makerPk);//fundingRepository의 메서드 가져와서 사용
-
+        //Map반환or Response만들기 혹은..Data이중으로 감싸기?
         List<List<RewardData>> dtoList = new ArrayList<>();
         for(int i = 0; i < fundingList.size(); i++){
             Funding funding = fundingList.get(i);
@@ -87,7 +86,7 @@ public class RewardService {
         return dtoList;
     }
 
-    private RewardData toRewardData(Reward reward){
+    private RewardData toRewardData(Reward reward){//Serializer로 변환
         return RewardData.builder()
                 .rewardPk(reward.getPk())
                 .name(reward.getName())
