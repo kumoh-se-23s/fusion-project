@@ -3,6 +3,7 @@ package model.dto;
 import annotation.BindDomain;
 import annotation.DataField;
 import lombok.*;
+import model.domain.Review;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -11,7 +12,7 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@BindDomain(values = ReviewData.class)
+@BindDomain(values = Review.class)
 public class ReviewData extends BaseData {
     private Long pk;
 

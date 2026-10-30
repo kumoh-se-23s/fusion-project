@@ -20,7 +20,7 @@ public class FundingRepository extends BaseRepositoryImpl<Funding, Long> {
     }
     public List<Funding> findAllOrderByCreatedAt() {
         return find(Filter.builder()
-                .sort(Sort.by(Order.desc("created_at")))
+                .sort(Sort.by(Order.desc("createdAt")))
                 .build()
         );
     }

@@ -19,5 +19,6 @@ public class DenyFundingData extends BaseData {
     @DataField(name = "funding.pk")
     private Long fundingPK;
 
+    @DataField(name = "reason")
     private String denyReason;
 }
