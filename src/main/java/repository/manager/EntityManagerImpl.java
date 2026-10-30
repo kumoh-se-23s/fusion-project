@@ -48,10 +48,6 @@ public class EntityManagerImpl implements EntityManager {
     }
 
     @Override
-    public void merge(Object entity) {
-    }
-
-    @Override
     public <T> T find(Class<T> entityClass, Object primaryKey) {
         return findWithLock(entityClass, primaryKey, LockModeType.NONE);
     }
