@@ -19,10 +19,7 @@ import model.dto.response.reward.RewardResponse;
 import repository.*;
 import service.BaseService;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @RequiredArgsConstructor
 public class FundingService extends BaseService {
@@ -42,20 +39,18 @@ public class FundingService extends BaseService {
             List<Reward> rewardList = rewardRepository.findByFunding(funding);
             List<Donate> donateList = donateRepository.findByRewards(rewardList);
             List<RewardResponse> rewardResponses = new ArrayList<>();
-
+            Map<Long, List<DonateUserAddressResponse>> rewardPKSet = new HashMap<>();
+            for (Donate donate : donateList) {
+                DonateUserAddressResponse donateUserAddressResponse =
+                    DonateUserAddressResponse.builder()
+                        .donatePK(donate.getPk())
+                        .userPK(donate.getUser().getPk())
+                        .address(donate.getUser().getAddress())
+                        .build();
+                rewardPKSet.computeIfAbsent(donate.getReward().getPk(), k -> new ArrayList<>())
+                        .add(donateUserAddressResponse);
+            }
             for (Reward reward : rewardList) {
-                List<DonateUserAddressResponse> donateUserAddressResponses = new ArrayList<>();
-                for (Donate donate : donateList) {
-                    if (donate.getReward().getPk().equals(reward.getPk())) {
-                        donateUserAddressResponses.add(
-                            DonateUserAddressResponse.builder()
-                                .donatePK(donate.getPk())
-                                .userPK(donate.getUser().getPk())
-                                .address(donate.getUser().getAddress())
-                                .build()
-                        );
-                    }
-                }
                 rewardResponses.add(
                         RewardResponse.builder()
                             .rewardPk(reward.getPk())
@@ -64,7 +59,7 @@ public class FundingService extends BaseService {
                             .remainQuantity(reward.getRemainQuantity())
                             .requiredAmount(reward.getRequiredAmount())
                             .provideDate(reward.getProvideDate())
-                            .donateUserInfo(donateUserAddressResponses)
+                            .donateUserInfo(rewardPKSet.getOrDefault(reward.getPk(), List.of()))
                             .build()
                 );
             }
@@ -84,6 +79,8 @@ public class FundingService extends BaseService {
             AppUser maker = userRepository.findByPK(makerPK)
                     .orElseThrow(NotFoundException::new);
 
+
+
             Funding funding;
             try {
                 funding = Funding.builder()
@@ -99,20 +96,19 @@ public class FundingService extends BaseService {
             } catch (NullPointerException e) {
                 throw new NotNullException("Funding has Null Value");
             }
-
+            //두 값이 null이 아닌지 먼저 검사하고 판단
             if (funding.getPurposeAmount().signum() <= 0) {
                 throw new OutOfRangeException("purposeAmount must be greater than 0");
             }
-            if (!funding.getEndDate().isAfter(funding.getStartDate())) {
+            if (funding.getEndDate().isAfter(funding.getStartDate())) {
                 throw new OutOfRangeException("endDate must be after startDate");
             }
 
             Funding resultFunding = fundingRepository.create(funding);
 
             //카테고리를 지정하지 않으면 카테고리 없이 등록
-            List<Category> categoryList = request.getCategoryPKs() == null
-                    ? List.of()
-                    : categoryRepository.findByPKs(request.getCategoryPKs());
+            List<Category> categoryList = (request.getCategoryPKs() == null) ?
+                    List.of() : categoryRepository.findByPKs(request.getCategoryPKs());
 
             List<PKResponse> fundingCategoryDTOs = new ArrayList<>();
             for (Category category : categoryList) {
@@ -133,7 +129,7 @@ public class FundingService extends BaseService {
         });
     }
 
-    //6. 전체 펀딩 조회 -> sort 추가
+    //6. 전체 펀딩 조회
     public DataCollectionResponse<FundingData> getAllFunding() {
         return tx.execute(true, () -> {
             List<FundingData> dtos = new ArrayList<>();
@@ -177,14 +173,14 @@ public class FundingService extends BaseService {
 
 
             //한 펀딩이 여러 카테고리에 속하면 중복으로 조회되므로 한 번만 담는다
-            Set<Long> addedFundingPKs = new HashSet<>();
+            Set<Long> fundingPKSet = new HashSet<>();
 
             for (FundingCategory fundingCategory :
                     fundingCategoryRepository.findByFundingAndCategoryPKs(
                             fundingList, categoryList
                     )
             ) {
-                if (!addedFundingPKs.add(fundingCategory.getFunding().getPk())) {
+                if (!fundingPKSet.add(fundingCategory.getFunding().getPk())) {
                     continue;
                 }
 
