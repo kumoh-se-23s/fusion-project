@@ -1,27 +1,26 @@
 package model.dto.response.reward;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import annotation.BindDomain;
+import annotation.DataField;
+import lombok.*;
+import model.domain.Reward;
 import model.dto.response.Response;
-import model.dto.response.donate.DonateUserAddressResponse;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 
-@Builder
 @Getter
-@AllArgsConstructor
+@Builder
 @NoArgsConstructor
-public class RewardResponse extends Response {
+@AllArgsConstructor
+@BindDomain(values = Reward.class)
+public class RewardInfoResponse extends Response {
+    @DataField(name = "pk")
     private Long rewardPk;
+
     private String name;
     private BigDecimal requiredAmount;
     private Long maxQuantity;
     private Long remainQuantity;
     private LocalDateTime provideDate;
-    private List<DonateUserAddressResponse> donateUserInfo;
-
 }

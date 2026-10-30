@@ -5,17 +5,20 @@ import exception.NotFoundException;
 import exception.NotNullException;
 import exception.OutOfRangeException;
 import lombok.RequiredArgsConstructor;
+import model.Serializer;
 import model.domain.*;
 import model.dto.FundingData;
-import model.dto.request.funding.CreateFundingRequest;
+import model.dto.request.funding.CreateFundingByCategoryRequest;
 import model.dto.request.funding.GetFundingByCategoryAndStateRequest;
 import model.dto.response.DataCollectionResponse;
 import model.dto.response.PKResponse;
-import model.dto.response.donate.DonateUserAddressResponse;
+import model.dto.response.funding.FundingInfoResponse;
+import model.dto.response.reward.RewardInfoResponse;
+import model.dto.response.reward.RewardUserResponse;
 import model.dto.response.funding.CreateFundingByCategoryResponse;
 import model.dto.response.funding.FundingRewardResponse;
 import model.dto.response.fundingCategory.BindCategoryResponse;
-import model.dto.response.reward.RewardResponse;
+import model.dto.response.user.UserAddressResponse;
 import repository.*;
 import service.BaseService;
 
@@ -38,61 +41,44 @@ public class FundingService extends BaseService {
 
             List<Reward> rewardList = rewardRepository.findByFunding(funding);
             List<Donate> donateList = donateRepository.findByRewards(rewardList);
-            List<RewardResponse> rewardResponses = new ArrayList<>();
-            Map<Long, List<DonateUserAddressResponse>> rewardPKSet = new HashMap<>();
+            List<RewardUserResponse> rewardUserResponses = new ArrayList<>();
+            Map<Long, List<UserAddressResponse>> rewardPKSet = new HashMap<>();
+
             for (Donate donate : donateList) {
-                DonateUserAddressResponse donateUserAddressResponse =
-                    DonateUserAddressResponse.builder()
-                        .donatePK(donate.getPk())
-                        .userPK(donate.getUser().getPk())
-                        .address(donate.getUser().getAddress())
-                        .build();
+                UserAddressResponse UserAddressDTO =
+                    Serializer.toData(donate.getUser(), UserAddressResponse.class);
+
                 rewardPKSet.computeIfAbsent(donate.getReward().getPk(), k -> new ArrayList<>())
-                        .add(donateUserAddressResponse);
+                    .add(UserAddressDTO);
             }
             for (Reward reward : rewardList) {
-                rewardResponses.add(
-                        RewardResponse.builder()
-                            .rewardPk(reward.getPk())
-                            .name(reward.getName())
-                            .maxQuantity(reward.getMaxQuantity())
-                            .remainQuantity(reward.getRemainQuantity())
-                            .requiredAmount(reward.getRequiredAmount())
-                            .provideDate(reward.getProvideDate())
-                            .donateUserInfo(rewardPKSet.getOrDefault(reward.getPk(), List.of()))
+                rewardUserResponses.add(
+                        RewardUserResponse.builder()
+                            .rewardInfoResponse(Serializer.toData(reward, RewardInfoResponse.class))
+                            .userAddressInfo(rewardPKSet.getOrDefault(reward.getPk(), List.of()))
                             .build()
                 );
             }
             return FundingRewardResponse.builder()
-                .pk(funding.getPk())
-                .title(funding.getTitle())
-                .purposeAmount(funding.getPurposeAmount())
-                .donateAmount(funding.getDonateAmount())
-                .rewards(rewardResponses)
+                .fundingInfo(Serializer.toData(funding, FundingInfoResponse.class))
+                .rewards(rewardUserResponses)
                 .build();
         });
     }
 
     //2. 프로젝트 기본 정보 등록
-    public CreateFundingByCategoryResponse createFunding(Long makerPK, CreateFundingRequest request) {
+    public CreateFundingByCategoryResponse createFunding(Long makerPK, CreateFundingByCategoryRequest request) {
         return tx.execute(false, () -> {
             AppUser maker = userRepository.findByPK(makerPK)
                     .orElseThrow(NotFoundException::new);
 
-
-
             Funding funding;
             try {
-                funding = Funding.builder()
-                        .maker(maker)
-                        .startDate(request.getStartDate())
-                        .endDate(request.getEndDate())
-                        .purposeAmount(request.getPurposeAmount())
-                        .title(request.getTitle())
-                        .text(request.getText())
-                        .imgFile(request.getImgFile())
-                        .state(FundingState.JUST_USER_INPUT)
-                        .build();
+                funding = Serializer.toDomain(request, Funding.class);
+                funding.toBuilder()
+                    .maker(maker)
+                    .state(FundingState.JUST_USER_INPUT)
+                    .build();
             } catch (NullPointerException e) {
                 throw new NotNullException("Funding has Null Value");
             }
@@ -113,13 +99,14 @@ public class FundingService extends BaseService {
             List<PKResponse> fundingCategoryDTOs = new ArrayList<>();
             for (Category category : categoryList) {
                 FundingCategory fundingCategory = FundingCategory.builder()
-                        .category(category)
-                        .funding(resultFunding)
-                        .build();
+                    .category(category)
+                    .funding(resultFunding)
+                    .build();
+
                 fundingCategoryDTOs.add(
-                        new PKResponse(
-                                fundingCategoryRepository.create(fundingCategory).getPk()
-                        )
+                    new PKResponse(
+                        fundingCategoryRepository.create(fundingCategory).getPk()
+                    )
                 );
             }
             return CreateFundingByCategoryResponse.builder()
@@ -134,23 +121,7 @@ public class FundingService extends BaseService {
         return tx.execute(true, () -> {
             List<FundingData> dtos = new ArrayList<>();
             for (Funding funding : fundingRepository.findAll()) {
-                FundingData dto = FundingData.builder()
-                        .pk(funding.getPk())
-                        .makerPK(funding.getMaker().getPk())
-                        .title(funding.getTitle())
-                        .text(funding.getText())
-                        .createdAt(funding.getCreatedAt())
-                        .updatedAt(funding.getUpdatedAt())
-                        .purposeAmount(funding.getPurposeAmount())
-                        .donateAmount(funding.getDonateAmount())
-                        .startDate(funding.getStartDate())
-                        .endDate(funding.getEndDate())
-                        .state(funding.getState())
-                        .likeCount(funding.getLikeCount())
-                        .dislikeCount(funding.getDislikeCount())
-                        .imgFile(funding.getImgFile())
-                        .build();
-                dtos.add(dto);
+                dtos.add(Serializer.toData(funding, FundingData.class));
             }
 
             return DataCollectionResponse.<FundingData>builder()
@@ -183,25 +154,7 @@ public class FundingService extends BaseService {
                 if (!fundingPKSet.add(fundingCategory.getFunding().getPk())) {
                     continue;
                 }
-
-                FundingData fundingDTO = FundingData.builder()
-                        .pk(fundingCategory.getFunding().getPk())
-                        .makerPK(fundingCategory.getFunding().getMaker().getPk())
-                        .title(fundingCategory.getFunding().getTitle())
-                        .text(fundingCategory.getFunding().getText())
-                        .createdAt(fundingCategory.getFunding().getCreatedAt())
-                        .updatedAt(fundingCategory.getFunding().getUpdatedAt())
-                        .purposeAmount(fundingCategory.getFunding().getPurposeAmount())
-                        .donateAmount(fundingCategory.getFunding().getDonateAmount())
-                        .startDate(fundingCategory.getFunding().getStartDate())
-                        .endDate(fundingCategory.getFunding().getEndDate())
-                        .state(fundingCategory.getFunding().getState())
-                        .likeCount(fundingCategory.getFunding().getLikeCount())
-                        .dislikeCount(fundingCategory.getFunding().getDislikeCount())
-                        .imgFile(fundingCategory.getFunding().getImgFile())
-                        .build();
-
-                dtos.add(fundingDTO);
+                dtos.add(Serializer.toData(fundingCategory.getFunding(), FundingData.class));
             }
             return DataCollectionResponse.<FundingData>builder()
                     .datas(dtos)

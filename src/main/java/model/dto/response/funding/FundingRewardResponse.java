@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import model.dto.response.Response;
-import model.dto.response.reward.RewardResponse;
+import model.dto.response.reward.RewardUserResponse;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -19,9 +19,6 @@ import java.util.List;
 @AllArgsConstructor
 public class FundingRewardResponse extends Response {
     //후원 1건 = 배송 1건
-    private Long pk;
-    private String title;
-    private BigDecimal purposeAmount;
-    private BigDecimal donateAmount;
-    private List<RewardResponse> rewards;
+    private FundingInfoResponse fundingInfo;
+    private List<RewardUserResponse> rewards;
 }

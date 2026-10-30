@@ -3,6 +3,7 @@ package service.internal;
 import exception.NotFoundException;
 import exception.NotNullException;
 import lombok.RequiredArgsConstructor;
+import model.Serializer;
 import model.domain.Category;
 import model.dto.CategoryData;
 import model.dto.request.PKQueryRequest;
@@ -20,11 +21,9 @@ public class CategoryService extends BaseService {
     public PKResponse createCategory(CreateCategoryRequest dto) {
         return tx.execute(() -> {
             Category category;
+
             try {
-                category = new Category().toBuilder()
-                        .name(dto.getName())
-                        .description(dto.getDescription())
-                        .build();
+                category = Serializer.toDomain(dto, Category.class);
             } catch (NullPointerException e) {
                 throw new NotNullException("Category has Null Value");
             }
@@ -35,16 +34,12 @@ public class CategoryService extends BaseService {
 
     public SingleDataResponse<CategoryData> readCategory(PKQueryRequest request) {
         return tx.execute(true, () -> {
+
             Category category = categoryRepository.findByPK(request.getPk())
                     .orElseThrow(NotFoundException::new);
 
-            CategoryData dto = CategoryData.builder()
-                    .pk(category.getPk())
-                    .name(category.getName())
-                    .description(category.getDescription())
-                    .build();
+            return new SingleDataResponse<>(Serializer.toData(category, CategoryData.class));
 
-            return new SingleDataResponse<>(dto);
         });
     }
 

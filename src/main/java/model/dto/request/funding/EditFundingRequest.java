@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import model.dto.request.Request;
+import model.dto.request.UpdateRequest;
 
 import java.util.List;
 
@@ -12,7 +12,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class EditFundingRequest extends Request {
+public class EditFundingRequest extends UpdateRequest {
     private String title;
 
     private String text;

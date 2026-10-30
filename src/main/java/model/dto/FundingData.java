@@ -1,5 +1,6 @@
 package model.dto;
 
+import annotation.DataField;
 import constant.FundingState;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,6 +17,7 @@ import java.time.LocalDateTime;
 public class FundingData extends BaseData {
     private Long pk;
 
+    @DataField(name = "maker.pk")
     private Long makerPK;
 
     private LocalDateTime createdAt;

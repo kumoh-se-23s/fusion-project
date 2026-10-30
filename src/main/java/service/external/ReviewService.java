@@ -7,6 +7,7 @@ import exception.NotFoundException;
 import exception.NotNullException;
 import exception.OutOfRangeException;
 import lombok.RequiredArgsConstructor;
+import model.Serializer;
 import model.domain.*;
 import model.dto.request.review.CreateReviewRequest;
 import model.dto.response.PKResponse;
@@ -55,13 +56,10 @@ public class ReviewService extends BaseService {
 
             Review review;
             try {
-                review = Review.builder()
-                    .reward(reward)
-                    .imgFile(dto.getImgFile())
-                    .rating(dto.getRating())
-                    .text(dto.getText())
-                    .user(user)
-                    .build();
+                review = Serializer.toDomain(dto, Review.class);
+                review.toBuilder()
+                        .reward(reward)
+                        .build();
 
             } catch (NullPointerException e) {
                 throw new NotNullException("Review has Null Value");
