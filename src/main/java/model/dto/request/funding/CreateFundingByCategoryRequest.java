@@ -13,6 +13,6 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class CreateFundingByCategoryRequest extends Request {
-    private CreateFundingByCategoryRequest createFundingRequest;
+    private CreateFundingRequest createFundingRequest;
     private List<Long> categoryPKs;
 }
