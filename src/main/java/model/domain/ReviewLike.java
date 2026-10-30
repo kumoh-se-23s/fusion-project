@@ -1,9 +1,6 @@
 package model.domain;
 
-import annotation.Column;
-import annotation.JoinColumn;
-import annotation.PK;
-import annotation.Table;
+import annotation.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 

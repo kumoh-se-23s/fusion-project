@@ -15,6 +15,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AdminCreateFundingRequest extends Request {
+    private Long makerPK;
 
     private CreateFundingRequest request;
 
