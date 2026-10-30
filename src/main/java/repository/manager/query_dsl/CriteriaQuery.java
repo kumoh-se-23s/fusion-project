@@ -27,11 +27,14 @@ public class CriteriaQuery<T> {
         this.resultClass = resultClass;
     }
 
+    //값이 null이면 IS NULL 조건. 조건을 빼면 전체 행이 조회된다
     public CriteriaQuery<T> whereEqual(String column, Object value) {
-        if (value != null) {
-            predicates.add(column + " = ?");
-            parameters.add(value);
+        if (value == null) {
+            predicates.add(column + " IS NULL");
+            return this;
         }
+        predicates.add(column + " = ?");
+        parameters.add(value);
         return this;
     }
 
