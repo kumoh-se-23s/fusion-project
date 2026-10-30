@@ -20,7 +20,7 @@ public abstract class AppException extends RuntimeException {
                 + "}";
     }
 
-    private static String quote(String value) {
+    protected static String quote(String value) {
         if (value == null) {
             return "null";
         }

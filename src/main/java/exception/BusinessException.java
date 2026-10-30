@@ -7,6 +7,16 @@ import lombok.Getter;
 public abstract class BusinessException extends AppException {
     private static final int DEFAULT_STATE_CODE = 510;
 
+    @Override
+    public String toJsonString() {
+        return "{"
+                + "\"exception\":" + quote(getClass().getName()) + ","
+                + "\"message\":" + quote(getMessage()) + ","
+                + "\"cause\":" + quote(getCause() == null ? null : getCause().toString())
+                + "\"stateCode\":" + DEFAULT_STATE_CODE
+                + "}";
+    }
+
     private final int stateCode;
 
     public BusinessException(String message) {
