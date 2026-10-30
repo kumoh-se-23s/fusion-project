@@ -20,8 +20,8 @@ public class Review extends BaseDomain {
     private Long pk;
 
     @NonNull
-    @JoinColumn(name = "funding_fk", nullable = false, uniqueGroup = "review")
-    private Funding funding;
+    @JoinColumn(name = "reward_fk", nullable = false, uniqueGroup = "review")
+    private Reward reward;
 
     @NonNull
     @JoinColumn(name = "user_fk", nullable = false, uniqueGroup = "review")

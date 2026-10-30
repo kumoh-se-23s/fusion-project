@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CreateReviewRequest extends Request {
-    private Long fundingPK;
+    private Long rewardPK;
 
     private String text;
 

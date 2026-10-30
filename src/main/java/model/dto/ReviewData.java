@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 public class ReviewData extends BaseData {
     private Long pk;
 
-    private Long fundingPK;
+    private Long rewardPK;
 
     private Long userPK;
 
