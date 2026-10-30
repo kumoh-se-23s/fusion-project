@@ -35,7 +35,7 @@ public class CategoryService extends BaseService {
 
     public SingleDataResponse<CategoryData> readCategory(PKQueryRequest request) {
         return tx.execute(true, () -> {
-            Category category = categoryRepository.findById(request.getPk())
+            Category category = categoryRepository.findByPK(request.getPk())
                     .orElseThrow(NotFoundException::new);
 
             CategoryData dto = CategoryData.builder()

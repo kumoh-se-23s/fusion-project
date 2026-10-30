@@ -13,14 +13,16 @@ import service.BaseService;
 public class FundingService extends BaseService {
     private final FundingRepository fundingRepository;
 
-    //4. 메이커의 펀딩 프로젝트 승인
+    //4. 관리자가 메이커의 펀딩 프로젝트 승인
     public PKResponse updateFundingApprove(Long fundingPK) {
         return tx.execute(false, () -> {
-            Funding funding = fundingRepository.findById(fundingPK)
+            Funding funding = fundingRepository.findByPK(fundingPK)
                     .orElseThrow(NotFoundException::new);
+
             if (funding.getState() != FundingState.PENDING_APPROVAL) {
                 throw new NotPendingFundingException();
             }
+
             Funding approved = fundingRepository.updateByApprove(funding.getPk())
                     .orElseThrow(NotFoundException::new);
             return new PKResponse(approved.getPk());
