@@ -41,7 +41,7 @@ public class AppConfig {
     private final service.internal.FundingService adminFundingService =
             new service.internal.FundingService(fundingRepository);
     private final ReviewService reviewService = new ReviewService(
-            reviewRepository, fundingRepository, userRepository, donateRepository, rewardRepository);
+            reviewRepository, userRepository, donateRepository, rewardRepository);
 
     public AppConfig() {
         //db.ddl-auto 설정에 따라 도메인 기준으로 테이블 생성
