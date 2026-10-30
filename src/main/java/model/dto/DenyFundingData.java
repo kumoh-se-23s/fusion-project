@@ -1,18 +1,23 @@
 package model.dto;
 
+import annotation.BindDomain;
+import annotation.DataField;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import model.domain.DenyFunding;
 
 @Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@BindDomain(values = DenyFunding.class)
 public class DenyFundingData extends BaseData {
     private Long pk;
 
-    private Long categoryPK;
+    @DataField(name = "funding.pk")
+    private Long fundingPK;
 
     private String denyReason;
 }

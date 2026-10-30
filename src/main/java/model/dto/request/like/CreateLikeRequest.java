@@ -1,5 +1,6 @@
 package model.dto.request.like;
 
+import annotation.BindDomain;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

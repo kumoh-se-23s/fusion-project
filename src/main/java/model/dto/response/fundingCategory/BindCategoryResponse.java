@@ -1,9 +1,10 @@
-package model.dto.response.category;
+package model.dto.response.fundingCategory;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import model.dto.response.PKResponse;
 import model.dto.response.Response;
 
 import java.util.List;
@@ -13,5 +14,5 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class BindCategoryResponse extends Response {
-    private List<Long> fundingCategoryPKs;
+    private List<PKResponse> fundingCategoryPKs;
 }

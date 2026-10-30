@@ -5,12 +5,13 @@ import annotation.JoinColumn;
 import annotation.PK;
 import annotation.Table;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import constant.FundingState;
 
 @Table(name = "FUNDING")
-@Builder(toBuilder = true)
+@SuperBuilder(toBuilder = true)
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -20,54 +21,57 @@ public class Funding extends BaseDomain {
     private Long pk;
 
     @NonNull
-    @JoinColumn(name = "maker_fk")
+    @JoinColumn(name = "maker_fk", nullable = false)
     private AppUser maker;
 
     @Builder.Default
     @NonNull
-    @Column(name = "like_count")
+    @Column(name = "like_count", nullable = false)
     private Long likeCount = 0L;
 
     @Builder.Default
     @NonNull
-    @Column(name = "dislike_count")
+    @Column(name = "dislike_count", nullable = false)
     private Long dislikeCount = 0L;
 
     @Builder.Default
     @NonNull
-    @Column(name = "created_at")
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt  = LocalDateTime.now();
 
     @Builder.Default
     @NonNull
-    @Column(name = "updated_at")
+    @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt = LocalDateTime.now();
 
     @Builder.Default
     @NonNull
-    @Column(name = "start_date")
+    @Column(name = "start_date", nullable = false)
     private LocalDateTime startDate = LocalDateTime.now();
 
     @NonNull
-    @Column(name = "end_date")
+    @Column(name = "end_date", nullable = false)
     private LocalDateTime endDate;
 
     @Builder.Default
     @NonNull
-    @Column(name = "purpose_amount")
+    @Column(name = "purpose_amount", nullable = false)
     private BigDecimal purposeAmount = BigDecimal.ZERO;
 
     @Builder.Default
     @NonNull
-    @Column(name = "donate_amount")
+    @Column(name = "donate_amount", nullable = false)
     private BigDecimal donateAmount = BigDecimal.ZERO;
 
     @Builder.Default
     @NonNull
-    @Column(name = "funding_state")
-    private FundingState state = FundingState.PENDING_APPROVAL;
+    @Column(name = "funding_state", nullable = false, length = 30)
+    private FundingState state = FundingState.JUST_USER_INPUT;
 
-    @Column(name = "funding_text")
+    @Column(name = "funding_title")
+    private String title;
+
+    @Column(name = "funding_text", columnDefinition = "TEXT")
     private String text;
 
     @Column(name = "funding_img_file")

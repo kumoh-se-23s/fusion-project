@@ -5,9 +5,10 @@ import annotation.JoinColumn;
 import annotation.PK;
 import annotation.Table;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Table(name = "FUNDING_LIKE")
-@Builder(toBuilder = true)
+@SuperBuilder(toBuilder = true)
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,15 +18,15 @@ public class FundingLike extends BaseDomain {
     private Long pk;
 
     @NonNull
-    @JoinColumn(name = "funding_fk")
+    @JoinColumn(name = "funding_fk", nullable = false, uniqueGroup = "like")
     private Funding funding;
 
     @NonNull
-    @JoinColumn(name = "user_fk")
+    @JoinColumn(name = "user_fk", nullable = false, uniqueGroup = "like")
     private AppUser user;
 
     @Builder.Default
     @NonNull
-    @Column(name = "like_type")
+    @Column(name = "like_type", nullable = false)
     private Boolean likeType = true;
 }

@@ -5,9 +5,10 @@ import annotation.JoinColumn;
 import annotation.PK;
 import annotation.Table;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Table(name = "USER_ROLE_RELATION")
-@Builder(toBuilder = true)
+@SuperBuilder(toBuilder = true)
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,10 +18,10 @@ public class UserRoleRelation extends BaseDomain {
     private Long pk;
 
     @NonNull
-    @JoinColumn(name = "role_fk")
+    @JoinColumn(name = "role_fk", nullable = false, uniqueGroup = "user_role")
     private UserRole role;
 
     @NonNull
-    @JoinColumn(name = "user_fk")
+    @JoinColumn(name = "user_fk", nullable = false, uniqueGroup = "user_role")
     private AppUser user;
 }

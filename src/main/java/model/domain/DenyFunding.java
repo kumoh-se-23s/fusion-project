@@ -5,9 +5,10 @@ import annotation.JoinColumn;
 import annotation.PK;
 import annotation.Table;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Table(name = "DENY_FUNDING")
-@Builder(toBuilder = true)
+@SuperBuilder(toBuilder = true)
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,10 +18,10 @@ public class DenyFunding extends BaseDomain {
     private Long pk;
 
     @NonNull
-    @JoinColumn(name = "funding_fk")
+    @JoinColumn(name = "funding_fk", nullable = false)
     private Funding funding;
 
     @NonNull
-    @Column(name = "deny_reason")
+    @Column(name = "deny_reason", nullable = false, length = 500)
     private String reason;
 }
