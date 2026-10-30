@@ -1,6 +1,9 @@
 package constant;
 
 public enum FundingState {
+    //펀딩 생성만 됨
+    JUST_USER_INPUT,
+
     //승인 대기
     PENDING_APPROVAL,
 
