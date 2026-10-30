@@ -53,7 +53,7 @@ public abstract class BaseRepositoryImpl<T extends BaseDomain, PK> implements Ba
         return entityManager.findBy(toCriteria(null));
     }
     @Override
-    public Optional<T> findById(PK pk) {
+    public Optional<T> findByPK(PK pk) {
         return Optional.ofNullable(entityManager.find(entityClass, pk));
     }
 

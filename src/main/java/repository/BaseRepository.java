@@ -17,7 +17,7 @@ public interface BaseRepository<T extends BaseDomain, PK> {
     List<T> find(Filter filter);
 
     //Pk로 객체를 단건 조회
-    Optional<T> findById(PK pk);
+    Optional<T> findByPK(PK pk);
 
     List<T> findAll();
 
