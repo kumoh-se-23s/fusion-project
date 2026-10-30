@@ -9,6 +9,8 @@ import model.dto.response.PKResponse;
 import repository.FundingRepository;
 import service.BaseService;
 
+import java.time.LocalDateTime;
+
 @RequiredArgsConstructor
 public class FundingService extends BaseService {
     private final FundingRepository fundingRepository;
@@ -18,11 +20,12 @@ public class FundingService extends BaseService {
         return tx.execute(false, () -> {
             Funding funding = fundingRepository.findByPK(fundingPK)
                     .orElseThrow(NotFoundException::new);
-
             if (funding.getState() != FundingState.PENDING_APPROVAL) {
                 throw new NotPendingFundingException();
             }
-
+            funding.toBuilder()
+                    .updatedAt(LocalDateTime.now())
+                    .build();
             Funding approved = fundingRepository.updateByApprove(funding.getPk())
                     .orElseThrow(NotFoundException::new);
             return new PKResponse(approved.getPk());
