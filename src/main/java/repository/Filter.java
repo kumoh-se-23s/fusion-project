@@ -21,6 +21,8 @@ public class Filter {
     private Integer limit;
 
     public void and(String field, Object value) {
+        //빌더로 Map.of 같은 불변 맵이 들어올 수 있으므로 복사해서 추가
+        conditions = new HashMap<>(conditions);
         conditions.put(field, value);
     }
 }
