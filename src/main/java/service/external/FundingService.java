@@ -1,12 +1,12 @@
 package service.external;
 
+import constant.FundingState;
 import exception.NotFoundException;
 import exception.NotNullException;
 import exception.OutOfRangeException;
 import lombok.RequiredArgsConstructor;
 import model.domain.*;
 import model.dto.FundingData;
-import model.dto.request.PKQueryRequest;
 import model.dto.request.funding.CreateFundingRequest;
 import model.dto.request.funding.GetFundingByCategoryAndStateRequest;
 import model.dto.response.DataCollectionResponse;
@@ -34,9 +34,9 @@ public class FundingService extends BaseService {
     private final FundingCategoryRepository fundingCategoryRepository;
 
     //1.펀딩의 리워드 정보와 리워드별 후원자 배송지
-    public FundingRewardResponse getFundingByReward(PKQueryRequest request) {
+    public FundingRewardResponse getFundingByReward(Long fundingPK) {
         return tx.execute(true, () -> {
-            Funding funding = fundingRepository.findById(request.getPk())
+            Funding funding = fundingRepository.findByPK(fundingPK)
                     .orElseThrow(NotFoundException::new);
 
             List<Reward> rewardList = rewardRepository.findByFunding(funding);
@@ -69,7 +69,8 @@ public class FundingService extends BaseService {
                 );
             }
             return FundingRewardResponse.builder()
-                .fundingPk(funding.getPk())
+                .pk(funding.getPk())
+                .title(funding.getTitle())
                 .purposeAmount(funding.getPurposeAmount())
                 .donateAmount(funding.getDonateAmount())
                 .rewards(rewardResponses)
@@ -78,9 +79,9 @@ public class FundingService extends BaseService {
     }
 
     //2. 프로젝트 기본 정보 등록
-    public CreateFundingByCategoryResponse createFunding(CreateFundingRequest request) {
+    public CreateFundingByCategoryResponse createFunding(Long makerPK, CreateFundingRequest request) {
         return tx.execute(false, () -> {
-            AppUser maker = userRepository.findById(request.getMakerPK())
+            AppUser maker = userRepository.findByPK(makerPK)
                     .orElseThrow(NotFoundException::new);
 
             Funding funding;
@@ -90,13 +91,15 @@ public class FundingService extends BaseService {
                         .startDate(request.getStartDate())
                         .endDate(request.getEndDate())
                         .purposeAmount(request.getPurposeAmount())
+                        .title(request.getTitle())
                         .text(request.getText())
                         .imgFile(request.getImgFile())
+                        .state(FundingState.JUST_USER_INPUT)
                         .build();
             } catch (NullPointerException e) {
                 throw new NotNullException("Funding has Null Value");
             }
-            //build()를 통과했으므로 아래 값들은 null이 아님
+
             if (funding.getPurposeAmount().signum() <= 0) {
                 throw new OutOfRangeException("purposeAmount must be greater than 0");
             }
@@ -124,13 +127,13 @@ public class FundingService extends BaseService {
                 );
             }
             return CreateFundingByCategoryResponse.builder()
-                    .fundingPK(new PKResponse(resultFunding.getPk()))
+                    .pk(resultFunding.getPk())
                     .fundingCategoryPKs(new BindCategoryResponse(fundingCategoryDTOs))
                     .build();
         });
     }
 
-    //6. 전체 펀딩 조회
+    //6. 전체 펀딩 조회 -> sort 추가
     public DataCollectionResponse<FundingData> getAllFunding() {
         return tx.execute(true, () -> {
             List<FundingData> dtos = new ArrayList<>();
@@ -138,6 +141,7 @@ public class FundingService extends BaseService {
                 FundingData dto = FundingData.builder()
                         .pk(funding.getPk())
                         .makerPK(funding.getMaker().getPk())
+                        .title(funding.getTitle())
                         .text(funding.getText())
                         .createdAt(funding.getCreatedAt())
                         .updatedAt(funding.getUpdatedAt())
@@ -164,14 +168,17 @@ public class FundingService extends BaseService {
     public DataCollectionResponse<FundingData> getByCategoryAndState(GetFundingByCategoryAndStateRequest dto)  {
         return tx.execute(true, () -> {
             List<FundingData> dtos = new ArrayList<>();
+
             List<Funding> fundingList = dto.getFundingStateList().isEmpty() ?
                     List.of() : fundingRepository.findByState(dto.getFundingStateList());
+
             List<Category> categoryList = dto.getCategoryList().isEmpty() ?
                     List.of() : categoryRepository.findByName(dto.getCategoryList());
 
 
             //한 펀딩이 여러 카테고리에 속하면 중복으로 조회되므로 한 번만 담는다
             Set<Long> addedFundingPKs = new HashSet<>();
+
             for (FundingCategory fundingCategory :
                     fundingCategoryRepository.findByFundingAndCategoryPKs(
                             fundingList, categoryList
@@ -180,9 +187,11 @@ public class FundingService extends BaseService {
                 if (!addedFundingPKs.add(fundingCategory.getFunding().getPk())) {
                     continue;
                 }
+
                 FundingData fundingDTO = FundingData.builder()
                         .pk(fundingCategory.getFunding().getPk())
                         .makerPK(fundingCategory.getFunding().getMaker().getPk())
+                        .title(fundingCategory.getFunding().getTitle())
                         .text(fundingCategory.getFunding().getText())
                         .createdAt(fundingCategory.getFunding().getCreatedAt())
                         .updatedAt(fundingCategory.getFunding().getUpdatedAt())
@@ -195,6 +204,7 @@ public class FundingService extends BaseService {
                         .dislikeCount(fundingCategory.getFunding().getDislikeCount())
                         .imgFile(fundingCategory.getFunding().getImgFile())
                         .build();
+
                 dtos.add(fundingDTO);
             }
             return DataCollectionResponse.<FundingData>builder()
