@@ -15,13 +15,14 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CreateFundingRequest extends Request {
-    private Long makerPK;
 
     private LocalDateTime startDate;
 
     private LocalDateTime endDate;
 
     private BigDecimal purposeAmount;
+
+    private String title;
 
     private String text;
 

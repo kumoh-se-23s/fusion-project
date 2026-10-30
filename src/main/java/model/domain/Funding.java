@@ -68,6 +68,9 @@ public class Funding extends BaseDomain {
     @Column(name = "funding_state", nullable = false, length = 30)
     private FundingState state = FundingState.PENDING_APPROVAL;
 
+    @Column(name = "funding_title")
+    private String title;
+
     @Column(name = "funding_text", columnDefinition = "TEXT")
     private String text;
 

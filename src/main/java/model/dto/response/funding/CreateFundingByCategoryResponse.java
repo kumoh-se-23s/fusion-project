@@ -13,6 +13,6 @@ import model.dto.response.fundingCategory.BindCategoryResponse;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateFundingByCategoryResponse extends Response {
-    private PKResponse fundingPK;
+    private Long pk;
     private BindCategoryResponse fundingCategoryPKs;
 }

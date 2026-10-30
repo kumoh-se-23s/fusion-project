@@ -36,6 +36,8 @@ public class FundingData extends BaseData {
 
     private FundingState state;
 
+    private String title;
+
     private String text;
 
     private byte[] imgFile;

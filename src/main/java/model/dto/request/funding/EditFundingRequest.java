@@ -13,6 +13,8 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class EditFundingRequest extends Request {
+    private String title;
+
     private String text;
 
     private byte[] imgFile;

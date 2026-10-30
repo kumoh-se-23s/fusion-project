@@ -19,10 +19,8 @@ import java.util.List;
 @AllArgsConstructor
 public class FundingRewardResponse extends Response {
     //후원 1건 = 배송 1건
-
-
-
-    private Long fundingPk;
+    private Long pk;
+    private String title;
     private BigDecimal purposeAmount;
     private BigDecimal donateAmount;
     private List<RewardResponse> rewards;
