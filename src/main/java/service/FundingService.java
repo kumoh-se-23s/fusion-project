@@ -8,6 +8,7 @@ import repository.RewardRepository;
 import repository.UserRepository;
 
 import java.util.List;
+import java.util.logging.Filter;
 
 @RequiredArgsConstructor
 public class FundingService {
@@ -16,6 +17,8 @@ public class FundingService {
     private final RewardRepository rewardRepository;
 
     public FundingRewardResponse getFundingByReward(Long fundingPK) {
-        List<Reward> rewardList = rewardRepository.find(Filter())
+        List<Reward> rewardList = rewardRepository.find(Filter());
     }
+
+
 }

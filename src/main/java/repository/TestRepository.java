@@ -15,3 +15,4 @@ public class TestRepository extends BaseRepositoryImpl<Funding, Long> {
         return this.find(new Filter(new HashMap<>(Map.of("state", state)), null, null));
     }
 }
+
