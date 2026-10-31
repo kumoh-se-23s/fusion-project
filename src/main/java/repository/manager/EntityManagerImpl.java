@@ -39,12 +39,7 @@ public class EntityManagerImpl implements EntityManager {
         if (version != null && version.getValue(entity) == null) {
             version.setValue(entity, 0L);
         }
-        //NOT NULL 컬럼에 null을 넣으면 DB 오류 대신 400으로 응답
-        for (ColumnInfo column : metadata.getInsertColumns()) {
-            if (!column.isNullable() && column.getValue(entity) == null) {
-                throw new NotNullException("'" + column.field().getName() + "' cannot be null");
-            }
-        }
+        checkNotNull(entity, metadata.getInsertColumns());
 
         List<Object> params = values(entity, metadata.getInsertColumns());
         Class<?> keyType = metadata.isAutoIncrement() ? metadata.getPk().getTargetClass() : null;
@@ -86,6 +81,7 @@ public class EntityManagerImpl implements EntityManager {
         EntityMetadata metadata = EntityMetadata.of(entity.getClass());
         ColumnInfo version = metadata.getVersion();
         Object pk = metadata.getPk().getValue(entity);
+        checkNotNull(entity, metadata.getUpdatableColumns());
 
         List<Object> params = values(entity, metadata.getUpdatableColumns());
         params.add(pk);
@@ -188,6 +184,15 @@ public class EntityManagerImpl implements EntityManager {
             throw new TransactionException("PESSIMISTIC_WRITE requires an active transaction");
         }
         return sql + FOR_UPDATE;
+    }
+
+    //NOT NULL 컬럼에 null을 넣으면 DB 오류 대신 400으로 응답
+    private static void checkNotNull(Object entity, List<ColumnInfo> columns) {
+        for (ColumnInfo column : columns) {
+            if (!column.isNullable() && column.getValue(entity) == null) {
+                throw new NotNullException("'" + column.field().getName() + "' cannot be null");
+            }
+        }
     }
 
     private static List<Object> values(Object entity, List<ColumnInfo> columns) {

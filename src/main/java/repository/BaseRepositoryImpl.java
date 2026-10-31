@@ -2,7 +2,6 @@ package repository;
 
 import constant.OrderDirection;
 import exception.NotFoundException;
-import exception.NotNullException;
 import exception.QueryErrorException;
 import model.domain.BaseDomain;
 import repository.manager.EntityManager;
@@ -90,10 +89,6 @@ public abstract class BaseRepositoryImpl<T extends BaseDomain, PK> implements Ba
         ColumnInfo column = metadata.getColumnByField(field);
         if (column == metadata.getPk() || column == metadata.getVersion()) {
             throw new QueryErrorException("'" + field + "' cannot be updated");
-        }
-        //NOT NULL 컬럼에 null을 넣으면 DB 오류 대신 400으로 응답
-        if (value == null && !column.isNullable()) {
-            throw new NotNullException("'" + field + "' cannot be null");
         }
         //연관 필드에 PK가 들어오면 해당 엔티티를 조회해서 넣는다
         if (column.isRelation() && value != null && !column.getRelationClass().isInstance(value)) {
