@@ -51,7 +51,8 @@ public EntityManagerImpl(Class<?> resultClass, Connection connection) {
     }
 
     @Override
-    public void merge(Object entity) {
+    public Object merge(Object entity) {
+        return entity;
     }
 
     @Override

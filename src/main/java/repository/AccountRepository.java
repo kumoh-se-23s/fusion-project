@@ -8,17 +8,27 @@ import java.util.Optional;
 
 public class AccountRepository extends BaseRepositoryImpl<LocalAccount, Long> {
 
-    public Optional<LocalAccount> checkID(String id) {
-        List<LocalAccount> result = find(Filter.eq("id", id).limit(1));
+//    CRUD에 맞는 네이밍
+//    id는 UNIQUE
 
-        if(result.isEmpty()){
+    public Optional<LocalAccount> findId(String id) {
+
+        List<LocalAccount> result = find(
+                Filter.builder()
+                        .conditions(Map.of("id", id))
+                        .limit(1)
+                        .build()
+        );
+
+        if (result.isEmpty()) {
             return Optional.empty();
         } else {
-            return Optional.of(find(Filter.eq("id", id).limit(1)).getFirst());
+            return Optional.of(result.getFirst());
         }
     }
 
-    public void signUp(String id, String password) {
+    //파라미터로 다 받을지 VS 안 받을지(DTO)
+    public void createAccount(String id, String password) {
         LocalAccount localAccount = LocalAccount.builder()
                 .id(id)
                 .password(password)
@@ -33,9 +43,5 @@ public class AccountRepository extends BaseRepositoryImpl<LocalAccount, Long> {
                 "password", hashedPassword,
                 "salt", salt
         )).isPresent();
-    }
-
-    public Optional<LocalAccount> findByUserPk(long userPk) {
-        return findById(userPk);
     }
 }
