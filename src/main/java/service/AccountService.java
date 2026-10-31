@@ -15,13 +15,19 @@ import util.JwtTokenProvider;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.Optional;
 
 public class AccountService extends BaseService {
-    private JwtTokenProvider jwtTokenProvider;
-    private AccountUtil accountUtil;
-    private AccountRepository accountRepository;
-    private JedisPool jedisPool;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final AccountUtil accountUtil;
+    private final AccountRepository accountRepository;
+    private final JedisPool jedisPool;
+
+    public AccountService(JwtTokenProvider jwtTokenProvider, AccountUtil accountUtil, AccountRepository accountRepository, JedisPool jedisPool) {
+        this.jwtTokenProvider = jwtTokenProvider;
+        this.accountUtil = accountUtil;
+        this.accountRepository = accountRepository;
+        this.jedisPool = jedisPool;
+    }
 
 //    public TokenPair createAccount(SignUpRequest request) {
 //
@@ -54,26 +60,24 @@ public class AccountService extends BaseService {
 
     public PKResponse changePassword(long userPk, ChangePasswordRequest request) {
         try {
-            Optional<LocalAccount> result = accountRepository.findById(userPk);
+            LocalAccount result = accountRepository.findById(userPk).orElseThrow(NotFoundException::new);
 
-            if (result.isPresent()) {
-                String currentPassword = result.get().getPassword();
-                String hashedInputPassword = accountUtil.hash(request.getCurrentPassword(), result.get().getSalt());
+            String currentPassword = result.getPassword();
+            String hashedInputPassword = accountUtil.hash(request.getCurrentPassword(), result.getSalt());
 
-                if (currentPassword.equals(hashedInputPassword)) {
-                    String newSalt = accountUtil.generateSalt();
-                    String hashedPassword = accountUtil.hash(request.getNewPassword(), newSalt);
+            if (currentPassword.equals(hashedInputPassword)) {
+                String newSalt = accountUtil.generateSalt();
+                String hashedPassword = accountUtil.hash(request.getNewPassword(), newSalt);
 
-                    accountRepository.updatePassword(result.get().getPk(), hashedPassword, newSalt);
+                accountRepository.updatePassword(result.getPk(), hashedPassword, newSalt);
 
-                    return new PKResponse(result.get().getPk());
-                } else {
-                    throw new PasswordMisMatchException();
-                }
+                return new PKResponse(result.getPk());
             } else {
-                throw new NotFoundException();
+                throw new PasswordMisMatchException();
             }
-        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+
+        } catch (NoSuchAlgorithmException |
+                 InvalidKeySpecException e) {
             throw new InvalidException(e.getMessage());
         }
     }
@@ -86,19 +90,16 @@ public class AccountService extends BaseService {
 
     public void deleteAccount(long userPk, DeleteAccountRequest request) {
         try {
-            Optional<LocalAccount> result = accountRepository.findById(userPk);
+            LocalAccount result = accountRepository.findById(userPk).orElseThrow(NotFoundException::new);
 
-            if (result.isPresent()) {
-                String hashedInputPassword = accountUtil.hash(request.getCheckPassword(), result.get().getSalt());
+            String hashedInputPassword = accountUtil.hash(request.getCheckPassword(), result.getSalt());
 
-                if (hashedInputPassword.equals(result.get().getPassword())) {
-                    accountRepository.delete(result.get().getPk());
-                } else {
-                    throw new PasswordMisMatchException();
-                }
+            if (hashedInputPassword.equals(result.getPassword())) {
+                accountRepository.delete(result.getPk());
             } else {
-                throw new NotFoundException();
+                throw new PasswordMisMatchException();
             }
+
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
             throw new InvalidException(e.getMessage());
         }

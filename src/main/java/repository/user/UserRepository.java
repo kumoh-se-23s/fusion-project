@@ -47,7 +47,7 @@ public class UserRepository extends BaseRepositoryImpl<AppUser,Long> {
         putIfNotNull(updateData, "name" , userData.getName());
         putIfNotNull(updateData, "email" , userData.getEmail());
         putIfNotNull(updateData, "address" , userData.getAddress());
-        putIfNotNull(updateData, "postalCode" , userData.getPostalCode());
+        putIfNotNull(updateData, "postal" , userData.getPostal());
         putIfNotNull(updateData, "phone" , userData.getPhone());
 
         Optional<AppUser> updateResult = update(userPk, updateData);

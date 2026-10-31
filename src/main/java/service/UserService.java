@@ -1,6 +1,7 @@
 package service;
 
 import exception.NotFoundException;
+import model.Serializer;
 import model.domain.AppUser;
 import model.domain.UserRole;
 import model.domain.UserRoleRelation;
@@ -19,46 +20,40 @@ import java.util.Map;
 import java.util.Optional;
 
 public class UserService extends BaseService {
-    private UserRepository userRepository;
-    private UserRoleRepository userRoleRepository;
-    private UserRoleRelationRepository userRoleRelationRepository;
+    private final UserRepository userRepository;
+    private final UserRoleRepository userRoleRepository;
+    private final UserRoleRelationRepository userRoleRelationRepository;
+
+    public UserService(UserRepository userRepository, UserRoleRepository userRoleRepository, UserRoleRelationRepository userRoleRelationRepository) {
+        this.userRepository = userRepository;
+        this.userRoleRepository = userRoleRepository;
+        this.userRoleRelationRepository = userRoleRelationRepository;
+    }
 
     public UserResponse getMyInfo(long userPk) {
-        Optional<AppUser> optionalAppUser = userRepository.findUser(userPk);
+        AppUser appUser = userRepository.findUser(userPk).orElseThrow(NotFoundException::new);
 
-        if (optionalAppUser.isPresent()) {
-            AppUser appUser = optionalAppUser.get();
+        UserData userData = Serializer.toData(appUser, UserData.class);
 
-            UserData userData = UserData.builder()
-                    .name(appUser.getName())
-                    .email(appUser.getEmail())
-                    .address(appUser.getAddress())
-                    .postalCode(appUser.getPostal())
-                    .phone(appUser.getPhone())
-                    .build();
+        return new UserResponse(userData);
 
-            return new UserResponse(userData);
-        } else {
-            throw new NotFoundException();
-        }
+//        if (optionalAppUser.isPresent()) {
+//            AppUser appUser = optionalAppUser.get();
+//
+//            UserData userData = Serializer.toData(appUser, UserData.class);
+//
+//            return new UserResponse(userData);
+//        } else {
+//            throw new NotFoundException();
+//        }
     }
 
     public PKResponse updateUser(long userPk, UpdateUserRequest request) {
-        Optional<AppUser> optionalAppUser = userRepository.findAppUserByUserPk(userPk);
+        UserData userData = request.getUserData();
 
-        if (optionalAppUser.isPresent()) {
-            UserData userData = request.getUserData();
+        Long updateResult = userRepository.updateUser(userPk, userData).orElseThrow(NotFoundException::new);
 
-            Optional<Long> updateResult = userRepository.updateUser(userPk, userData);
-
-            if (updateResult.isPresent()) {
-                return new PKResponse(updateResult.get());
-            } else {
-                throw new NotFoundException();
-            }
-        } else {
-            throw new NotFoundException();
-        }
+        return new PKResponse(updateResult);
     }
 
     //키값 검증하는 로직 필요
@@ -69,9 +64,10 @@ public class UserService extends BaseService {
 
     //List로 만들어야 함
     public List<UserRoleRelation> getRoles(long userPk) {
+        AppUser appUser = userRepository.findUser(userPk).orElseThrow(NotFoundException::new);
+
         return userRoleRelationRepository.find(Filter.builder()
-                .conditions(Map.of("pk", userPk))
-                .limit(1)
+                .conditions(Map.of("user_fk", appUser))
                 .build()
         );
     }

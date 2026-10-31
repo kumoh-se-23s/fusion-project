@@ -28,6 +28,7 @@ public class AccountRepository extends BaseRepositoryImpl<LocalAccount, Long> {
     }
 
     //파라미터로 다 받을지 VS 안 받을지(DTO)
+    //회원가입 시 사용 예정, salt,user => NonNull이므로 salt 생성 user 받아야함
     public void createAccount(String id, String password) {
         LocalAccount localAccount = LocalAccount.builder()
                 .id(id)
