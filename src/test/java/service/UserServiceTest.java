@@ -14,9 +14,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import repository.Filter;
+import repository.UserRepository;
 import repository.UserRoleRelationRepository;
 import repository.UserRoleRepository;
-import repository.user.UserRepository;
 
 import java.util.HashMap;
 import java.util.List;

@@ -7,6 +7,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import repository.Filter;
+import repository.UserRepository;
 
 import java.util.List;
 import java.util.Map;
@@ -15,7 +16,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * UserService가 사용하는 {@link repository.user.UserRepository} 테스트.
+ * UserService가 사용하는 {@link repository.UserRepository} 테스트.
  * ({@link repository.UserRepository}는 메서드가 하나도 없어서 따로 테스트하지 않는다.)
  */
 class UserRepositoryTest {

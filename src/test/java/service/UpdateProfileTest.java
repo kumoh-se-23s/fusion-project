@@ -9,9 +9,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import repository.UserRepository;
 import repository.UserRoleRelationRepository;
 import repository.UserRoleRepository;
-import repository.user.UserRepository;
 
 import java.util.ArrayList;
 import java.util.List;
