@@ -20,27 +20,6 @@ public class UserRepository extends BaseRepositoryImpl<AppUser,Long> {
         }
     }
 
-    public Optional<AppUser> findUser(Long userPk) {
-
-        //List로 나올 이유 없음
-        List<AppUser> result = find(Filter.builder()
-                .conditions(Map.of("pk", userPk))
-                .limit(1)
-                .build()
-        );
-
-         if(result.isEmpty()) {
-             return Optional.empty();
-         } else {
-             return Optional.of(result.getFirst());
-         }
-    }
-
-    //rapping 이유 없음
-    public Optional<AppUser> findAppUserByUserPk(long userPk) {
-        return findById(userPk);
-    }
-
     public Optional<Long> updateUser(long userPk, UserData userData) {
         Map<String, Object> updateData = new HashMap<>();
 
