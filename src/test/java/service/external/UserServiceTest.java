@@ -42,7 +42,7 @@ public class UserServiceTest extends DatabaseTest {
             AppUser maker2 = db.maker2;
             long maker2PK = maker2.getPk();
 
-            Map<Long, AppUser> dataMap = new HashMap<Long, AppUser>();
+            Map<Long, AppUser> dataMap = new HashMap<>();
             dataMap.put(maker1PK, maker1);
             dataMap.put(maker2PK, maker2);
 
