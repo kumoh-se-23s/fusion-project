@@ -4,7 +4,6 @@ import constant.FundingState;
 import exception.AlreadyExistException;
 import exception.NotCompleteFundingException;
 import exception.NotFoundException;
-import exception.NotNullException;
 import exception.OutOfRangeException;
 import lombok.RequiredArgsConstructor;
 import model.Serializer;
@@ -60,8 +59,9 @@ public class ReviewService extends BaseService {
                     .reward(reward)
                     .user(user)
                     .build();
-
-            if (review.getRating().compareTo(MIN_RATING) < 0 || review.getRating().compareTo(MAX_RATING) > 0) {
+            
+            BigDecimal rating = review.getRating();
+            if (rating != null && (rating.compareTo(MIN_RATING) < 0 || rating.compareTo(MAX_RATING) > 0)) {
                 throw new OutOfRangeException("Rating must be between " + MIN_RATING + " and " + MAX_RATING);
             }
 
