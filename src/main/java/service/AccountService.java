@@ -60,7 +60,7 @@ public class AccountService extends BaseService {
 
     public PKResponse changePassword(long userPk, ChangePasswordRequest request) {
         try {
-            LocalAccount result = accountRepository.findById(userPk).orElseThrow(NotFoundException::new);
+            LocalAccount result = accountRepository.findByPK(userPk).orElseThrow(NotFoundException::new);
 
             String currentPassword = result.getPassword();
             String hashedInputPassword = accountUtil.hash(request.getCurrentPassword(), result.getSalt());
@@ -90,7 +90,7 @@ public class AccountService extends BaseService {
 
     public void deleteAccount(long userPk, DeleteAccountRequest request) {
         try {
-            LocalAccount result = accountRepository.findById(userPk).orElseThrow(NotFoundException::new);
+            LocalAccount result = accountRepository.findByPK(userPk).orElseThrow(NotFoundException::new);
 
             String hashedInputPassword = accountUtil.hash(request.getCheckPassword(), result.getSalt());
 

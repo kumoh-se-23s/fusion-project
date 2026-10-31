@@ -31,7 +31,7 @@ public class UserService extends BaseService {
     }
 
     public UserResponse getMyInfo(long userPk) {
-        AppUser appUser = userRepository.findById(userPk).orElseThrow(NotFoundException::new);
+        AppUser appUser = userRepository.findByPK(userPk).orElseThrow(NotFoundException::new);
 
         UserData userData = Serializer.toData(appUser, UserData.class);
 
@@ -64,7 +64,7 @@ public class UserService extends BaseService {
 
     //List로 만들어야 함
     public List<UserRoleRelation> getRoles(long userPk) {
-        AppUser appUser = userRepository.findById(userPk).orElseThrow(NotFoundException::new);
+        AppUser appUser = userRepository.findByPK(userPk).orElseThrow(NotFoundException::new);
 
         return userRoleRelationRepository.find(Filter.builder()
                 .conditions(Map.of("user_fk", appUser))
