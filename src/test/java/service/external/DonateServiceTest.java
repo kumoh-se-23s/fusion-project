@@ -30,7 +30,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 @DisplayName("DonateService")
-class DonateServiceTest extends DatabaseTest {
+public class DonateServiceTest extends DatabaseTest {
 
     private DonateService donateService;
 
@@ -136,7 +136,7 @@ class DonateServiceTest extends DatabaseTest {
 
     @Nested
     @DisplayName("createDonate")
-    class CreateDonate {
+    public class CreateDonate {
 
         @Test
         @DisplayName("후원을 생성한다")

@@ -31,7 +31,7 @@ public class UserServiceTest extends DatabaseTest {
     }
 
     @Nested
-    class UpdateUser {
+    public class UpdateUser {
 
         @Test
         @DisplayName("유저 정보를 업데이트한다.")

@@ -9,7 +9,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 @DisplayName("ReviewService")
-class ReviewServiceTest extends DatabaseTest {
+public class ReviewServiceTest extends DatabaseTest {
     private ReviewService reviewService;
 
     @BeforeEach

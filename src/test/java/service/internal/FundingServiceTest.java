@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 @DisplayName("관리자 FundingService")
-class FundingServiceTest extends DatabaseTest {
+public class FundingServiceTest extends DatabaseTest {
     private FundingService fundingService;
 
     @BeforeEach

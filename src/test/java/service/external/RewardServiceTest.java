@@ -32,7 +32,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 @DisplayName("RewardService")
-class RewardServiceTest extends DatabaseTest {
+public class RewardServiceTest extends DatabaseTest {
 
     private RewardService rewardService;
     private UserRepository userRepository;
@@ -203,7 +203,7 @@ class RewardServiceTest extends DatabaseTest {
 
     @Nested
     @DisplayName("createReward")
-    class CreateReward {
+    public class CreateReward {
 
         @Test
         @DisplayName("남은 수량을 최대 수량과 같게 생성한다")
