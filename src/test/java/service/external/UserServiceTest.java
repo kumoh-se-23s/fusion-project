@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DisplayName("UserService")
 public class UserServiceTest extends DatabaseTest {
@@ -37,31 +38,22 @@ public class UserServiceTest extends DatabaseTest {
         @Test
         @DisplayName("유저 정보를 업데이트한다.")
         void success() {
-            AppUser maker1 = db.maker1;
-            long maker1PK = maker1.getPk();
+            AppUser maker = db.maker1;
+            long makerPK = maker.getPk();
 
-            AppUser maker2 = db.maker2;
-            long maker2PK = maker2.getPk();
 
-            UserResponse userResponse = userService.getMyInfo(maker2PK);
+            UserResponse userResponse = userService.getMyInfo(makerPK);
             UserData testUserData = userResponse.getUserData();
 
             testUserData.setName("호날두");
 
-            Map<Long, AppUser> dataMap = new HashMap<>();
-            dataMap.put(maker1PK, maker1);
-            dataMap.put(maker2PK, maker2);
 
-            for(Map.Entry<Long, AppUser> entry : dataMap.entrySet()) {
-                Long key = entry.getKey();
-                AppUser appUser = entry.getValue();
-
-                UserData userData = Serializer.toData(appUser, UserData.class);
-
-                PKResponse response = userService.updateUser(key, new UpdateUserRequest(testUserData));
-                assertEquals(key, response.getPk());
-                System.out.println(response.getPk());
-            }
+            PKResponse response = userService.updateUser(makerPK, new UpdateUserRequest(testUserData));
+            AppUser result = db.config.getUserRepository().findByPK(response.getPk())
+                    .orElseThrow(AssertionError::new);
+            assertEquals(makerPK, response.getPk());
+            assertEquals(result.getPk(), response.getPk());
+            assertEquals("호날두", result.getName());
         }
     }
 }
