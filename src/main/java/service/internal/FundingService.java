@@ -23,9 +23,6 @@ public class FundingService extends BaseService {
             if (funding.getState() != FundingState.PENDING_APPROVAL) {
                 throw new NotPendingFundingException();
             }
-            funding.toBuilder()
-                    .updatedAt(LocalDateTime.now())
-                    .build();
             Funding approved = fundingRepository.updateByApprove(funding.getPk())
                     .orElseThrow(NotFoundException::new);
             return new PKResponse(approved.getPk());
