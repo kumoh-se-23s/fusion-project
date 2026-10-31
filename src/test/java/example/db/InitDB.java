@@ -14,11 +14,6 @@ import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/**
- * 테스트 DB의 테이블 생성(create), 기본 데이터 삽입(init), 테이블 삭제(drop)를 담당하는 클래스
- * 생성, 수정 테스트는 기본 데이터를 바꾸므로, 다시 실행하려면 InitDB.main으로 초기화한다.
- * 필드의 pk는 초기화 직후 insert() 순서대로 매겨지는 값이므로, 삽입 순서를 바꾸면 pk도 함께 바꾼다.
- */
 public class InitDB {
     private static final List<Class<?>> ENTITIES = List.of(
             AppUser.class, UserRole.class, UserRoleRelation.class, LocalAccount.class, Category.class,
@@ -62,7 +57,7 @@ public class InitDB {
             .phone("후원자2 전화번호")
             .postal("후원자2 우편번호")
             .build();
-    //후원 내역 없음
+
     public AppUser newUser = AppUser.builder()
             .pk(5L)
             .name("신규 사용자")
@@ -111,7 +106,7 @@ public class InitDB {
             .purposeAmount(new BigDecimal("100000"))
             .endDate(now.plusDays(30))
             .build();
-    //후원 2건
+
     public Funding maker1ApproveFunding = Funding.builder()
             .pk(3L)
             .maker(maker1)
@@ -131,7 +126,7 @@ public class InitDB {
             .purposeAmount(new BigDecimal("100000"))
             .endDate(now.plusDays(30))
             .build();
-    //후원 2건
+
     public Funding maker1CompleteFunding = Funding.builder()
             .pk(5L)
             .maker(maker1)
@@ -140,6 +135,17 @@ public class InitDB {
             .state(FundingState.COMPLETED)
             .purposeAmount(new BigDecimal("100000"))
             .donateAmount(new BigDecimal("3000"))
+            .endDate(now.plusDays(30))
+            .build();
+
+    public Funding changeStateFunding = Funding.builder()
+            .pk(6L)
+            .maker(maker1)
+            .title("승인용 펀딩")
+            .text("승인용 펀딩 소개")
+            .state(FundingState.PENDING_APPROVAL)
+            .purposeAmount(new BigDecimal("1"))
+            .donateAmount(new BigDecimal("1"))
             .endDate(now.plusDays(30))
             .build();
 
@@ -189,7 +195,6 @@ public class InitDB {
             .provideDate(now.plusDays(60))
             .build();
 
-    //후원 1건
     public Reward maker1ApproveReward1 = Reward.builder()
             .pk(5L)
             .funding(maker1ApproveFunding)
@@ -201,7 +206,7 @@ public class InitDB {
             .remainQuantity(9L)
             .provideDate(now.plusDays(60))
             .build();
-    //후원 1건
+
     public Reward maker1ApproveReward2 = Reward.builder()
             .pk(6L)
             .funding(maker1ApproveFunding)
@@ -237,7 +242,6 @@ public class InitDB {
             .provideDate(now.plusDays(60))
             .build();
 
-    //후원 1건, 배송 완료
     public Reward maker1CompleteReward1 = Reward.builder()
             .pk(9L)
             .funding(maker1CompleteFunding)
@@ -249,7 +253,7 @@ public class InitDB {
             .remainQuantity(9L)
             .provideDate(now.plusDays(60))
             .build();
-    //후원 1건, 배송 전
+
     public Reward maker1CompleteReward2 = Reward.builder()
             .pk(10L)
             .funding(maker1CompleteFunding)
