@@ -46,6 +46,10 @@ public class FundingService extends BaseService {
             Map<Long, List<UserAddressResponse>> rewardPKSet = new HashMap<>();
 
             for (Donate donate : donateList) {
+                //탈퇴한 사용자의 후원은 배송지가 없으므로 제외
+                if (donate.getUser() == null) {
+                    continue;
+                }
                 UserAddressResponse UserAddressDTO =
                     Serializer.toData(donate.getUser(), UserAddressResponse.class);
 
