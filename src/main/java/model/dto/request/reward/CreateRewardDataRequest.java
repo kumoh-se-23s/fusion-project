@@ -1,49 +1,72 @@
 package model.dto.request.reward;
-import java.time.LocalDateTime;
 
-import lombok.*;
+import annotation.BindDomain;
+import annotation.DataField;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import model.domain.Category;
+import model.domain.Funding;
+import model.domain.Reward;
 import model.dto.BaseData;
 
-@Getter//값을 읽는 메서드 생성
-@Builder//필드 이름을 지정하면서 객체 생성
-@AllArgsConstructor//모든 필드 값을 받는 생성자 생성
-//@NoArgsConstructor//빈 괄호로 객체를 만드느 생성자 생성>있으면 안됨
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
-public class CreateRewardDataRequest extends BaseData {//BaseData로 바꿀거임
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@BindDomain(values = {Reward.class})
+public class CreateRewardDataRequest extends BaseData {
 
-
+    @DataField(name = "name")
     private String rewardName;
 
-
-    //@DomainField("rewardImg")
+    @DataField(name = "imgFile")
     private byte[] rewardImg;
 
-
-    //DomainField("rewardCreateAt")
-    // 서비스 시점에서 자동으로 넣어서 생성private LocalDateTime createdAt;
-
-
-    //@DomainField("servedAt")
     private LocalDateTime provideDate;
 
-
-    //@DomainField("rewardText")
+    @DataField(name = "text")
     private String rewardText;
 
-
-    //@DomainField("fundingFk")
+    @DataField(name = "funding.pk")
     private Long fundingFk;
 
+    @DataField(name = "category.pk")
+    private Long categoryFk;
 
-    //@DomainField("requiredAmount")
-    private Long requiredAmount;//float는 소수계싼에서 오차가 생리 수 이쏙, 기본형이라 null도 저장가능
+    private BigDecimal requiredAmount;
 
+    @DataField(name = "maxQuantity")
+    private Long rewardMaxQuantity;
 
-    //@DomainField("rewardMaxQuantity")
-    private Long rewardMaxQuantity;//리워드 제공가능한 수량
+    @DataField(name = "remainQuantity")
+    private Long rewardRemainQuantity;
 
+    private LocalDateTime createdAt;
 
-    //@DomainField("rewardRemainQuantity")
-    private Long rewardRemainQuantity;//리워드 현재 남은 수량
+    private LocalDateTime updatedAt;
 
+    // Service에서 조회한 도메인 객체
+    private Funding funding;
+
+    private Category category;
+
+    // 리워드 생성 전 필요한 값 설정
+    public void prepareForCreate(
+            Funding funding,
+            Category category
+    ) {
+        this.funding = funding;
+        this.category = category;
+
+        // 최초 남은 수량 = 최대 수량
+        this.rewardRemainQuantity = rewardMaxQuantity;
+
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = createdAt;
+    }
 }

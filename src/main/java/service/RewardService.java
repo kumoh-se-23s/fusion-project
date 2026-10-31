@@ -1,12 +1,22 @@
 package service;
 
 import exception.NotFoundException;
+import exception.LimitNumberOutException;
+import exception.TransactionException;
+
 import lombok.RequiredArgsConstructor;
+
+import model.Serializer;
+
+import model.domain.Category;
 import model.domain.Donate;
 import model.domain.Funding;
 import model.domain.Reward;
+
 import model.dto.RewardData;
 import model.dto.request.reward.CreateRewardDataRequest;
+
+import repository.CategoryRepository;
 import repository.DonateRepository;
 import repository.FundingRepository;
 import repository.UserRepository;
@@ -18,90 +28,169 @@ import java.util.List;
 
 @RequiredArgsConstructor
 public class RewardService {
+
     private final FundingRepository fundingRepository;
     private final DonateRepository donateRepository;
     private final UserRepository userRepository;
     private final RewardRepository rewardRepository;
-
- //펀딩에 리워드 등록
-    public void createReward(CreateRewardDataRequest request){
-        //(리워드가 속할 펀딩의 Pk, 사용자가 입력한 리워드 정보)
-        Long fundingPk = request.getFundingFk();
-
-        Funding funding =  fundingRepository.findById(fundingPk).
-                orElseThrow(()-> new NotFoundException());//따로 만들어 놓은 예외처리 쓰기
-
-        Reward reward = Reward.builder()//나중에 바뀜 Serializer
-                .funding(funding)//펀딩에 유저pk가 있으니 여기서 안 받아도 되는 듯
-                .name(request.getRewardName())
-                .text(request.getRewardText())
-                .imgFile(request.getRewardImg())
-                .requiredAmount(BigDecimal.valueOf(request.getRequiredAmount()))
-                .maxQuantity(request.getRewardMaxQuantity())
-                .build();
-                //남아있는 리워드 수량은 입력x
-        rewardRepository.create(reward);
-    }
+    private final CategoryRepository categoryRepository;
 
 
+    // 1. 펀딩에 리워드 등록
+    public void createReward(CreateRewardDataRequest request) {
 
-    public List<RewardData> getRewardByFunding(Long fundingPk){
-        List<Reward> rewardList = rewardRepository.findByFundingPk(fundingPk);
-
-        List<RewardData> dtoList = new ArrayList<>();
-        for(int i = 0; i < rewardList.size(); i++ ){
-            Reward reward = rewardList.get(i);
-            //DTO Builder만들기
-            RewardData.RewardDataBuilder builder = RewardData.builder();
-            RewardData dto = toRewardData(reward);
-
-            dtoList.add(dto);
+        // 요청값 검사
+        if (request == null) {
+            throw new LimitNumberOutException(
+                    "리워드 등록 요청 정보가 없습니다."
+            );
         }
-        return dtoList;//dto변환한거 반환;
-    }
 
-    public List<RewardData> getRewardByDonate(Long userPk){//본인이 후원한 리워드들 확인
-        List<Donate> donateList = donateRepository.findByUserPk(userPk);//후원한 펀딩들 전부 리스트에 넣음
-
-        List<RewardData> dtoList = new ArrayList<>();//donateDto에 있는 PkResponse사용,리워드 정보로 반영
-        for(int i = 0; i < donateList.size(); i++){
-            Donate donate = donateList.get(i);//후원 하나씩 리워드 보기
-            Reward reward = donate.getReward();//후원도메인에 있던거로 리워드 객체 생성
-            RewardData dto = toRewardData(reward);//dto변환
-
-            dtoList.add(dto);
+        if (request.getFundingFk() == null
+                || request.getCategoryFk() == null) {
+            throw new LimitNumberOutException(
+                    "펀딩 또는 카테고리 PK가 없습니다."
+            );
         }
-        return dtoList;
+
+        if (request.getRewardName() == null
+                || request.getRewardName().isBlank()) {
+            throw new LimitNumberOutException(
+                    "리워드 이름을 입력해야 합니다."
+            );
+        }
+
+        if (request.getProvideDate() == null) {
+            throw new LimitNumberOutException(
+                    "리워드 제공 예정일이 없습니다."
+            );
+        }
+
+        // 금액 검사
+        if (request.getRequiredAmount() == null
+                || request.getRequiredAmount()
+                .compareTo(BigDecimal.ZERO) <= 0) {
+            throw new LimitNumberOutException(
+                    "리워드 필요 금액은 0원보다 커야 합니다."
+            );
+        }
+
+        // 수량 검사
+        if (request.getRewardMaxQuantity() == null
+                || request.getRewardMaxQuantity() <= 0) {
+            throw new LimitNumberOutException(
+                    "제공 가능 수량은 1개 이상이어야 합니다."
+            );
+        }
+
+        // 펀딩 조회
+        Funding funding = fundingRepository
+                .findById(request.getFundingFk())
+                .orElseThrow(
+                        () -> new NotFoundException(
+                                "리워드를 등록할 펀딩을 찾을 수 없습니다."
+                        )
+                );
+
+        // 카테고리 조회
+        Category category = categoryRepository
+                .findById(request.getCategoryFk())
+                .orElseThrow(
+                        () -> new NotFoundException(
+                                "리워드 카테고리를 찾을 수 없습니다."
+                        )
+                );
+
+        // Service에서 초기값 설정
+        request.prepareForCreate(funding, category);
+
+        // Builder 대신 Serializer 사용
+        Reward reward = Serializer.toDomain(
+                request,
+                Reward.class
+        );
+
+        // 리워드 저장
+        if (rewardRepository.create(reward) == null) {
+            throw new TransactionException(
+                    "리워드 저장에 실패했습니다."
+            );
+        }
     }
 
-    //유저>후원한 펀딩>리워드
-    public List<List<RewardData>> getRewardfindByMaker(Long makerPk){
-        List<Funding> fundingList = fundingRepository.findByUserPk(makerPk);//fundingRepository의 메서드 가져와서 사용
-        //Map반환or Response만들기 혹은..Data이중으로 감싸기?
+
+    // 2. 펀딩 PK로 리워드 조회
+    public List<RewardData> getRewardByFunding(Long fundingPk) {
+
+        if (fundingPk == null) {
+            throw new LimitNumberOutException(
+                    "조회할 펀딩 PK가 없습니다."
+            );
+        }
+
+        List<Reward> rewardList =
+                rewardRepository.findByFundingPk(fundingPk);
+
+        return Serializer.toDataList(
+                rewardList,
+                RewardData.class
+        );
+    }
+
+
+    // 3. 본인이 후원한 리워드 조회
+    public List<RewardData> getRewardByDonate(Long userPk) {
+
+        if (userPk == null) {
+            throw new LimitNumberOutException(
+                    "조회할 사용자 PK가 없습니다."
+            );
+        }
+
+        List<Donate> donateList =
+                donateRepository.findByUserPk(userPk);
+
+        List<Reward> rewardList = new ArrayList<>();
+
+        for (Donate donate : donateList) {
+
+            Reward reward = donate.getReward();
+
+            if (reward != null) {
+                rewardList.add(reward);
+            }
+        }
+
+        return Serializer.toDataList(
+                rewardList,
+                RewardData.class
+        );
+    }
+
+
+    // 4. 메이커의 프로젝트별 리워드 조회
+    public List<List<RewardData>> getRewardfindByMaker(
+            Long makerPk
+    ) {
+
+        if (makerPk == null) {
+            throw new LimitNumberOutException(
+                    "조회할 메이커 PK가 없습니다."
+            );
+        }
+
+        List<Funding> fundingList =
+                fundingRepository.findByUserPk(makerPk);
+
         List<List<RewardData>> dtoList = new ArrayList<>();
-        for(int i = 0; i < fundingList.size(); i++){
-            Funding funding = fundingList.get(i);
-            dtoList.add(getRewardByFunding(funding.getPk()));
-            //dtoList.addAll둘 중?
+
+        for (Funding funding : fundingList) {
+
+            dtoList.add(
+                    getRewardByFunding(funding.getPk())
+            );
         }
+
         return dtoList;
     }
-
-    private RewardData toRewardData(Reward reward){//Serializer로 변환
-        return RewardData.builder()
-                .rewardPk(reward.getPk())
-                .name(reward.getName())
-                .text(reward.getText())
-                .fundingPk(reward.getFunding().getPk())
-                .imgFile(reward.getImgFile())
-                .makerPk(reward.getFunding().getMaker().getPk())
-                .providerDate(reward.getProvideDate())
-                .createdAt(reward.getCreatedAt())
-                .updatedAt(reward.getUpdatedAt())
-                .requiredAmount(reward.getRequiredAmount())
-                .maxQuantity(reward.getMaxQuantity())
-                .remainQuantity(reward.getRemainQuantity())
-                .build();
-    }
-
 }
