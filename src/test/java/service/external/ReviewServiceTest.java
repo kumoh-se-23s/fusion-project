@@ -1,15 +1,22 @@
 package service.external;
 
 import example.db.DatabaseTest;
+import model.domain.Review;
+import model.dto.request.review.CreateReviewRequest;
+import model.dto.response.PKResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import repository.Filter;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @DisplayName("ReviewService")
-class ReviewServiceTest extends DatabaseTest {
+public class ReviewServiceTest extends DatabaseTest {
     private ReviewService reviewService;
 
     @BeforeEach
@@ -17,43 +24,31 @@ class ReviewServiceTest extends DatabaseTest {
         reviewService = db.config.getReviewService();
     }
 
-    @Nested
-    @DisplayName("createReview")
-    class CreateReview {
-        @Test
-        @DisplayName("배송 완료된 후원자는 리뷰를 작성한다")
-        void success() {
+    @Test
+    @DisplayName("배송 완료된 후원자가 리뷰를 작성한다")
+    void createReview() {
+        List<Review> list = db.config.getReviewRepository().find(
+                Filter.builder()
+                        .conditions(Map.of("reward", db.maker1CompleteReward1.getPk()))
+                        .build()
+        );
+        System.out.println(list.size());
+        for (Review review : list) {
+            db.config.getReviewRepository().delete(review.getPk());
         }
 
-        @Test
-        @DisplayName("배송 전이면 NotCompleteFundingException")
-        void notDelivered() {
-        }
+        PKResponse response = reviewService.createReview(CreateReviewRequest.builder()
+                .rewardPK(db.maker1CompleteReward1.getPk())
+                .text("리뷰 테스트 데이터")
+                .rating(new BigDecimal("1.0"))
+                .build(), db.donateUser1.getPk());
 
-        @Test
-        @DisplayName("후원하지 않았으면 NotCompleteFundingException")
-        void notDonated() {
-        }
+        Review saved = db.config.getReviewRepository().findByPK(response.getPk()).orElseThrow();
+        assertEquals(db.maker1CompleteReward1.getPk(), saved.getReward().getPk());
+        assertEquals(db.donateUser1.getPk(), saved.getUser().getPk());
+        assertEquals("리뷰 테스트 데이터", saved.getText());
+        assertAmount("1.0", saved.getRating());
 
-        @Test
-        @DisplayName("이미 작성했으면 AlreadyExistException")
-        void duplicate() {
-        }
 
-        @ParameterizedTest(name = "별점 {0}")
-        @ValueSource(strings = {"-0.5", "5.5"})
-        @DisplayName("별점이 범위를 벗어나면 OutOfRangeException")
-        void ratingOutOfRange(String rating) {
-        }
-
-        @Test
-        @DisplayName("별점이 없으면 NotNullException")
-        void withoutRating() {
-        }
-
-        @Test
-        @DisplayName("없는 사용자면 NotFoundException")
-        void userNotFound() {
-        }
     }
 }
