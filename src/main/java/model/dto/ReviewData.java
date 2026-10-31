@@ -1,9 +1,9 @@
 package model.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import annotation.BindDomain;
+import annotation.DataField;
+import lombok.*;
+import model.domain.Review;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -12,11 +12,14 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@BindDomain(values = Review.class)
 public class ReviewData extends BaseData {
     private Long pk;
 
-    private Long fundingPK;
+    @DataField(name = "reward.pk")
+    private Long rewardPK;
 
+    @DataField(name = "user.pk")
     private Long userPK;
 
     private String text;

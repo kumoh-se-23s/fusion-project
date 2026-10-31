@@ -5,11 +5,12 @@ import annotation.JoinColumn;
 import annotation.PK;
 import annotation.Table;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Table(name = "DONATE")
-@Builder(toBuilder = true)
+@SuperBuilder(toBuilder = true)
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -18,29 +19,24 @@ public class Donate extends BaseDomain {
     @Column(name = "donate_pk")
     private Long pk;
 
-    @NonNull
-    @JoinColumn(name = "user_fk")
+    @JoinColumn(name = "user_fk", nullable = false)
     private AppUser user;
 
-    @NonNull
-    @JoinColumn(name = "reward_fk")
+    @JoinColumn(name = "reward_fk", nullable = false)
     private Reward reward;
 
-    @NonNull
-    @Column(name = "donate_amount")
+    @Column(name = "donate_amount", nullable = false)
     private BigDecimal amount;
 
-    @NonNull
-    @Column(name = "donate_quantity")
+    @Column(name = "donate_quantity", nullable = false)
     private Long quantity;
 
     @Builder.Default
-    @NonNull
-    @Column(name = "created_at")
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    //배송 완료 여부 (true: 배송 완료)
     @Builder.Default
-    @NonNull
-    @Column(name = "donate_state")
+    @Column(name = "donate_state", nullable = false)
     private Boolean state = false;
 }
