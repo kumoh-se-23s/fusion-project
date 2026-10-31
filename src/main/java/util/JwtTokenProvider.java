@@ -25,6 +25,7 @@ public class JwtTokenProvider {
 
         return Jwts.builder()
                 .subject(userPK)
+                .claim("type", "access")
                 .issuedAt(now)
                 .expiration(expiry)
                 .signWith(key)
@@ -37,11 +38,14 @@ public class JwtTokenProvider {
 
         return Jwts.builder()
                 .subject(userPK)
+                .claim("type" , "refresh")
                 .issuedAt(now)
                 .expiration(expiry)
                 .signWith(key)
                 .compact();
     }
+
+    //public
 
     public boolean validateToken(String token) throws JsonProcessingException {
         Map<String, String> parseToken = parse(token);
