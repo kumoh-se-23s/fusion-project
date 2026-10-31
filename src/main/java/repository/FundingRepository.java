@@ -11,7 +11,8 @@ import java.util.Optional;
 public class FundingRepository extends BaseRepositoryImpl<Funding, Long> {
     public Optional<Funding> updateByApprove(Long fundingPK) {
         return update(fundingPK, Map.of(
-                "state", FundingState.APPROVED
+                "state", FundingState.APPROVED,
+                "updatedAt", LocalDateTime.now()
         ));
     }
 
