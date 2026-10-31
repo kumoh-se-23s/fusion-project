@@ -28,9 +28,8 @@ public class Review extends BaseDomain {
     @Column(name = "review_text", columnDefinition = "TEXT")
     private String text;
 
-    @Builder.Default
     @Column(name = "review_rating", nullable = false, precision = 2, scale = 1)
-    private BigDecimal rating = BigDecimal.valueOf(5.0);
+    private BigDecimal rating;
 
     @Builder.Default
     @Column(name = "like_count", nullable = false)

@@ -54,16 +54,12 @@ public class ReviewService extends BaseService {
                 throw new AlreadyExistException();
             }
 
-            Review review;
-            try {
-                review = Serializer.toDomain(dto, Review.class);
-                review.toBuilder()
-                        .reward(reward)
-                        .build();
 
-            } catch (NullPointerException e) {
-                throw new NotNullException("Review has Null Value");
-            }
+            Review review = Serializer.toDomain(dto, Review.class)
+                    .toBuilder()
+                    .reward(reward)
+                    .user(user)
+                    .build();
 
             if (review.getRating().compareTo(MIN_RATING) < 0 || review.getRating().compareTo(MAX_RATING) > 0) {
                 throw new OutOfRangeException("Rating must be between " + MIN_RATING + " and " + MAX_RATING);
