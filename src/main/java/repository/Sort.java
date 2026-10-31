@@ -1,6 +1,5 @@
 package repository;
 
-import constant.OrderDirection;
 import lombok.Getter;
 
 import java.util.List;

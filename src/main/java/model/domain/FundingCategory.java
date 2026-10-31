@@ -5,9 +5,10 @@ import annotation.JoinColumn;
 import annotation.PK;
 import annotation.Table;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Table(name = "FUNDING_CATEGORY")
-@Builder(toBuilder = true)
+@SuperBuilder(toBuilder = true)
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -16,11 +17,9 @@ public class FundingCategory extends BaseDomain {
     @Column(name = "funding_category_pk")
     private Long pk;
 
-    @NonNull
-    @JoinColumn(name = "category_fk")
+    @JoinColumn(name = "category_fk", nullable = false, uniqueGroup = "funding_category")
     private Category category;
 
-    @NonNull
-    @JoinColumn(name = "funding_fk")
+    @JoinColumn(name = "funding_fk", nullable = false, uniqueGroup = "funding_category")
     private Funding funding;
 }

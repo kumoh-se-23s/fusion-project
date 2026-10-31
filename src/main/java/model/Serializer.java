@@ -145,7 +145,11 @@ public final class Serializer {
                 Serializer.writeField(mapping.dataField(), target, mapping.converter().convert(value, context));
             } else {
                 Object value = Serializer.readField(mapping.dataField(), source);
-                Serializer.writePath(target, mapping.domainPath(), mapping.converter().convert(value, context));
+                Object converted = mapping.converter().convert(value, context);
+                // DTO 의 null 이 도메인 필드 기본값(@Builder.Default)을 덮지 않도록 건너뛴다.
+                if (converted != null) {
+                    Serializer.writePath(target, mapping.domainPath(), converted);
+                }
             }
         }
 

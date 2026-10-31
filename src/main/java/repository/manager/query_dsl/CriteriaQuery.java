@@ -5,6 +5,8 @@ import constant.OrderDirection;
 import exception.LimitNumberOutException;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -25,11 +27,28 @@ public class CriteriaQuery<T> {
         this.resultClass = resultClass;
     }
 
+    //값이 null이면 IS NULL 조건. 조건을 빼면 전체 행이 조회된다
     public CriteriaQuery<T> whereEqual(String column, Object value) {
-        if (value != null) {
-            predicates.add(column + " = ?");
-            parameters.add(value);
+        if (value == null) {
+            predicates.add(column + " IS NULL");
+            return this;
         }
+        predicates.add(column + " = ?");
+        parameters.add(value);
+        return this;
+    }
+
+    //값 목록 중 하나와 일치. 빈 목록이면 결과가 없다
+    public CriteriaQuery<T> whereIn(String column, Collection<?> values) {
+        if (values == null) {
+            return this;
+        }
+        if (values.isEmpty()) {
+            predicates.add("1 = 0");
+            return this;
+        }
+        predicates.add(column + " IN (" + String.join(", ", Collections.nCopies(values.size(), "?")) + ")");
+        parameters.addAll(values);
         return this;
     }
 

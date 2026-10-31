@@ -4,9 +4,10 @@ import annotation.Column;
 import annotation.PK;
 import annotation.Table;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Table(name = "CATEGORY")
-@Builder(toBuilder = true)
+@SuperBuilder(toBuilder = true)
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -15,8 +16,7 @@ public class Category extends BaseDomain {
     @Column(name = "category_pk")
     private Long pk;
 
-    @NonNull
-    @Column(name = "category_name")
+    @Column(name = "category_name", nullable = false, unique = true, length = 100)
     private String name;
 
     @Column(name = "category_description")
