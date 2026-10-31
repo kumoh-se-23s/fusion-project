@@ -147,9 +147,14 @@ public abstract class BaseRepositoryImpl<T extends BaseDomain, PK> implements Ba
         return query;
     }
 
+    //테스트용 가짜 클래스처럼 한 번 더 상속해도 동작하도록, 제네릭 타입이 있는 부모를 찾을 때까지 위로 올라감
     @SuppressWarnings("unchecked")
     private Class<T> resolveEntityClass() {
-        ParameterizedType type = (ParameterizedType) getClass().getGenericSuperclass();
+        Class<?> current = getClass();
+        while (!(current.getGenericSuperclass() instanceof ParameterizedType)) {
+            current = current.getSuperclass();
+        }
+        ParameterizedType type = (ParameterizedType) current.getGenericSuperclass();
         return (Class<T>) type.getActualTypeArguments()[0];
     }
 }
