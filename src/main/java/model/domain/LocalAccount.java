@@ -2,6 +2,7 @@ package model.domain;
 
 import annotation.Column;
 import annotation.JoinColumn;
+import annotation.OnDelete;
 import annotation.PK;
 import annotation.Table;
 import lombok.*;
@@ -17,7 +18,7 @@ public class LocalAccount extends BaseDomain {
     @Column(name = "local_account_pk")
     private Long pk;
 
-    @JoinColumn(name = "user_fk", nullable = false, unique = true)
+    @JoinColumn(name = "user_fk", nullable = false, unique = true, onDelete = OnDelete.CASCADE)
     private AppUser user;
 
     @Column(name = "local_account_id", nullable = false, unique = true)

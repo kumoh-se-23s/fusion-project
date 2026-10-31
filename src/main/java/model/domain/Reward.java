@@ -2,6 +2,7 @@ package model.domain;
 
 import annotation.Column;
 import annotation.JoinColumn;
+import annotation.OnDelete;
 import annotation.PK;
 import annotation.Table;
 import lombok.*;
@@ -20,7 +21,7 @@ public class Reward extends BaseDomain {
     @Column(name = "reward_pk")
     private Long pk;
 
-    @JoinColumn(name = "funding_fk", nullable = false)
+    @JoinColumn(name = "funding_fk", nullable = false, onDelete = OnDelete.CASCADE)
     private Funding funding;
 
     @JoinColumn(name = "category_fk", nullable = false)

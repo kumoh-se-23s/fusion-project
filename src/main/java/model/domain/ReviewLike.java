@@ -14,10 +14,10 @@ public class ReviewLike extends BaseDomain {
     @Column(name = "review_like_pk")
     private Long pk;
 
-    @JoinColumn(name = "review_fk", nullable = false, uniqueGroup = "like")
+    @JoinColumn(name = "review_fk", nullable = false, uniqueGroup = "like", onDelete = OnDelete.CASCADE)
     private Review review;
 
-    @JoinColumn(name = "user_fk", nullable = false, uniqueGroup = "like")
+    @JoinColumn(name = "user_fk", nullable = false, uniqueGroup = "like", onDelete = OnDelete.CASCADE)
     private AppUser user;
 
     @Builder.Default

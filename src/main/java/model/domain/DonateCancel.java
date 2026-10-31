@@ -2,6 +2,7 @@ package model.domain;
 
 import annotation.Column;
 import annotation.JoinColumn;
+import annotation.OnDelete;
 import annotation.PK;
 import annotation.Table;
 import lombok.*;
@@ -29,6 +30,6 @@ public class DonateCancel extends BaseDomain {
     @JoinColumn(name = "reward_fk", nullable = false)
     private Reward reward;
 
-    @JoinColumn(name = "user_fk", nullable = false)
+    @JoinColumn(name = "user_fk", onDelete = OnDelete.SET_NULL)
     private AppUser user;
 }

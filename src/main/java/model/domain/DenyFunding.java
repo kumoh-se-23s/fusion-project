@@ -2,6 +2,7 @@ package model.domain;
 
 import annotation.Column;
 import annotation.JoinColumn;
+import annotation.OnDelete;
 import annotation.PK;
 import annotation.Table;
 import lombok.*;
@@ -17,7 +18,7 @@ public class DenyFunding extends BaseDomain {
     @Column(name = "deny_funding_pk")
     private Long pk;
 
-    @JoinColumn(name = "funding_fk", nullable = false)
+    @JoinColumn(name = "funding_fk", nullable = false, onDelete = OnDelete.CASCADE)
     private Funding funding;
 
     @Column(name = "deny_reason", nullable = false, length = 500)

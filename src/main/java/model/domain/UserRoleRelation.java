@@ -2,6 +2,7 @@ package model.domain;
 
 import annotation.Column;
 import annotation.JoinColumn;
+import annotation.OnDelete;
 import annotation.PK;
 import annotation.Table;
 import lombok.*;
@@ -17,9 +18,9 @@ public class UserRoleRelation extends BaseDomain {
     @Column(name = "user_role_pk")
     private Long pk;
 
-    @JoinColumn(name = "role_fk", nullable = false, uniqueGroup = "user_role")
+    @JoinColumn(name = "role_fk", nullable = false, uniqueGroup = "user_role", onDelete = OnDelete.CASCADE)
     private UserRole role;
 
-    @JoinColumn(name = "user_fk", nullable = false, uniqueGroup = "user_role")
+    @JoinColumn(name = "user_fk", nullable = false, uniqueGroup = "user_role", onDelete = OnDelete.CASCADE)
     private AppUser user;
 }

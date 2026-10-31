@@ -2,6 +2,7 @@ package model.domain;
 
 import annotation.Column;
 import annotation.JoinColumn;
+import annotation.OnDelete;
 import annotation.PK;
 import annotation.Table;
 import lombok.*;
@@ -20,7 +21,7 @@ public class Funding extends BaseDomain {
     @Column(name = "funding_pk")
     private Long pk;
 
-    @JoinColumn(name = "maker_fk", nullable = false)
+    @JoinColumn(name = "maker_fk", nullable = false, onDelete = OnDelete.CASCADE)
     private AppUser maker;
 
     @Builder.Default

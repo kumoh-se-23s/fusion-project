@@ -2,6 +2,7 @@ package model.domain;
 
 import annotation.Column;
 import annotation.JoinColumn;
+import annotation.OnDelete;
 import annotation.PK;
 import annotation.Table;
 import lombok.*;
@@ -17,9 +18,9 @@ public class FundingCategory extends BaseDomain {
     @Column(name = "funding_category_pk")
     private Long pk;
 
-    @JoinColumn(name = "category_fk", nullable = false, uniqueGroup = "funding_category")
+    @JoinColumn(name = "category_fk", nullable = false, uniqueGroup = "funding_category", onDelete = OnDelete.CASCADE)
     private Category category;
 
-    @JoinColumn(name = "funding_fk", nullable = false, uniqueGroup = "funding_category")
+    @JoinColumn(name = "funding_fk", nullable = false, uniqueGroup = "funding_category", onDelete = OnDelete.CASCADE)
     private Funding funding;
 }

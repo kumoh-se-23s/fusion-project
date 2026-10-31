@@ -2,6 +2,7 @@ package model.domain;
 
 import annotation.Column;
 import annotation.JoinColumn;
+import annotation.OnDelete;
 import annotation.PK;
 import annotation.Table;
 import lombok.*;
@@ -17,10 +18,10 @@ public class FundingLike extends BaseDomain {
     @Column(name = "funding_like_pk")
     private Long pk;
 
-    @JoinColumn(name = "funding_fk", nullable = false, uniqueGroup = "like")
+    @JoinColumn(name = "funding_fk", nullable = false, uniqueGroup = "like", onDelete = OnDelete.CASCADE)
     private Funding funding;
 
-    @JoinColumn(name = "user_fk", nullable = false, uniqueGroup = "like")
+    @JoinColumn(name = "user_fk", nullable = false, uniqueGroup = "like", onDelete = OnDelete.CASCADE)
     private AppUser user;
 
     @Builder.Default

@@ -93,7 +93,8 @@ public class SchemaGenerator {
                 EntityMetadata target = EntityMetadata.of(column.getRelationClass());
                 constraints.add("CONSTRAINT fk_" + table.toLowerCase() + "_" + column.columnName()
                         + " FOREIGN KEY (" + column.columnName() + ")"
-                        + " REFERENCES " + target.getTableName() + " (" + target.getPk().columnName() + ")");
+                        + " REFERENCES " + target.getTableName() + " (" + target.getPk().columnName() + ")"
+                        + column.field().getAnnotation(JoinColumn.class).onDelete().sql());
             }
         }
 

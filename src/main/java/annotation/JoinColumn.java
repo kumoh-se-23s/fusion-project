@@ -18,4 +18,7 @@ public @interface JoinColumn {
 
     //같은 그룹 이름을 가진 컬럼(@Column, @JoinColumn)끼리 묶어서 복합 UNIQUE
     String uniqueGroup() default "";
+
+    //참조 대상(부모)이 삭제될 때의 동작
+    OnDelete onDelete() default OnDelete.NONE;
 }
