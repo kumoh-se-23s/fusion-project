@@ -17,11 +17,9 @@ public class AppUser extends BaseDomain {
     @Column(name = "user_pk")
     private Long pk;
 
-    @NonNull
     @Column(name = "user_name", nullable = false)
     private String name;
 
-    @NonNull
     @Column(name = "user_email", unique = true, nullable = false)
     private String email;
 
@@ -35,7 +33,6 @@ public class AppUser extends BaseDomain {
     private String phone;
 
     @Builder.Default
-    @NonNull
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 }

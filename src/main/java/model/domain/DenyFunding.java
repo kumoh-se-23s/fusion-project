@@ -17,11 +17,9 @@ public class DenyFunding extends BaseDomain {
     @Column(name = "deny_funding_pk")
     private Long pk;
 
-    @NonNull
     @JoinColumn(name = "funding_fk", nullable = false)
     private Funding funding;
 
-    @NonNull
     @Column(name = "deny_reason", nullable = false, length = 500)
     private String reason;
 }

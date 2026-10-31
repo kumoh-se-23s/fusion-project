@@ -9,6 +9,7 @@ import model.Serializer;
 import model.domain.*;
 import model.dto.FundingData;
 import model.dto.request.funding.CreateFundingByCategoryRequest;
+import model.dto.request.funding.CreateFundingRequest;
 import model.dto.request.funding.GetFundingByCategoryAndStateRequest;
 import model.dto.response.DataCollectionResponse;
 import model.dto.response.PKResponse;
@@ -72,21 +73,20 @@ public class FundingService extends BaseService {
             AppUser maker = userRepository.findByPK(makerPK)
                     .orElseThrow(NotFoundException::new);
 
-            Funding funding;
-            try {
-                funding = Serializer.toDomain(request, Funding.class);
-                funding.toBuilder()
-                    .maker(maker)
-                    .state(FundingState.JUST_USER_INPUT)
-                    .build();
-            } catch (NullPointerException e) {
+            CreateFundingRequest fundingRequest = request.getCreateFundingRequest();
+            if (fundingRequest == null || fundingRequest.getEndDate() == null) {
                 throw new NotNullException("Funding has Null Value");
             }
-            //두 값이 null이 아닌지 먼저 검사하고 판단
+            //요청에서 비운 startDate, purposeAmount는 도메인 기본값을 유지하고 state는 JUST_USER_INPUT으로 시작
+            Funding funding = Serializer.toDomain(fundingRequest, Funding.class)
+                    .toBuilder()
+                    .maker(maker)
+                    .build();
+
             if (funding.getPurposeAmount().signum() <= 0) {
                 throw new OutOfRangeException("purposeAmount must be greater than 0");
             }
-            if (funding.getEndDate().isAfter(funding.getStartDate())) {
+            if (!funding.getEndDate().isAfter(funding.getStartDate())) {
                 throw new OutOfRangeException("endDate must be after startDate");
             }
 
@@ -131,26 +131,33 @@ public class FundingService extends BaseService {
         });
     }
 
-    //7. 펀딩 필터링
+    //7. 펀딩 필터링. 목록이 null이거나 비어 있으면 그 조건은 적용하지 않는다
     public DataCollectionResponse<FundingData> getByCategoryAndState(GetFundingByCategoryAndStateRequest dto)  {
         return tx.execute(true, () -> {
             List<FundingData> dtos = new ArrayList<>();
 
-            List<Funding> fundingList = dto.getFundingStateList().isEmpty() ?
-                    List.of() : fundingRepository.findByState(dto.getFundingStateList());
+            List<FundingState> stateList = dto.getFundingStateList();
+            List<String> categoryNames = dto.getCategoryList();
+            boolean filterState = stateList != null && !stateList.isEmpty();
 
-            List<Category> categoryList = dto.getCategoryList().isEmpty() ?
-                    List.of() : categoryRepository.findByName(dto.getCategoryList());
+            List<Funding> fundingList = filterState ?
+                    fundingRepository.findByState(stateList) : fundingRepository.findAll();
 
+            //카테고리 조건이 없으면 카테고리가 없는 펀딩도 조회되도록 바로 반환한다
+            if (categoryNames == null || categoryNames.isEmpty()) {
+                return DataCollectionResponse.<FundingData>builder()
+                        .datas(Serializer.toDataList(fundingList, FundingData.class))
+                        .amount((long) fundingList.size())
+                        .build();
+            }
+
+            List<Category> categoryList = categoryRepository.findByName(categoryNames);
 
             //한 펀딩이 여러 카테고리에 속하면 중복으로 조회되므로 한 번만 담는다
             Set<Long> fundingPKSet = new HashSet<>();
 
             for (FundingCategory fundingCategory :
-                    fundingCategoryRepository.findByFundingAndCategoryPKs(
-                            fundingList, categoryList
-                    )
-            ) {
+                    fundingCategoryRepository.findByFundingAndCategoryPKs(fundingList, categoryList)) {
                 if (!fundingPKSet.add(fundingCategory.getFunding().getPk())) {
                     continue;
                 }

@@ -16,7 +16,6 @@ public class Category extends BaseDomain {
     @Column(name = "category_pk")
     private Long pk;
 
-    @NonNull
     @Column(name = "category_name", nullable = false, unique = true, length = 100)
     private String name;
 

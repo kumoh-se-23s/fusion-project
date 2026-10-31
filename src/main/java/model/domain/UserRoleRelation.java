@@ -17,11 +17,9 @@ public class UserRoleRelation extends BaseDomain {
     @Column(name = "user_role_pk")
     private Long pk;
 
-    @NonNull
     @JoinColumn(name = "role_fk", nullable = false, uniqueGroup = "user_role")
     private UserRole role;
 
-    @NonNull
     @JoinColumn(name = "user_fk", nullable = false, uniqueGroup = "user_role")
     private AppUser user;
 }

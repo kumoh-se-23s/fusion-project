@@ -19,20 +19,16 @@ public class DonateCancel extends BaseDomain {
     @Column(name = "cancel_donate_pk")
     private Long pk;
 
-    @NonNull
     @Column(name = "donate_amount", nullable = false)
     private BigDecimal amount;
 
     @Builder.Default
-    @NonNull
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    @NonNull
     @JoinColumn(name = "reward_fk", nullable = false)
     private Reward reward;
 
-    @NonNull
     @JoinColumn(name = "user_fk", nullable = false)
     private AppUser user;
 }

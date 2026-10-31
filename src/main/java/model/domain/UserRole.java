@@ -16,7 +16,6 @@ public class UserRole extends BaseDomain {
     @Column(name = "role_pk")
     private Long pk;
 
-    @NonNull
     @Column(name = "role_name", nullable = false, unique = true, length = 50)
     private String roleName;
 }

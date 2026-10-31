@@ -17,11 +17,9 @@ public class FundingCategory extends BaseDomain {
     @Column(name = "funding_category_pk")
     private Long pk;
 
-    @NonNull
     @JoinColumn(name = "category_fk", nullable = false, uniqueGroup = "funding_category")
     private Category category;
 
-    @NonNull
     @JoinColumn(name = "funding_fk", nullable = false, uniqueGroup = "funding_category")
     private Funding funding;
 }

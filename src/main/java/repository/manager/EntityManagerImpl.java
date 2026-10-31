@@ -2,6 +2,7 @@ package repository.manager;
 
 import config.PooledDataSource;
 import exception.NotFoundException;
+import exception.NotNullException;
 import exception.OptimisticLockException;
 import exception.TransactionException;
 import repository.manager.mapper.EntityMapper;
@@ -37,6 +38,12 @@ public class EntityManagerImpl implements EntityManager {
         ColumnInfo version = metadata.getVersion();
         if (version != null && version.getValue(entity) == null) {
             version.setValue(entity, 0L);
+        }
+        //NOT NULL 컬럼에 null을 넣으면 DB 오류 대신 400으로 응답
+        for (ColumnInfo column : metadata.getInsertColumns()) {
+            if (!column.isNullable() && column.getValue(entity) == null) {
+                throw new NotNullException("'" + column.field().getName() + "' cannot be null");
+            }
         }
 
         List<Object> params = values(entity, metadata.getInsertColumns());

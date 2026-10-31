@@ -1,7 +1,6 @@
 package service.internal;
 
 import exception.NotFoundException;
-import exception.NotNullException;
 import lombok.RequiredArgsConstructor;
 import model.Serializer;
 import model.domain.Category;
@@ -20,13 +19,7 @@ public class CategoryService extends BaseService {
 
     public PKResponse createCategory(CreateCategoryRequest dto) {
         return tx.execute(() -> {
-            Category category;
-
-            try {
-                category = Serializer.toDomain(dto, Category.class);
-            } catch (NullPointerException e) {
-                throw new NotNullException("Category has Null Value");
-            }
+            Category category = Serializer.toDomain(dto, Category.class);
             Long categoryPK = this.categoryRepository.create(category).getPk();
             return new PKResponse(categoryPK);
         });

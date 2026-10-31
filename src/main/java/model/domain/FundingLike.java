@@ -17,16 +17,13 @@ public class FundingLike extends BaseDomain {
     @Column(name = "funding_like_pk")
     private Long pk;
 
-    @NonNull
     @JoinColumn(name = "funding_fk", nullable = false, uniqueGroup = "like")
     private Funding funding;
 
-    @NonNull
     @JoinColumn(name = "user_fk", nullable = false, uniqueGroup = "like")
     private AppUser user;
 
     @Builder.Default
-    @NonNull
     @Column(name = "like_type", nullable = false)
     private Boolean likeType = true;
 }
