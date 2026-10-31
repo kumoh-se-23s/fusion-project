@@ -15,7 +15,7 @@ public class FundingService {
     private final UserRepository userRepository;
     private final RewardRepository rewardRepository;
 
-    public FundingRewardResponse getFundingByReward(Long fundingPK) {
-        List<Reward> rewardList = rewardRepository.find(Filter())
-    }
+//    public FundingRewardResponse getFundingByReward(Long fundingPK) {
+//        //List<Reward> rewardList = rewardRepository.find(Filter());
+//    }
 }

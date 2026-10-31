@@ -43,43 +43,37 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    public boolean validateToken(String token) {
-        try {
-            Map<String, String> parseToken = parse(token);
+    public boolean validateToken(String token) throws JsonProcessingException {
+        Map<String, String> parseToken = parse(token);
 
-            String header = parseToken.get("header");
-            Map<String, Object> decodedHeader = jsonToMap(decoding(header));
+        String header = parseToken.get("header");
+        Map<String, Object> decodedHeader = jsonToMap(decoding(header));
 
-            if (!decodedHeader.get("alg").equals(alg)) {
-                return false;
-            }
-
-            String payload = parseToken.get("payload");
-            Map<String, Object> decodedPayload = jsonToMap(decoding(payload));
-
-            long now = System.currentTimeMillis() / 1000;
-            if (((Number) decodedPayload.get("exp")).longValue() < now || decodedPayload.get("sub") == null) {
-                return false;
-            }
-
-            String expectedToken = Jwts.builder()
-                    .header()
-                    .add("alg", alg)
-                    .and()
-                    .content(decoding(payload))
-                    .signWith(key)
-                    .compact();
-
-            if (!expectedToken.equals(token)) {
-                return false;
-            }
-
-            return true;
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        } catch (NullPointerException e) {
-            throw new RuntimeException(e);
+        if (!decodedHeader.get("alg").equals(alg)) {
+            return false;
         }
+
+        String payload = parseToken.get("payload");
+        Map<String, Object> decodedPayload = jsonToMap(decoding(payload));
+
+        long now = System.currentTimeMillis() / 1000;
+        if (((Number) decodedPayload.get("exp")).longValue() < now || decodedPayload.get("sub") == null) {
+            return false;
+        }
+
+        String expectedToken = Jwts.builder()
+                .header()
+                .add("alg", alg)
+                .and()
+                .content(decoding(payload))
+                .signWith(key)
+                .compact();
+
+        if (!expectedToken.equals(token)) {
+            return false;
+        }
+
+        return true;
     }
 
     private Map<String, String> parse(String token) {
