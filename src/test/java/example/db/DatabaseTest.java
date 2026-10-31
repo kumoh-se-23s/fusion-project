@@ -2,9 +2,13 @@ package example.db;
 
 import org.junit.jupiter.api.BeforeEach;
 
+import java.math.BigDecimal;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 /**
  * DB를 쓰는 테스트의 부모 클래스
- * InitDB.main으로 넣어둔 기본 데이터를 불러오기만 하고, DB를 지우지 않는다.
+ * InitDB.main으로 넣어둔 기본 데이터의 값과 pk를 사용하고, DB를 지우지 않는다.
  */
 public abstract class DatabaseTest {
     protected InitDB db;
@@ -12,5 +16,10 @@ public abstract class DatabaseTest {
     @BeforeEach
     protected void setUpDatabase() {
         db = InitDB.load();
+    }
+
+    //DB에서 읽으면 소수 자릿수가 달라지므로(10000 -> 10000.00) 값만 비교한다
+    protected static void assertAmount(String expected, BigDecimal actual) {
+        assertEquals(0, new BigDecimal(expected).compareTo(actual), "expected " + expected + " but was " + actual);
     }
 }

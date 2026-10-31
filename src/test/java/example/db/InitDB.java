@@ -4,10 +4,6 @@ import config.AppConfig;
 import config.PooledDataSource;
 import constant.FundingState;
 import model.domain.*;
-import repository.BaseRepositoryImpl;
-import repository.Filter;
-import repository.Order;
-import repository.Sort;
 import repository.manager.query_dsl.EntityMetadata;
 import repository.manager.schema.SchemaGenerator;
 
@@ -17,11 +13,11 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 /**
- * 테스트 DB의 테이블 생성(create), 기본 데이터 삽입(init), 테이블 삭제(drop), 기본 데이터 조회(load)를 담당하는 클래스
+ * 테스트 DB의 테이블 생성(create), 기본 데이터 삽입(init), 테이블 삭제(drop)를 담당하는 클래스
  * 생성, 수정 테스트는 기본 데이터를 바꾸므로, 다시 실행하려면 InitDB.main으로 초기화한다.
+ * 필드의 pk는 초기화 직후 insert() 순서대로 매겨지는 값이므로, 삽입 순서를 바꾸면 pk도 함께 바꾼다.
  */
 public class InitDB {
     private static final List<Class<?>> ENTITIES = List.of(
@@ -31,25 +27,273 @@ public class InitDB {
 
     public final AppConfig config = new AppConfig();
 
-    public AppUser maker;
-    public AppUser deliveredUser;     //completedFunding에 후원, 배송 완료
-    public AppUser undeliveredUser;   //completedFunding에 후원, 배송 전
-    public AppUser newUser;           //후원 내역 없음
+    private final LocalDateTime now = LocalDateTime.now();
 
-    public Category food;
-    public Category tech;
+    public AppUser maker1 = AppUser.builder()
+            .pk(1L)
+            .name("메이커1")
+            .address("메이커1 주소")
+            .email("메이커1 이메일")
+            .phone("메이커1 전화번호")
+            .postal("메이커1 우편번호")
+            .build();
+    public AppUser maker2 = AppUser.builder()
+            .pk(2L)
+            .name("메이커2")
+            .address("메이커2 주소")
+            .email("메이커2 이메일")
+            .phone("메이커2 전화번호")
+            .postal("메이커2 우편번호")
+            .build();
 
-    //펀딩은 모두 maker가 만들었다
-    public Funding completedFunding;  //카테고리 food, tech, 후원 2건
-    public Funding inProgressFunding; //카테고리 food, 후원 1건
-    public Funding approvedFunding;   //카테고리 tech
-    public Funding pendingFunding;    //카테고리 tech
-    public Funding noCategoryFunding; //JUST_USER_INPUT
+    public AppUser donateUser1 = AppUser.builder()
+            .pk(3L)
+            .name("후원자1")
+            .address("후원자1 주소")
+            .email("후원자1 이메일")
+            .phone("후원자1 전화번호")
+            .postal("후원자1 우편번호")
+            .build();
+    public AppUser donateUser2 = AppUser.builder()
+            .pk(4L)
+            .name("후원자2")
+            .address("후원자2 주소")
+            .email("후원자2 이메일")
+            .phone("후원자2 전화번호")
+            .postal("후원자2 우편번호")
+            .build();
+    //후원 내역 없음
+    public AppUser newUser = AppUser.builder()
+            .pk(5L)
+            .name("신규 사용자")
+            .address("신규 사용자 주소")
+            .email("신규 사용자 이메일")
+            .phone("신규 사용자 전화번호")
+            .postal("신규 사용자 우편번호")
+            .build();
 
-    public Reward completedReward;
-    public Reward inProgressReward;   //남은 수량 4, undeliveredUser가 1개 후원
-    public Reward openReward;         //남은 수량 5
-    public Reward soldOutReward;      //남은 수량 0
+    public Category food = Category.builder()
+            .pk(1L)
+            .name("food")
+            .description("음식")
+            .build();
+
+    public Category tech = Category.builder()
+            .pk(2L)
+            .name("tech")
+            .description("기술")
+            .build();
+    public Category furniture = Category.builder()
+            .pk(3L)
+            .name("furniture")
+            .description("가구").build();
+    public Category travel = Category.builder()
+            .pk(4L)
+            .name("travel")
+            .description("여행")
+            .build();
+
+    public Funding maker1PendingFunding = Funding.builder()
+            .pk(1L)
+            .maker(maker1)
+            .title("메이커1 승인 대기 펀딩")
+            .text("메이커1 승인 대기 펀딩 소개")
+            .state(FundingState.PENDING_APPROVAL)
+            .purposeAmount(new BigDecimal("100000"))
+            .endDate(now.plusDays(30))
+            .build();
+    public Funding maker2PendingFunding = Funding.builder()
+            .pk(2L)
+            .maker(maker2)
+            .title("메이커2 승인 대기 펀딩")
+            .text("메이커2 승인 대기 펀딩 소개")
+            .state(FundingState.PENDING_APPROVAL)
+            .purposeAmount(new BigDecimal("100000"))
+            .endDate(now.plusDays(30))
+            .build();
+    //후원 2건
+    public Funding maker1ApproveFunding = Funding.builder()
+            .pk(3L)
+            .maker(maker1)
+            .title("메이커1 승인 펀딩")
+            .text("메이커1 승인 펀딩 소개")
+            .state(FundingState.APPROVED)
+            .purposeAmount(new BigDecimal("100000"))
+            .donateAmount(new BigDecimal("3000"))
+            .endDate(now.plusDays(30))
+            .build();
+    public Funding maker2ApproveFunding = Funding.builder()
+            .pk(4L)
+            .maker(maker2)
+            .title("메이커2 승인 펀딩")
+            .text("메이커2 승인 펀딩 소개")
+            .state(FundingState.APPROVED)
+            .purposeAmount(new BigDecimal("100000"))
+            .endDate(now.plusDays(30))
+            .build();
+    //후원 2건
+    public Funding maker1CompleteFunding = Funding.builder()
+            .pk(5L)
+            .maker(maker1)
+            .title("메이커1 완료 펀딩")
+            .text("메이커1 완료 펀딩 소개")
+            .state(FundingState.COMPLETED)
+            .purposeAmount(new BigDecimal("100000"))
+            .donateAmount(new BigDecimal("3000"))
+            .endDate(now.plusDays(30))
+            .build();
+
+    public Reward maker1PendingReward1 = Reward.builder()
+            .pk(1L)
+            .funding(maker1PendingFunding)
+            .category(food)
+            .name("메이커1 승인 대기 리워드1")
+            .text("메이커1 승인 대기 리워드1 소개")
+            .requiredAmount(new BigDecimal("1000"))
+            .maxQuantity(10L)
+            .remainQuantity(10L)
+            .provideDate(now.plusDays(60))
+            .build();
+    public Reward maker1PendingReward2 = Reward.builder()
+            .pk(2L)
+            .funding(maker1PendingFunding)
+            .category(food)
+            .name("메이커1 승인 대기 리워드2")
+            .text("메이커1 승인 대기 리워드2 소개")
+            .requiredAmount(new BigDecimal("2000"))
+            .maxQuantity(10L)
+            .remainQuantity(10L)
+            .provideDate(now.plusDays(60))
+            .build();
+
+    public Reward maker2PendingReward1 = Reward.builder()
+            .pk(3L)
+            .funding(maker2PendingFunding)
+            .category(tech)
+            .name("메이커2 승인 대기 리워드1")
+            .text("메이커2 승인 대기 리워드1 소개")
+            .requiredAmount(new BigDecimal("1000"))
+            .maxQuantity(10L)
+            .remainQuantity(10L)
+            .provideDate(now.plusDays(60))
+            .build();
+    public Reward maker2PendingReward2 = Reward.builder()
+            .pk(4L)
+            .funding(maker2PendingFunding)
+            .category(tech)
+            .name("메이커2 승인 대기 리워드2")
+            .text("메이커2 승인 대기 리워드2 소개")
+            .requiredAmount(new BigDecimal("2000"))
+            .maxQuantity(10L)
+            .remainQuantity(10L)
+            .provideDate(now.plusDays(60))
+            .build();
+
+    //후원 1건
+    public Reward maker1ApproveReward1 = Reward.builder()
+            .pk(5L)
+            .funding(maker1ApproveFunding)
+            .category(furniture)
+            .name("메이커1 승인 리워드1")
+            .text("메이커1 승인 리워드1 소개")
+            .requiredAmount(new BigDecimal("1000"))
+            .maxQuantity(10L)
+            .remainQuantity(9L)
+            .provideDate(now.plusDays(60))
+            .build();
+    //후원 1건
+    public Reward maker1ApproveReward2 = Reward.builder()
+            .pk(6L)
+            .funding(maker1ApproveFunding)
+            .category(furniture)
+            .name("메이커1 승인 리워드2")
+            .text("메이커1 승인 리워드2 소개")
+            .requiredAmount(new BigDecimal("2000"))
+            .maxQuantity(10L)
+            .remainQuantity(9L)
+            .provideDate(now.plusDays(60))
+            .build();
+
+    public Reward maker2ApproveReward1 = Reward.builder()
+            .pk(7L)
+            .funding(maker2ApproveFunding)
+            .category(tech)
+            .name("메이커2 승인 리워드1")
+            .text("메이커2 승인 리워드1 소개")
+            .requiredAmount(new BigDecimal("1000"))
+            .maxQuantity(10L)
+            .remainQuantity(10L)
+            .provideDate(now.plusDays(60))
+            .build();
+    public Reward maker2ApproveReward2 = Reward.builder()
+            .pk(8L)
+            .funding(maker2ApproveFunding)
+            .category(tech)
+            .name("메이커2 승인 리워드2")
+            .text("메이커2 승인 리워드2 소개")
+            .requiredAmount(new BigDecimal("2000"))
+            .maxQuantity(10L)
+            .remainQuantity(10L)
+            .provideDate(now.plusDays(60))
+            .build();
+
+    //후원 1건, 배송 완료
+    public Reward maker1CompleteReward1 = Reward.builder()
+            .pk(9L)
+            .funding(maker1CompleteFunding)
+            .category(travel)
+            .name("메이커1 완료 리워드1")
+            .text("메이커1 완료 리워드1 소개")
+            .requiredAmount(new BigDecimal("1000"))
+            .maxQuantity(10L)
+            .remainQuantity(9L)
+            .provideDate(now.plusDays(60))
+            .build();
+    //후원 1건, 배송 전
+    public Reward maker1CompleteReward2 = Reward.builder()
+            .pk(10L)
+            .funding(maker1CompleteFunding)
+            .category(travel)
+            .name("메이커1 완료 리워드2")
+            .text("메이커1 완료 리워드2 소개")
+            .requiredAmount(new BigDecimal("2000"))
+            .maxQuantity(10L)
+            .remainQuantity(9L)
+            .provideDate(now.plusDays(60))
+            .build();
+
+    public Donate donateUser1CompleteDonate = Donate.builder()
+            .pk(1L)
+            .user(donateUser1)
+            .reward(maker1CompleteReward1)
+            .amount(new BigDecimal("1000"))
+            .quantity(1L)
+            .state(true)
+            .build();
+    public Donate donateUser2CompleteDonate = Donate.builder()
+            .pk(2L)
+            .user(donateUser2)
+            .reward(maker1CompleteReward2)
+            .amount(new BigDecimal("2000"))
+            .quantity(1L)
+            .state(false)
+            .build();
+    public Donate donateUser1ApproveDonate = Donate.builder()
+            .pk(3L)
+            .user(donateUser1)
+            .reward(maker1ApproveReward1)
+            .amount(new BigDecimal("1000"))
+            .quantity(1L)
+            .state(false)
+            .build();
+    public Donate donateUser2ApproveDonate = Donate.builder()
+            .pk(4L)
+            .user(donateUser2)
+            .reward(maker1ApproveReward2)
+            .amount(new BigDecimal("2000"))
+            .quantity(1L)
+            .state(false)
+            .build();
 
     private InitDB() {
     }
@@ -61,42 +305,9 @@ public class InitDB {
         init();
     }
 
-    //이미 삽입된 기본 데이터를 불러온다. DB를 변경하지 않는다
+    //기본 데이터의 pk와 값이 담긴 객체를 돌려준다. DB를 조회하거나 변경하지 않는다
     public static InitDB load() {
-        InitDB db = new InitDB();
-
-        db.maker = first(db.config.getUserRepository(), "email", "maker@test.com");
-        db.deliveredUser = first(db.config.getUserRepository(), "email", "delivered@test.com");
-        db.undeliveredUser = first(db.config.getUserRepository(), "email", "undelivered@test.com");
-        db.newUser = first(db.config.getUserRepository(), "email", "new@test.com");
-
-        db.food = first(db.config.getCategoryRepository(), "name", "food");
-        db.tech = first(db.config.getCategoryRepository(), "name", "tech");
-
-        db.completedFunding = first(db.config.getFundingRepository(), "title", "completed");
-        db.inProgressFunding = first(db.config.getFundingRepository(), "title", "inProgress");
-        db.approvedFunding = first(db.config.getFundingRepository(), "title", "approved");
-        db.pendingFunding = first(db.config.getFundingRepository(), "title", "pending");
-        db.noCategoryFunding = first(db.config.getFundingRepository(), "title", "noCategory");
-
-        db.completedReward = first(db.config.getRewardRepository(), "name", "completedReward");
-        db.inProgressReward = first(db.config.getRewardRepository(), "name", "inProgressReward");
-        db.openReward = first(db.config.getRewardRepository(), "name", "openReward");
-        db.soldOutReward = first(db.config.getRewardRepository(), "name", "soldOutReward");
-        return db;
-    }
-
-    //테스트가 같은 값으로 데이터를 만들어도 먼저 삽입된 기본 데이터를 찾도록 PK 순으로 조회한다
-    private static <T extends BaseDomain> T first(BaseRepositoryImpl<T, Long> repository, String field, Object value) {
-        List<T> result = repository.find(Filter.builder()
-                .conditions(Map.of(field, value))
-                .sort(Sort.by(Order.asc("pk")))
-                .limit(1)
-                .build());
-        if (result.isEmpty()) {
-            throw new IllegalStateException("Seed data not found (" + field + "=" + value + "). Run InitDB.main first");
-        }
-        return result.get(0);
+        return new InitDB();
     }
 
     //테이블 생성
@@ -129,87 +340,40 @@ public class InitDB {
         }
     }
 
-    //기본 데이터를 리포지토리로 삽입
+    //필드에 정해둔 기본 데이터를 리포지토리로 삽입. 필드의 pk와 맞도록 순서를 유지한다
     private void insert() {
-        LocalDateTime now = LocalDateTime.now();
+        List.of(maker1, maker2, donateUser1, donateUser2, newUser)
+                .forEach(config.getUserRepository()::create);
 
-        maker = createUser("maker");
-        deliveredUser = createUser("delivered");
-        undeliveredUser = createUser("undelivered");
-        newUser = createUser("new");
+        List.of(food, tech, furniture, travel)
+                .forEach(config.getCategoryRepository()::create);
 
-        food = config.getCategoryRepository().create(Category.builder().name("food").build());
-        tech = config.getCategoryRepository().create(Category.builder().name("tech").build());
+        List.of(maker1PendingFunding, maker2PendingFunding, maker1ApproveFunding, maker2ApproveFunding, maker1CompleteFunding)
+                .forEach(config.getFundingRepository()::create);
 
-        completedFunding = createFunding("completed", FundingState.COMPLETED, "2000", now);
-        inProgressFunding = createFunding("inProgress", FundingState.IN_PROGRESS, "1000", now);
-        approvedFunding = createFunding("approved", FundingState.APPROVED, "0", now);
-        pendingFunding = createFunding("pending", FundingState.PENDING_APPROVAL, "0", now);
-        noCategoryFunding = createFunding("noCategory", FundingState.JUST_USER_INPUT, "0", now);
+        bindCategory(maker1PendingFunding, food);
+        bindCategory(maker2PendingFunding, tech);
+        bindCategory(maker1ApproveFunding, furniture);
+        bindCategory(maker1ApproveFunding, tech);
+        bindCategory(maker2ApproveFunding, tech);
+        bindCategory(maker1CompleteFunding, travel);
+        bindCategory(maker1CompleteFunding, food);
 
-        bindCategory(completedFunding, food);
-        bindCategory(completedFunding, tech);
-        bindCategory(inProgressFunding, food);
-        bindCategory(approvedFunding, tech);
-        bindCategory(pendingFunding, tech);
+        List.of(maker1PendingReward1, maker1PendingReward2,
+                        maker2PendingReward1, maker2PendingReward2,
+                        maker1ApproveReward1, maker1ApproveReward2,
+                        maker2ApproveReward1, maker2ApproveReward2,
+                        maker1CompleteReward1, maker1CompleteReward2)
+                .forEach(config.getRewardRepository()::create);
 
-        completedReward = createReward("completedReward", completedFunding, 5L, now);
-        inProgressReward = createReward("inProgressReward", inProgressFunding, 4L, now);
-        openReward = createReward("openReward", pendingFunding, 5L, now);
-        soldOutReward = createReward("soldOutReward", pendingFunding, 0L, now);
-
-        createDonate(deliveredUser, completedReward, true);
-        createDonate(undeliveredUser, completedReward, false);
-        createDonate(undeliveredUser, inProgressReward, false);
-    }
-
-    private AppUser createUser(String name) {
-        return config.getUserRepository().create(AppUser.builder()
-                .name(name)
-                .email(name + "@test.com")
-                .postal("12345")
-                .address(name + " address")
-                .phone("010-0000-0000")
-                .build());
-    }
-
-    private Funding createFunding(String title, FundingState state, String donateAmount, LocalDateTime now) {
-        return config.getFundingRepository().create(Funding.builder()
-                .maker(maker)
-                .title(title)
-                .state(state)
-                .purposeAmount(new BigDecimal("10000"))
-                .donateAmount(new BigDecimal(donateAmount))
-                .endDate(now.plusDays(30))
-                .build());
+        List.of(donateUser1CompleteDonate, donateUser2CompleteDonate, donateUser1ApproveDonate, donateUser2ApproveDonate)
+                .forEach(config.getDonateRepository()::create);
     }
 
     private void bindCategory(Funding funding, Category category) {
         config.getFundingCategoryRepository().create(FundingCategory.builder()
                 .funding(funding)
                 .category(category)
-                .build());
-    }
-
-    private Reward createReward(String name, Funding funding, Long remainQuantity, LocalDateTime now) {
-        return config.getRewardRepository().create(Reward.builder()
-                .funding(funding)
-                .category(food)
-                .name(name)
-                .requiredAmount(new BigDecimal("1000"))
-                .maxQuantity(5L)
-                .remainQuantity(remainQuantity)
-                .provideDate(now.plusDays(60))
-                .build());
-    }
-
-    private void createDonate(AppUser user, Reward reward, boolean delivered) {
-        config.getDonateRepository().create(Donate.builder()
-                .user(user)
-                .reward(reward)
-                .amount(new BigDecimal("1000"))
-                .quantity(1L)
-                .state(delivered)
                 .build());
     }
 }
