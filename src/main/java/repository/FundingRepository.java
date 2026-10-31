@@ -28,4 +28,10 @@ public class FundingRepository extends BaseRepositoryImpl<Funding, Long> {
                 .build()
         );
     }
+    public List<Funding> findByUserPK(Long userPK) {
+        return find(Filter.builder()
+                .conditions(Map.of("maker", userPK))
+                .build()
+        );
+    }
 }

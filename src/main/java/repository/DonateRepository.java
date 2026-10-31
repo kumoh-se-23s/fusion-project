@@ -1,17 +1,12 @@
 package repository;
-
+import model.domain.AppUser;
 import model.domain.Donate;
 import model.domain.Reward;
-import model.dto.RewardData;
-
-
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 
 public class DonateRepository extends BaseRepositoryImpl<Donate, Long> {
-
 
     public List<Donate> findByUserPk(Long userPk) {//rewardService에서 사용할
         return find(
@@ -35,14 +30,7 @@ public class DonateRepository extends BaseRepositoryImpl<Donate, Long> {
             }
         }
         return false;
-import model.domain.AppUser;
-import model.domain.Donate;
-import model.domain.Reward;
-
-import java.util.List;
-import java.util.Map;
-
-public class DonateRepository extends BaseRepositoryImpl<Donate, Long>{
+    }
 
     public List<Donate> findByRewards(List<Reward> rewards) {
         return find(Filter.builder()
@@ -60,5 +48,4 @@ public class DonateRepository extends BaseRepositoryImpl<Donate, Long>{
         );
 
     }
-
 }

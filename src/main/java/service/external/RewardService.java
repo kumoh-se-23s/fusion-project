@@ -1,4 +1,4 @@
-package service;
+package service.external;
 
 import exception.NotFoundException;
 import exception.LimitNumberOutException;
@@ -19,7 +19,6 @@ import model.dto.request.reward.CreateRewardDataRequest;
 import repository.CategoryRepository;
 import repository.DonateRepository;
 import repository.FundingRepository;
-import repository.UserRepository;
 import repository.RewardRepository;
 
 import java.math.BigDecimal;
@@ -31,7 +30,6 @@ public class RewardService {
 
     private final FundingRepository fundingRepository;
     private final DonateRepository donateRepository;
-    private final UserRepository userRepository;
     private final RewardRepository rewardRepository;
     private final CategoryRepository categoryRepository;
 
@@ -85,7 +83,7 @@ public class RewardService {
 
         // 펀딩 조회
         Funding funding = fundingRepository
-                .findById(request.getFundingFk())
+                .findByPK(request.getFundingFk())
                 .orElseThrow(
                         () -> new NotFoundException(
                                 "리워드를 등록할 펀딩을 찾을 수 없습니다."
@@ -94,7 +92,7 @@ public class RewardService {
 
         // 카테고리 조회(사용자가 직접 입력)
         Category category = categoryRepository
-                .findById(request.getCategoryFk())
+                .findByPK(request.getCategoryFk())
                 .orElseThrow(
                         () -> new NotFoundException(
                                 "리워드 카테고리를 찾을 수 없습니다."
@@ -169,7 +167,7 @@ public class RewardService {
 
 
     //  메이커의 프로젝트별 리워드 조회
-    public List<List<RewardData>> getRewardfindByMaker(
+    public List<List<RewardData>> getRewardFindByMaker(
             Long makerPk
     ) {
 
@@ -180,7 +178,7 @@ public class RewardService {
         }
 
         List<Funding> fundingList =
-                fundingRepository.findByUserPk(makerPk);
+                fundingRepository.findByUserPK(makerPk);
 
         List<List<RewardData>> dtoList = new ArrayList<>();
 

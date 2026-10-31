@@ -2,6 +2,8 @@ package repository;
 
 import java.util.List;
 import java.util.Map;
+
+import model.domain.Funding;
 import model.domain.Reward;
 
 
@@ -34,6 +36,13 @@ public class RewardRepository extends BaseRepositoryImpl<Reward, Long> {
         }
         return true;
     }
+    public List<Reward> findByFunding(Funding funding) {
+        return find(
+                    Filter.builder()
+                            .conditions(Map.of("funding", funding))
+                            .build()
+        );
+    }
 /*
     public List<Reward> findByMakerPk(Long fundingPk) {
 
@@ -61,24 +70,6 @@ public class RewardRepository extends BaseRepositoryImpl<Reward, Long> {
 
 
     }
-
 */
-
-
-import model.domain.Funding;
-import model.domain.Reward;
-
-import java.util.List;
-import java.util.Map;
-
-public class RewardRepository extends BaseRepositoryImpl<Reward, Long> {
-    public List<Reward> findByFunding(Funding funding) {
-        return find(
-                    Filter.builder()
-                            .conditions(Map.of("funding", funding))
-                            .build()
-        );
-    }
-
 }
 

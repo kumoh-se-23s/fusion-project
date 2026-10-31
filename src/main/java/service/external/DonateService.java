@@ -1,4 +1,4 @@
-package service;
+package service.external;
 
 import exception.AlreadyDonatedException;
 import exception.InvalidRequestException;
@@ -21,6 +21,7 @@ import repository.DonateRepository;
 import repository.FundingRepository;
 import repository.RewardRepository;
 import repository.UserRepository;
+import service.BaseService;
 
 import java.math.BigDecimal;
 
@@ -43,7 +44,7 @@ public class DonateService extends BaseService {
         }
 
         Funding funding = fundingRepository
-                .findById(fundingPk)
+                .findByPK(fundingPk)
                 .orElseThrow(() -> new NotFoundException(
                         "후원하려는 펀딩을 찾을 수 없습니다."
                 ));
@@ -94,14 +95,14 @@ public class DonateService extends BaseService {
 
         // 사용자 조회
         AppUser user = userRepository
-                .findById(request.getUserFk())
+                .findByPK(request.getUserFk())
                 .orElseThrow(() -> new NotFoundException(
                         "후원자를 찾을 수 없습니다."
                 ));
 
         // 리워드 조회
         Reward reward = rewardRepository
-                .findById(request.getRewardFk())
+                .findByPK(request.getRewardFk())
                 .orElseThrow(() -> new NotFoundException(
                         "신청할 리워드를 찾을 수 없습니다."
                 ));
