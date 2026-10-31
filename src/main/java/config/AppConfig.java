@@ -1,16 +1,7 @@
 package config;
 
 import lombok.Getter;
-import repository.CategoryRepository;
-import repository.DenyFundingRepository;
-import repository.DonateRepository;
-import repository.FundingCategoryRepository;
-import repository.FundingLikeRepository;
-import repository.FundingRepository;
-import repository.ReviewLikeRepository;
-import repository.ReviewRepository;
-import repository.RewardRepository;
-import repository.UserRepository;
+import repository.*;
 import repository.manager.schema.SchemaGenerator;
 import service.external.FundingService;
 import service.external.ReviewService;
@@ -32,6 +23,8 @@ public class AppConfig {
     private final ReviewRepository reviewRepository = new ReviewRepository();
     private final RewardRepository rewardRepository = new RewardRepository();
     private final UserRepository userRepository = new UserRepository();
+    private final UserRoleRepository userRoleRepository = new UserRoleRepository();
+    private final UserRoleRelationRepository userRoleRelationRepository = new UserRoleRelationRepository();
 
     private final CategoryService categoryService = new CategoryService(categoryRepository);
     private final FundingService fundingService = new FundingService(
