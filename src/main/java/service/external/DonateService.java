@@ -24,6 +24,7 @@ import repository.UserRepository;
 import service.BaseService;
 
 import java.math.BigDecimal;
+import java.util.Map;
 
 @RequiredArgsConstructor
 public class DonateService extends BaseService {
@@ -147,10 +148,22 @@ public class DonateService extends BaseService {
         );
 
         // 후원 내역 저장
+        // 후원 내역 저장
         if (donateRepository.create(donate) == null) {
             throw new TransactionException(
                     "후원 신청 저장에 실패했습니다."
             );
         }
+
+// 남은 재고 계산
+        Long newRemainQuantity = remainQuantity - quantity;
+
+// 리워드 재고 업데이트
+        rewardRepository.update(
+                reward.getPk(),
+                Map.of("remainQuantity", newRemainQuantity)
+        ).orElseThrow(() -> new TransactionException(
+                "리워드 재고 업데이트에 실패했습니다."
+        ));
     }
 }
