@@ -1,5 +1,6 @@
 package repository;
 
+import model.Serializer;
 import model.domain.AppUser;
 import model.domain.UserRole;
 import model.dto.UserData;
@@ -18,6 +19,12 @@ public class UserRepository extends BaseRepositoryImpl<AppUser,Long> {
         if(value != null) {
             resultMap.put(key, value);
         }
+    }
+
+    public Optional<AppUser> createUser(UserData userData) {
+        AppUser appUser = Serializer.toDomain(userData, AppUser.class);
+
+        return Optional.of(create(appUser));
     }
 
     public Optional<Long> updateUser(long userPk, UserData userData) {

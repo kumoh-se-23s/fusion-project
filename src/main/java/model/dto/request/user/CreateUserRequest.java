@@ -12,8 +12,6 @@ import model.dto.request.Request;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class SignUpRequest extends Request {
-    private AccountData accountData;
-
+public class CreateUserRequest extends Request {
     private UserData userData;
 }

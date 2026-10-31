@@ -1,11 +1,12 @@
 package service;
 
+import exception.InvalidRequestException;
 import exception.NotFoundException;
 import model.Serializer;
 import model.domain.AppUser;
-import model.domain.UserRole;
 import model.domain.UserRoleRelation;
 import model.dto.UserData;
+import model.dto.request.user.CreateUserRequest;
 import model.dto.request.user.UpdateUserRequest;
 import model.dto.response.DeleteResponse;
 import model.dto.response.PKResponse;
@@ -18,7 +19,6 @@ import repository.UserRoleRepository;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 public class UserService extends BaseService {
     private final UserRepository userRepository;
@@ -31,6 +31,18 @@ public class UserService extends BaseService {
         this.userRoleRelationRepository = userRoleRelationRepository;
     }
 
+    public PKResponse createUser(CreateUserRequest request) {
+        UserData userData = request.getUserData();
+
+        if(userData.getName() == null || userData.getEmail() == null) {
+            throw new InvalidRequestException("필수 사항을 입력하지 않았습니다.");
+        }
+
+        AppUser appUser = userRepository.createUser(userData).orElseThrow();
+
+        return new PKResponse(appUser.getPk());
+    }
+
     public UserResponse getMyInfo(long userPk) {
         AppUser appUser = userRepository.findByPK(userPk).orElseThrow(NotFoundException::new);
 
@@ -38,15 +50,6 @@ public class UserService extends BaseService {
 
         return new UserResponse(userData);
 
-//        if (optionalAppUser.isPresent()) {
-//            AppUser appUser = optionalAppUser.get();
-//
-//            UserData userData = Serializer.toData(appUser, UserData.class);
-//
-//            return new UserResponse(userData);
-//        } else {
-//            throw new NotFoundException();
-//        }
     }
 
     public PKResponse updateUser(long userPk, UpdateUserRequest request) {
