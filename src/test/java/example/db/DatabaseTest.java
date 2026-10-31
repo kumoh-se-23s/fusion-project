@@ -6,10 +6,7 @@ import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-/**
- * DB를 쓰는 테스트의 부모 클래스
- * InitDB.main으로 넣어둔 기본 데이터의 값과 pk를 사용하고, DB를 지우지 않는다.
- */
+
 public abstract class DatabaseTest {
     protected InitDB db;
 
