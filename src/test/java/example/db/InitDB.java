@@ -21,7 +21,7 @@ import java.util.Map;
 
 /**
  * 테스트 DB의 테이블 생성(create), 기본 데이터 삽입(init), 테이블 삭제(drop), 기본 데이터 조회(load)를 담당하는 클래스
- * 기본 데이터는 읽기 전용이다. 생성, 수정 테스트는 필요한 데이터를 직접 만들어서 사용한다.
+ * 생성, 수정 테스트는 기본 데이터를 바꾸므로, 다시 실행하려면 InitDB.main으로 초기화한다.
  */
 public class InitDB {
     private static final List<Class<?>> ENTITIES = List.of(
@@ -39,11 +39,15 @@ public class InitDB {
     public Category food;
     public Category tech;
 
-    public Funding completedFunding;  //카테고리 food, tech
+    //펀딩은 모두 maker가 만들었다
+    public Funding completedFunding;  //카테고리 food, tech, 후원 2건
+    public Funding inProgressFunding; //카테고리 food, 후원 1건
+    public Funding approvedFunding;   //카테고리 tech
     public Funding pendingFunding;    //카테고리 tech
     public Funding noCategoryFunding; //JUST_USER_INPUT
 
     public Reward completedReward;
+    public Reward inProgressReward;   //남은 수량 4, undeliveredUser가 1개 후원
     public Reward openReward;         //남은 수량 5
     public Reward soldOutReward;      //남은 수량 0
 
@@ -70,10 +74,13 @@ public class InitDB {
         db.tech = first(db.config.getCategoryRepository(), "name", "tech");
 
         db.completedFunding = first(db.config.getFundingRepository(), "title", "completed");
+        db.inProgressFunding = first(db.config.getFundingRepository(), "title", "inProgress");
+        db.approvedFunding = first(db.config.getFundingRepository(), "title", "approved");
         db.pendingFunding = first(db.config.getFundingRepository(), "title", "pending");
         db.noCategoryFunding = first(db.config.getFundingRepository(), "title", "noCategory");
 
         db.completedReward = first(db.config.getRewardRepository(), "name", "completedReward");
+        db.inProgressReward = first(db.config.getRewardRepository(), "name", "inProgressReward");
         db.openReward = first(db.config.getRewardRepository(), "name", "openReward");
         db.soldOutReward = first(db.config.getRewardRepository(), "name", "soldOutReward");
         return db;
@@ -134,20 +141,26 @@ public class InitDB {
         food = config.getCategoryRepository().create(Category.builder().name("food").build());
         tech = config.getCategoryRepository().create(Category.builder().name("tech").build());
 
-        completedFunding = createFunding("completed", FundingState.COMPLETED, now);
-        pendingFunding = createFunding("pending", FundingState.PENDING_APPROVAL, now);
-        noCategoryFunding = createFunding("noCategory", FundingState.JUST_USER_INPUT, now);
+        completedFunding = createFunding("completed", FundingState.COMPLETED, "2000", now);
+        inProgressFunding = createFunding("inProgress", FundingState.IN_PROGRESS, "1000", now);
+        approvedFunding = createFunding("approved", FundingState.APPROVED, "0", now);
+        pendingFunding = createFunding("pending", FundingState.PENDING_APPROVAL, "0", now);
+        noCategoryFunding = createFunding("noCategory", FundingState.JUST_USER_INPUT, "0", now);
 
         bindCategory(completedFunding, food);
         bindCategory(completedFunding, tech);
+        bindCategory(inProgressFunding, food);
+        bindCategory(approvedFunding, tech);
         bindCategory(pendingFunding, tech);
 
         completedReward = createReward("completedReward", completedFunding, 5L, now);
+        inProgressReward = createReward("inProgressReward", inProgressFunding, 4L, now);
         openReward = createReward("openReward", pendingFunding, 5L, now);
         soldOutReward = createReward("soldOutReward", pendingFunding, 0L, now);
 
         createDonate(deliveredUser, completedReward, true);
         createDonate(undeliveredUser, completedReward, false);
+        createDonate(undeliveredUser, inProgressReward, false);
     }
 
     private AppUser createUser(String name) {
@@ -160,12 +173,13 @@ public class InitDB {
                 .build());
     }
 
-    private Funding createFunding(String title, FundingState state, LocalDateTime now) {
+    private Funding createFunding(String title, FundingState state, String donateAmount, LocalDateTime now) {
         return config.getFundingRepository().create(Funding.builder()
                 .maker(maker)
                 .title(title)
                 .state(state)
                 .purposeAmount(new BigDecimal("10000"))
+                .donateAmount(new BigDecimal(donateAmount))
                 .endDate(now.plusDays(30))
                 .build());
     }

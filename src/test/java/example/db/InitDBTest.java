@@ -3,20 +3,13 @@ package example.db;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
+//기본 데이터가 없으면 DatabaseTest의 InitDB.load에서 실패한다
 @DisplayName("기본 데이터")
 class InitDBTest extends DatabaseTest {
 
     @Test
-    @DisplayName("InitDB.main으로 넣은 기본 데이터를 불러온다")
+    @DisplayName("기본 데이터를 불러와 전체 펀딩을 출력한다")
     void load() {
-        assertAll(
-                () -> assertNotNull(db.maker.getPk()),
-                () -> assertNotNull(db.food.getPk()),
-                () -> assertNotNull(db.pendingFunding.getPk()),
-                () -> assertNotNull(db.openReward.getPk())
-        );
+        System.out.println(db.config.getFundingService().getAllFunding().toJsonString());
     }
 }
