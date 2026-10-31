@@ -6,6 +6,7 @@ import model.domain.AppUser;
 import model.dto.UserData;
 import model.dto.request.user.UpdateUserRequest;
 import model.dto.response.PKResponse;
+import model.dto.response.user.UserResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -42,6 +43,11 @@ public class UserServiceTest extends DatabaseTest {
             AppUser maker2 = db.maker2;
             long maker2PK = maker2.getPk();
 
+            UserResponse userResponse = userService.getMyInfo(maker2PK);
+            UserData testUserData = userResponse.getUserData();
+
+            testUserData.setName("호날두");
+
             Map<Long, AppUser> dataMap = new HashMap<>();
             dataMap.put(maker1PK, maker1);
             dataMap.put(maker2PK, maker2);
@@ -52,7 +58,7 @@ public class UserServiceTest extends DatabaseTest {
 
                 UserData userData = Serializer.toData(appUser, UserData.class);
 
-                PKResponse response = userService.updateUser(key, new UpdateUserRequest(userData));
+                PKResponse response = userService.updateUser(key, new UpdateUserRequest(testUserData));
                 assertEquals(key, response.getPk());
                 System.out.println(response.getPk());
             }

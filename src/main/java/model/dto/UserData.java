@@ -2,13 +2,11 @@ package model.dto;
 
 import annotation.BindDomain;
 import annotation.DataField;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import model.domain.AppUser;
 
 @Getter
+@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
