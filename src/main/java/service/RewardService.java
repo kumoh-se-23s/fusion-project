@@ -92,7 +92,7 @@ public class RewardService {
                         )
                 );
 
-        // 카테고리 조회
+        // 카테고리 조회(사용자가 직접 입력)
         Category category = categoryRepository
                 .findById(request.getCategoryFk())
                 .orElseThrow(
@@ -119,7 +119,7 @@ public class RewardService {
     }
 
 
-    // 2. 펀딩 PK로 리워드 조회
+    //  펀딩 PK로 리워드 조회
     public List<RewardData> getRewardByFunding(Long fundingPk) {
 
         if (fundingPk == null) {
@@ -138,7 +138,7 @@ public class RewardService {
     }
 
 
-    // 3. 본인이 후원한 리워드 조회
+    //  본인이 후원한 리워드 조회
     public List<RewardData> getRewardByDonate(Long userPk) {
 
         if (userPk == null) {
@@ -168,7 +168,7 @@ public class RewardService {
     }
 
 
-    // 4. 메이커의 프로젝트별 리워드 조회
+    //  메이커의 프로젝트별 리워드 조회
     public List<List<RewardData>> getRewardfindByMaker(
             Long makerPk
     ) {
