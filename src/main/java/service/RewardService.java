@@ -1,5 +1,6 @@
 package service;
 
+import exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import model.domain.Donate;
 import model.domain.Funding;
@@ -28,7 +29,7 @@ public class RewardService {
         Long fundingPk = request.getFundingFk();
 
         Funding funding =  fundingRepository.findById(fundingPk).
-                orElseThrow(()-> new IllegalArgumentException("펀딩을 찾을 수 없습니다."));//따로 만들어 놓은 예외처리 쓰기
+                orElseThrow(()-> new NotFoundException());//따로 만들어 놓은 예외처리 쓰기
 
         Reward reward = Reward.builder()//나중에 바뀜 Serializer
                 .funding(funding)//펀딩에 유저pk가 있으니 여기서 안 받아도 되는 듯

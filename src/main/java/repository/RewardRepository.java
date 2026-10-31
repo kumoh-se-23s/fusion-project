@@ -27,6 +27,13 @@ public class RewardRepository extends BaseRepositoryImpl<Reward, Long> {
 
 
     }
+
+    public boolean decreaseRemainQuantity(Long rewardPk, Long quantity){//재고를 안전하게 차감을 했는가?
+        if( quantity < 0){
+            return false;
+        }
+        return true;
+    }
 /*
     public List<Reward> findByMakerPk(Long fundingPk) {
 
