@@ -23,7 +23,7 @@ public class RewardRepository extends BaseRepositoryImpl<Reward, Long> {
         return find(//해당 PK로 찾은 리워드 객체들의 목록 반환되는 것
                 Filter.builder()//find가 Filter타입을 객체로 받아서,Filter클래스가 안 보여서 우선 형식 만든정도...
                         .conditions(Map.of("funding", fundingPk))//펀딩 pk로 필터링
-                        .sort(Sort.by(Order.asc("created_at")))//생성일 기준 정렬
+                        .sort(Sort.by(Order.asc("createdAt")))//생성일 기준 정렬
                         .build()//필터 객체 완성
         );
 

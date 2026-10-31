@@ -12,7 +12,7 @@ public class DonateRepository extends BaseRepositoryImpl<Donate, Long> {
         return find(
                 Filter.builder()
                         .conditions(Map.of("user", userPk))//펀딩 pk로 필터링
-                        .sort(Sort.by(Order.asc("donated_at")))//후원일 기준 정렬
+                        .sort(Sort.by(Order.asc("createdAt")))//후원일 기준 정렬
                         .build()//필터 객체 완성
         );
     }
