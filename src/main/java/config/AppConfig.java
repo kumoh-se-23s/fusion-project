@@ -3,8 +3,10 @@ package config;
 import lombok.Getter;
 import repository.*;
 import repository.manager.schema.SchemaGenerator;
+import service.external.DonateService;
 import service.external.FundingService;
 import service.external.ReviewService;
+import service.external.RewardService;
 import service.internal.CategoryService;
 
 /**
@@ -30,6 +32,11 @@ public class AppConfig {
     private final FundingService fundingService = new FundingService(
             fundingRepository, donateRepository, rewardRepository,
             userRepository, categoryRepository, fundingCategoryRepository);
+    private final service.external.RewardService rewardService = new RewardService(
+            fundingRepository, donateRepository, rewardRepository, categoryRepository);
+    private final service.external.DonateService donateService = new DonateService(
+            donateRepository, rewardRepository, fundingRepository, userRepository
+    );
     //이름이 같은 external.FundingService와 구분하기 위해 전체 경로 사용
     private final service.internal.FundingService adminFundingService =
             new service.internal.FundingService(fundingRepository);
