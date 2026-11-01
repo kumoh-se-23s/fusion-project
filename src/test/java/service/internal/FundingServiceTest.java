@@ -2,6 +2,7 @@ package service.internal;
 
 import constant.FundingState;
 import example.db.DatabaseTest;
+import exception.NotFoundException;
 import model.domain.Funding;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -23,7 +24,8 @@ public class FundingServiceTest extends DatabaseTest {
     void updateFundingApprove() {
         fundingService.updateFundingApprove(db.changeStateFunding.getPk());
 
-        Funding saved = db.config.getFundingRepository().findByPK(db.changeStateFunding.getPk()).orElseThrow();
+        Funding saved = db.config.getFundingRepository().findByPK(db.changeStateFunding.getPk())
+                .orElseThrow(NotFoundException::new);
         assertEquals(FundingState.APPROVED, saved.getState());
         assertEquals(db.changeStateFunding.getTitle(), saved.getTitle());
     }

@@ -32,7 +32,6 @@ public class ReviewServiceTest extends DatabaseTest {
                         .conditions(Map.of("reward", db.maker1CompleteReward1.getPk()))
                         .build()
         );
-        System.out.println(list.size());
         for (Review review : list) {
             db.config.getReviewRepository().delete(review.getPk());
         }
