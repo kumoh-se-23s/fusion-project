@@ -1,8 +1,8 @@
 import constant.FundingState;
 import example.db.DatabaseTest;
 import example.db.InitDB;
+import exception.LimitNumberOutException;
 import model.domain.AppUser;
-import model.domain.Category;
 import model.domain.Donate;
 import model.domain.Funding;
 import model.domain.FundingCategory;
@@ -25,31 +25,24 @@ import model.dto.response.reward.RewardInfoResponse;
 import model.dto.response.reward.RewardUserResponse;
 import model.dto.response.user.UserAddressResponse;
 import model.dto.response.user.UserResponse;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.ClassOrderer;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestClassOrder;
-import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
-import org.junit.platform.launcher.core.LauncherFactory;
-import org.junit.platform.launcher.listeners.SummaryGeneratingListener;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import repository.CategoryRepository;
-import repository.DonateRepository;
+
 import repository.Filter;
-import repository.FundingRepository;
-import repository.RewardRepository;
-import repository.UserRepository;
 import service.UserService;
-import service.external.DonateService;
 import service.external.FundingService;
 import service.external.ReviewService;
-import service.external.RewardService;
 
-import java.io.PrintWriter;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -57,93 +50,24 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * 검사 항목별 단위 테스트. 각 서비스 테스트에서 메서드를 그대로 옮겨 왔다.
  * IDE에서 클래스 또는 항목 옆의 실행 버튼으로 실행하면 JUnit 결과 화면에 항목별로 표시된다.
- * main에서 항목의 주석을 해제해 실행하면 콘솔에 JUnit 요약이 출력된다.
+ * 콘솔에서 항목별로 실행하려면 {@link Main}을 사용한다.
  */
 @DisplayName("검사 항목")
 @TestClassOrder(ClassOrderer.DisplayName.class)
 public class MainTest extends DatabaseTest {
     private static final Logger LOG = LoggerFactory.getLogger(MainTest.class);
 
-    public static void main(String[] args) {
-        // initDB();                       // 검사에 필요한 사전 데이터를 insert하는 메소드 (모든 테이블을 삭제 후 다시 생성)
-        // 검사할 항목 하나만 주석 해제하여 실행
-
-        // test01ViewFundingStatus();      // MAKER     - 프로젝트별 펀딩 현황 보기
-        // test02RegisterProject();        // MAKER     - 프로젝트 기본 정보 등록
-        // test03RegisterReward();         // MAKER     - 리워드 등록 및 프로젝트 신청
-        // test04ApproveProject();         // ADMIN     - 프로젝트 등록 승인
-        // test05UpdateProfile();          // SUPPORTER - 개인정보 수정
-        // test06ViewProjects();           // SUPPORTER - 프로젝트 보기
-        // test07FilterProjects();         // SUPPORTER - 프로젝트 필터링
-        // test08ApplyReward();            // SUPPORTER - 리워드 신청
-        // test09RegisterReview();         // SUPPORTER - 리뷰 및 별점 등록
-        // test10ConcurrencyControl();     // SUPPORTER - 제공 가능 수량 동시성 제어
-    }
-
-    private static void initDB() {
+    //모든 테이블을 삭제 후 다시 생성해 기본 데이터로 시작한다
+    @BeforeAll
+    static void initDB() {
         InitDB.main(new String[0]);
-    }
-
-    private static void test01ViewFundingStatus() {
-        run(Test01ViewFundingStatus.class);
-    }
-
-    private static void test02RegisterProject() {
-        run(Test02RegisterProject.class);
-    }
-
-    private static void test03RegisterReward() {
-        run(Test03RegisterReward.class);
-    }
-
-    private static void test04ApproveProject() {
-        run(Test04ApproveProject.class);
-    }
-
-    private static void test05UpdateProfile() {
-        run(Test05UpdateProfile.class);
-    }
-
-    private static void test06ViewProjects() {
-        run(Test06ViewProjects.class);
-    }
-
-    private static void test07FilterProjects() {
-        run(Test07FilterProjects.class);
-    }
-
-    private static void test08ApplyReward() {
-        run(Test08ApplyReward.class);
-    }
-
-    private static void test09RegisterReview() {
-        run(Test09RegisterReview.class);
-    }
-
-    //TODO 동시성 테스트를 작성하면 해당 클래스를 넘기도록 변경
-    private static void test10ConcurrencyControl() {
-        System.out.println("동시성 테스트가 아직 없습니다.");
-    }
-
-    private static void run(Class<?> testClass) {
-        SummaryGeneratingListener listener = new SummaryGeneratingListener();
-        LauncherFactory.create().execute(
-                LauncherDiscoveryRequestBuilder.request().selectors(selectClass(testClass)).build(), listener);
-
-        PrintWriter out = new PrintWriter(System.out, true);
-        listener.getSummary().printTo(out);
-        listener.getSummary().printFailuresTo(out);
     }
 
     @Nested
@@ -237,202 +161,44 @@ public class MainTest extends DatabaseTest {
     @Nested
     @DisplayName("03. MAKER - 리워드 등록 및 프로젝트 신청")
     class Test03RegisterReward {
-        private RewardService rewardService;
-        private UserRepository userRepository;
-        private FundingRepository fundingRepository;
-        private DonateRepository donateRepository;
-        private RewardRepository rewardRepository;
-        private CategoryRepository categoryRepository;
-
-        private AppUser maker;
-        private AppUser supporter;
-        private Funding funding;
-        private Funding secondFunding;
-        private Category category;
+        private service.external.RewardService rewardService;
 
         @BeforeEach
-        void setUp() {
-
-            userRepository = db.config.getUserRepository();
-            fundingRepository = db.config.getFundingRepository();
-            donateRepository = db.config.getDonateRepository();
-            rewardRepository = db.config.getRewardRepository();
-            categoryRepository = db.config.getCategoryRepository();
-
-            rewardService = new RewardService(
-                    fundingRepository,
-                    donateRepository,
-                    rewardRepository,
-                    categoryRepository
-            );
-
-            // 테스트 데이터가 중복되지 않도록 고유값 생성
-            String unique = UUID.randomUUID().toString().replace("-", "");
-
-            maker = userRepository.create(
-                    AppUser.builder()
-                            .name("테스트 메이커")
-                            .email("maker-" + unique + "@example.com")
-                            .build()
-            );
-
-            supporter = userRepository.create(
-                    AppUser.builder()
-                            .name("테스트 서포터")
-                            .email("supporter-" + unique + "@example.com")
-                            .build()
-            );
-
-            assertNotNull(maker);
-            assertNotNull(maker.getPk());
-            assertNotNull(supporter);
-            assertNotNull(supporter.getPk());
-
-            category = categoryRepository.create(
-                    Category.builder()
-                            .name("테스트 카테고리 " + unique)
-                            .build()
-            );
-
-            assertNotNull(category);
-            assertNotNull(category.getPk());
-
-            funding = createFunding();
-            secondFunding = createFunding();
-        }
-
-        // 테스트용 펀딩 생성
-        private Funding createFunding() {
-
-            Funding saved = fundingRepository.create(
-                    Funding.builder()
-                            .maker(maker)
-                            .endDate(LocalDateTime.now().plusDays(30))
-                            .build()
-            );
-
-            assertNotNull(saved);
-            assertNotNull(saved.getPk());
-
-            return saved;
-        }
-
-        // 정상적인 리워드 등록 요청 생성
-        private CreateRewardDataRequest validRequest(Long fundingPk, String name) {
-
-            return new CreateRewardDataRequest(
-                    name,
-                    null,
-                    LocalDateTime.now().plusDays(7),
-                    "테스트 리워드 설명",
-                    fundingPk,
-                    category.getPk(),
-                    BigDecimal.valueOf(10000),
-                    10L,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null
-            );
-        }
-
-        // DB에서 저장된 리워드 조회
-        private Reward findSavedReward(Long fundingPk, String name) {
-
-            return rewardRepository.findByFundingPk(fundingPk)
-                    .stream()
-                    .filter(reward -> name.equals(reward.getName()))
-                    .findFirst()
-                    .orElseThrow(() ->
-                            new AssertionError("리워드 조회 실패: " + name)
-                    );
-        }
-
-        // 테스트 종료 후 생성 데이터 삭제
-        @AfterEach
-        void tearDown() {
-
-            if (supporter != null && supporter.getPk() != null) {
-
-                for (Donate donate :
-                        donateRepository.findByUserPk(supporter.getPk())) {
-
-                    if (donate.getReward() == null ||
-                            donate.getReward().getFunding() == null) {
-                        continue;
-                    }
-
-                    Long fundingPk = donate.getReward().getFunding().getPk();
-
-                    if ((funding != null && fundingPk.equals(funding.getPk()))
-                            || (secondFunding != null &&
-                            fundingPk.equals(secondFunding.getPk()))) {
-
-                        donateRepository.delete(donate.getPk());
-                    }
-                }
-            }
-
-            for (Funding f : new Funding[]{funding, secondFunding}) {
-
-                if (f == null || f.getPk() == null) {
-                    continue;
-                }
-
-                for (Reward reward : rewardRepository.findByFundingPk(f.getPk())) {
-                    rewardRepository.delete(reward.getPk());
-                }
-
-                fundingRepository.delete(f.getPk());
-            }
-
-            if (category != null && category.getPk() != null) {
-                categoryRepository.delete(category.getPk());
-            }
-
-            if (supporter != null && supporter.getPk() != null) {
-                userRepository.delete(supporter.getPk());
-            }
-
-            if (maker != null && maker.getPk() != null) {
-                userRepository.delete(maker.getPk());
-            }
+        void setup() {
+            rewardService = db.config.getRewardService();
         }
 
         @Test
-        @DisplayName("남은 수량을 최대 수량과 같게 생성한다")
-        void success() {
+        @DisplayName("리워드를 등록한다")
+        void createReward() {
+            LocalDateTime provideDate = LocalDateTime.now().plusDays(30).truncatedTo(ChronoUnit.MICROS);
 
-            // Given
-            CreateRewardDataRequest request =
-                    validRequest(funding.getPk(), "정상 리워드");
-
-            // When
-            rewardService.createReward(request);
-
-            // Then
-            Reward saved =
-                    findSavedReward(funding.getPk(), "정상 리워드");
-
-            assertEquals(10L, saved.getMaxQuantity());
-            assertEquals(10L, saved.getRemainQuantity());
-
-            assertEquals(
-                    0,
-                    BigDecimal.valueOf(10000)
-                            .compareTo(saved.getRequiredAmount())
+            PKResponse response = rewardService.createReward(
+                    CreateRewardDataRequest.builder()
+                            .categoryFk(db.food.getPk())
+                            .fundingFk(db.maker1NoRewardFunding.getPk())
+                            .rewardName("테스트용 새 리워드")
+                            .rewardText("리워드 소개")
+                            .provideDate(provideDate)
+                            .requiredAmount(new BigDecimal("1000"))
+                            .rewardMaxQuantity(10L)
+                            .rewardRemainQuantity(5L)
+                            .build()
             );
+            Reward saved = db.config.getRewardRepository().findByPK(response.getPk())
+                    .orElseThrow();
 
-            assertEquals(funding.getPk(), saved.getFunding().getPk());
-            assertEquals(category.getPk(), saved.getCategory().getPk());
+            assertEquals("테스트용 새 리워드", saved.getName());
+            assertEquals("리워드 소개", saved.getText());
+            assertEquals(db.maker1NoRewardFunding.getPk(), saved.getFunding().getPk());
+            assertEquals(FundingState.PENDING_APPROVAL, saved.getFunding().getState());
+            assertEquals(db.food.getPk(), saved.getCategory().getPk());
         }
     }
 
     @Nested
     @DisplayName("04. ADMIN - 프로젝트 등록 승인")
     class Test04ApproveProject {
-        //이름이 같은 external.FundingService와 구분하기 위해 전체 경로 사용
         private service.internal.FundingService fundingService;
 
         @BeforeEach
@@ -448,6 +214,7 @@ public class MainTest extends DatabaseTest {
             Funding saved = db.config.getFundingRepository().findByPK(db.changeStateFunding.getPk()).orElseThrow();
             assertEquals(FundingState.APPROVED, saved.getState());
             assertEquals(db.changeStateFunding.getTitle(), saved.getTitle());
+
         }
     }
 
@@ -541,135 +308,33 @@ public class MainTest extends DatabaseTest {
     @Nested
     @DisplayName("08. SUPPORTER - 리워드 신청")
     class Test08ApplyReward {
-        private DonateService donateService;
-
-        private DonateRepository donateRepository;
-        private RewardRepository rewardRepository;
-
-        private AppUser user;
-        private AppUser maker;
-        private Funding funding;
-        private Reward reward;
+        private service.external.DonateService donateService;
 
         @BeforeEach
-        void setUp() {
-
-            donateRepository = db.config.getDonateRepository();
-            rewardRepository = db.config.getRewardRepository();
-            FundingRepository fundingRepository = db.config.getFundingRepository();
-            UserRepository userRepository = db.config.getUserRepository();
-
-            donateService = new DonateService(
-                    donateRepository,
-                    rewardRepository,
-                    fundingRepository,
-                    userRepository
-            );
-
-            String unique = UUID.randomUUID().toString();
-
-            // 테스트 사용자 생성
-            maker = userRepository.create(
-                    AppUser.builder()
-                            .name("테스트 메이커")
-                            .email("maker-" + unique + "@example.com")
-                            .build()
-            );
-
-            user = userRepository.create(
-                    AppUser.builder()
-                            .name("테스트 후원자")
-                            .email("user-" + unique + "@example.com")
-                            .build()
-            );
-
-            // 테스트 펀딩 생성
-            funding = fundingRepository.create(
-                    Funding.builder()
-                            .maker(maker)
-                            .endDate(LocalDateTime.now().plusDays(30))
-                            .build()
-            );
-
-            // 테스트 카테고리 생성
-            Category category = db.config.getCategoryRepository().create(
-                    Category.builder()
-                            .name("테스트 카테고리 " + unique)
-                            .build()
-            );
-
-            // 초기 재고 10개
-            reward = rewardRepository.create(
-                    Reward.builder()
-                            .funding(funding)
-                            .category(category)
-                            .name("테스트 리워드")
-                            .requiredAmount(BigDecimal.valueOf(10000))
-                            .maxQuantity(10L)
-                            .remainQuantity(10L)
-                            .provideDate(LocalDateTime.now().plusDays(7))
-                            .build()
-            );
-        }
-
-        // 정상 후원 요청 생성
-        private CreateDonateRequest validRequest() {
-            return new CreateDonateRequest(
-                    user.getPk(),
-                    reward.getPk(),
-                    BigDecimal.valueOf(10000),
-                    1L
-            );
-        }
-
-        // DB에서 현재 재고 조회
-        private Long currentStock() {
-            return rewardRepository.findByPK(reward.getPk())
-                    .orElseThrow()
-                    .getRemainQuantity();
-        }
-
-        // DB에서 현재 사용자의 해당 펀딩 후원 건수 조회
-        private long donationCount() {
-            List<Donate> donations =
-                    donateRepository.findByUserPk(user.getPk());
-
-            return donations.stream()
-                    .filter(d -> d.getReward() != null)
-                    .filter(d -> d.getReward().getFunding() != null)
-                    .filter(d -> funding.getPk().equals(
-                            d.getReward().getFunding().getPk()
-                    ))
-                    .count();
+        void setup() {
+            donateService = db.config.getDonateService();
         }
 
         @Test
-        @DisplayName("후원을 생성한다")
-        void success() {
-
-            // Given
-            CreateDonateRequest request = validRequest();
-
-            Long beforeStock = currentStock();
-            long beforeCount = donationCount();
-
-            // When
-            donateService.createDonate(request);
-
-            // Then
-            assertEquals(beforeCount + 1, donationCount());
-
-            assertEquals(
-                    beforeStock - 1,
-                    currentStock()
+        @DisplayName("리워드를 신청한다")
+        void createDonate() {
+            PKResponse response = donateService.createDonate(
+                    CreateDonateRequest.builder()
+                            .amount(new BigDecimal("10000"))
+                            .quantity(2L)
+                            .state(false)
+                            .createdAt(LocalDateTime.now())
+                            .rewardFk(db.maker1ApproveReward1.getPk())
+                            .userFk(db.notDonateUser1.getPk())
+                            .build()
             );
+            Donate saved = db.config.getDonateRepository().findByPK(response.getPk())
+                    .orElseThrow();
 
-            assertTrue(
-                    donateRepository.existsByUserPkAndFundingPk(
-                            user.getPk(),
-                            funding.getPk()
-                    )
-            );
+            assertEquals(false, saved.getState());
+            assertEquals(db.maker1ApproveReward1.getPk(), saved.getReward().getPk());
+            assertEquals(db.notDonateUser1.getPk(), saved.getUser().getPk());
+            assertEquals(7L, saved.getReward().getRemainQuantity());
         }
     }
 
@@ -691,7 +356,6 @@ public class MainTest extends DatabaseTest {
                             .conditions(Map.of("reward", db.maker1CompleteReward1.getPk()))
                             .build()
             );
-            System.out.println(list.size());
             for (Review review : list) {
                 db.config.getReviewRepository().delete(review.getPk());
             }
@@ -710,5 +374,52 @@ public class MainTest extends DatabaseTest {
         }
     }
 
-    //TODO 10. SUPPORTER - 제공 가능 수량 동시성 제어: 동시성 테스트를 작성하면 여기에 추가
+    @Nested
+    @DisplayName("10. SUPPORTER - 제공 가능 수량 동시성 제어")
+    @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+    class Test10ConcurrencyControl {
+        private service.external.DonateService donateService;
+
+        @BeforeEach
+        void setup() {
+            donateService = db.config.getDonateService();
+        }
+
+        private PKResponse donate(Long userPk) {
+            return donateService.createDonate(
+                    CreateDonateRequest.builder()
+                            .amount(new BigDecimal("10000"))
+                            .quantity(2L)
+                            .state(false)
+                            .createdAt(LocalDateTime.now())
+                            .rewardFk(db.maker1ConcurrencyReward1.getPk())
+                            .userFk(userPk)
+                            .build()
+            );
+        }
+
+        @Test
+        @Order(1)
+        @DisplayName("남은 수량만큼 신청하면 성공한다")
+        void createDonate() {
+            PKResponse response = donate(db.notDonateUser2.getPk());
+            Donate saved = db.config.getDonateRepository().findByPK(response.getPk())
+                    .orElseThrow();
+
+            assertEquals(false, saved.getState());
+            assertEquals(db.maker1ConcurrencyReward1.getPk(), saved.getReward().getPk());
+            assertEquals(db.notDonateUser2.getPk(), saved.getUser().getPk());
+            assertEquals(0L, saved.getReward().getRemainQuantity());
+        }
+
+        //앞 테스트에서 수량을 모두 소진한 상태를 이어서 사용한다
+        @Test
+        @Order(2)
+        @DisplayName("남은 수량을 넘겨서 신청하면 실패한다")
+        void createDonateOverQuantity() {
+            assertThrows(LimitNumberOutException.class,
+                    () -> donate(db.notDonateUser3.getPk())
+            );
+        }
+    }
 }
