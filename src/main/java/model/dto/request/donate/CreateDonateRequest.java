@@ -3,6 +3,8 @@ package model.dto.request.donate;
 import annotation.BindDomain;
 import annotation.DataField;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -14,8 +16,10 @@ import model.dto.BaseData;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+@Builder
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
 @BindDomain(values = {Donate.class})
 public class CreateDonateRequest extends BaseData {
 
