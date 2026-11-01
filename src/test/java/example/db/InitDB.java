@@ -67,6 +67,33 @@ public class InitDB {
             .postal("신규 사용자 우편번호")
             .build();
 
+    public AppUser notDonateUser1 = AppUser.builder()
+            .pk(6L)
+            .name("후원하지 않은 사용자1")
+            .address("후원하지 않은 사용자1 주소")
+            .email("후원하지 않은 사용자1 이메일")
+            .phone("후원하지 않은 사용자1 전화번호")
+            .postal("후원하지 않은 사용자1 우편번호")
+            .build();
+
+    public AppUser notDonateUser2 = AppUser.builder()
+            .pk(7L)
+            .name("후원하지 않은 사용자2")
+            .address("후원하지 않은 사용자2 주소")
+            .email("후원하지 않은 사용자2 이메일")
+            .phone("후원하지 않은 사용자2 전화번호")
+            .postal("후원하지 않은 사용자2 우편번호")
+            .build();
+
+    public AppUser notDonateUser3 = AppUser.builder()
+            .pk(8L)
+            .name("후원하지 않은 사용자3")
+            .address("후원하지 않은 사용자3 주소")
+            .email("후원하지 않은 사용자3 이메일")
+            .phone("후원하지 않은 사용자3 전화번호")
+            .postal("후원하지 않은 사용자3 우편번호")
+            .build();
+
     public Category food = Category.builder()
             .pk(1L)
             .name("food")
@@ -88,6 +115,17 @@ public class InitDB {
             .description("여행")
             .build();
 
+    public Funding maker1NoRewardFunding = Funding.builder()
+            .pk(7L)
+            .maker(maker1)
+            .title("메이커1 리워드 없는 펀딩")
+            .text("메이커1 리워드 없는 소개")
+            .state(FundingState.JUST_USER_INPUT)
+            .purposeAmount(new BigDecimal("100000"))
+            .endDate(now.plusDays(30))
+            .createdAt(LocalDateTime.now().minusDays(10))
+            .build();
+
     public Funding maker1PendingFunding = Funding.builder()
             .pk(1L)
             .maker(maker1)
@@ -96,7 +134,9 @@ public class InitDB {
             .state(FundingState.PENDING_APPROVAL)
             .purposeAmount(new BigDecimal("100000"))
             .endDate(now.plusDays(30))
+            .createdAt(now.minusDays(9))
             .build();
+
     public Funding maker2PendingFunding = Funding.builder()
             .pk(2L)
             .maker(maker2)
@@ -105,6 +145,7 @@ public class InitDB {
             .state(FundingState.PENDING_APPROVAL)
             .purposeAmount(new BigDecimal("100000"))
             .endDate(now.plusDays(30))
+            .createdAt(now.minusDays(8))
             .build();
 
     public Funding maker1ApproveFunding = Funding.builder()
@@ -116,6 +157,7 @@ public class InitDB {
             .purposeAmount(new BigDecimal("100000"))
             .donateAmount(new BigDecimal("3000"))
             .endDate(now.plusDays(30))
+            .createdAt(now.minusDays(7))
             .build();
     public Funding maker2ApproveFunding = Funding.builder()
             .pk(4L)
@@ -125,6 +167,7 @@ public class InitDB {
             .state(FundingState.APPROVED)
             .purposeAmount(new BigDecimal("100000"))
             .endDate(now.plusDays(30))
+            .createdAt(now.minusDays(6))
             .build();
 
     public Funding maker1CompleteFunding = Funding.builder()
@@ -136,6 +179,7 @@ public class InitDB {
             .purposeAmount(new BigDecimal("100000"))
             .donateAmount(new BigDecimal("3000"))
             .endDate(now.plusDays(30))
+            .createdAt(now.minusDays(5))
             .build();
 
     public Funding changeStateFunding = Funding.builder()
@@ -147,6 +191,7 @@ public class InitDB {
             .purposeAmount(new BigDecimal("1"))
             .donateAmount(new BigDecimal("1"))
             .endDate(now.plusDays(30))
+            .createdAt(now.minusDays(4))
             .build();
 
     public Reward maker1PendingReward1 = Reward.builder()
@@ -265,7 +310,17 @@ public class InitDB {
             .remainQuantity(9L)
             .provideDate(now.plusDays(60))
             .build();
-
+    public Reward maker1ConcurrencyReward1 = Reward.builder()
+            .pk(11L)
+            .funding(maker1ApproveFunding)
+            .category(travel)
+            .name("동시성 테스트용 리워드 1")
+            .text("동시성 테스트용 리워드 1 소개")
+            .requiredAmount(new BigDecimal("2000"))
+            .maxQuantity(12L)
+            .remainQuantity(2L)
+            .provideDate(now.plusDays(60))
+            .build();
     public Donate donateUser1CompleteDonate = Donate.builder()
             .pk(1L)
             .user(donateUser1)
@@ -346,13 +401,15 @@ public class InitDB {
 
     //필드에 정해둔 기본 데이터를 리포지토리로 삽입. 필드의 pk와 맞도록 순서를 유지한다
     private void insert() {
-        List.of(maker1, maker2, donateUser1, donateUser2, newUser)
+        List.of(maker1, maker2, donateUser1, donateUser2, newUser, notDonateUser1, notDonateUser2, notDonateUser3)
                 .forEach(config.getUserRepository()::create);
 
         List.of(food, tech, furniture, travel)
                 .forEach(config.getCategoryRepository()::create);
 
-        List.of(maker1PendingFunding, maker2PendingFunding, maker1ApproveFunding, maker2ApproveFunding, maker1CompleteFunding)
+        List.of(maker1PendingFunding, maker2PendingFunding, maker1ApproveFunding,
+                maker2ApproveFunding, maker1CompleteFunding, changeStateFunding,
+                        maker1NoRewardFunding)
                 .forEach(config.getFundingRepository()::create);
 
         bindCategory(maker1PendingFunding, food);
@@ -362,12 +419,14 @@ public class InitDB {
         bindCategory(maker2ApproveFunding, tech);
         bindCategory(maker1CompleteFunding, travel);
         bindCategory(maker1CompleteFunding, food);
+        bindCategory(maker1NoRewardFunding, food);
 
         List.of(maker1PendingReward1, maker1PendingReward2,
                         maker2PendingReward1, maker2PendingReward2,
                         maker1ApproveReward1, maker1ApproveReward2,
                         maker2ApproveReward1, maker2ApproveReward2,
-                        maker1CompleteReward1, maker1CompleteReward2)
+                        maker1CompleteReward1, maker1CompleteReward2,
+                        maker1ConcurrencyReward1)
                 .forEach(config.getRewardRepository()::create);
 
         List.of(donateUser1CompleteDonate, donateUser2CompleteDonate, donateUser1ApproveDonate, donateUser2ApproveDonate)
