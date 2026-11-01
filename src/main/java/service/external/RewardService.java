@@ -1,5 +1,6 @@
 package service.external;
 
+import constant.FundingState;
 import exception.NotFoundException;
 import exception.LimitNumberOutException;
 import exception.TransactionException;
@@ -16,6 +17,7 @@ import model.domain.Reward;
 import model.dto.RewardData;
 import model.dto.request.reward.CreateRewardDataRequest;
 
+import model.dto.response.PKResponse;
 import repository.CategoryRepository;
 import repository.DonateRepository;
 import repository.FundingRepository;
@@ -35,7 +37,7 @@ public class RewardService {
 
 
     // 1. 펀딩에 리워드 등록
-    public void createReward(CreateRewardDataRequest request) {
+    public PKResponse createReward(CreateRewardDataRequest request) {
 
         // 요청값 검사
         if (request == null) {
@@ -109,11 +111,17 @@ public class RewardService {
         );
 
         // 리워드 저장
-        if (rewardRepository.create(reward) == null) {
-            throw new TransactionException(
+        Reward result = rewardRepository.create(reward);
+        if (result == null) {
+             throw new TransactionException(
                     "리워드 저장에 실패했습니다."
             );
         }
+        //첫 리워드 작성 시 펀딩을 승인 대기로 변경
+        if (funding.getState() == FundingState.JUST_USER_INPUT) {
+            fundingRepository.updateByPending(funding.getPk());
+        }
+        return new PKResponse(result.getPk());
     }
 
 

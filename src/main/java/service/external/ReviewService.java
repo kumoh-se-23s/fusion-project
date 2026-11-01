@@ -46,7 +46,7 @@ public class ReviewService extends BaseService {
             }
 
             if (reward.getFunding().getState() != FundingState.COMPLETED || !isDelivered) {
-                throw new NotCompleteFundingException();
+                throw new NotCompleteFundingException("Not Allowed Write Review");
             }
 
             if (reviewRepository.isExistUserAndReward(user, reward)) {

@@ -124,7 +124,7 @@ public class FundingService extends BaseService {
     public DataCollectionResponse<FundingData> getAllFunding() {
         return tx.execute(true, () -> {
             List<FundingData> dtos = new ArrayList<>();
-            for (Funding funding : fundingRepository.findAll()) {
+            for (Funding funding : fundingRepository.findAllOrderByCreatedAt()) {
                 dtos.add(Serializer.toData(funding, FundingData.class));
             }
 

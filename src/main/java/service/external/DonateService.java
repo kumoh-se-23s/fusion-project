@@ -17,6 +17,7 @@ import model.domain.Reward;
 
 import model.dto.request.donate.CreateDonateRequest;
 
+import model.dto.response.PKResponse;
 import repository.DonateRepository;
 import repository.FundingRepository;
 import repository.RewardRepository;
@@ -62,7 +63,7 @@ public class DonateService extends BaseService {
 
 
     // 후원 신청 생성
-    public void createDonate(CreateDonateRequest request) {
+    public PKResponse createDonate(CreateDonateRequest request) {
 
         // 요청 정보 검사
         if (request == null) {
@@ -149,7 +150,8 @@ public class DonateService extends BaseService {
 
         // 후원 내역 저장
         // 후원 내역 저장
-        if (donateRepository.create(donate) == null) {
+        Donate result = donateRepository.create(donate);
+        if (result == null) {
             throw new TransactionException(
                     "후원 신청 저장에 실패했습니다."
             );
@@ -165,5 +167,7 @@ public class DonateService extends BaseService {
         ).orElseThrow(() -> new TransactionException(
                 "리워드 재고 업데이트에 실패했습니다."
         ));
+
+        return new PKResponse(result.getPk());
     }
 }
