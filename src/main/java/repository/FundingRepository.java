@@ -16,6 +16,13 @@ public class FundingRepository extends BaseRepositoryImpl<Funding, Long> {
         ));
     }
 
+    public Optional<Funding> updateByPending(Long fundingPK) {
+        return update(fundingPK, Map.of(
+                "state", FundingState.PENDING_APPROVAL,
+                "updatedAt", LocalDateTime.now()
+        ));
+    }
+
     public List<Funding> findByState(List<FundingState> stateList) {
         return find(Filter.builder()
                 .conditions(Map.of("state", stateList))
