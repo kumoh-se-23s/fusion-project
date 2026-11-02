@@ -1,17 +1,19 @@
 package model.dto.request.account;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import model.dto.BaseData;
 
+
 @Getter
-@Setter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class UpdateAccount extends BaseData {
-    private String currentPassword;
+public class CreateLocalAccountRequest extends BaseData {
+    private String id;
 
-    private String newPassword;
+    private String password;
+
 }
