@@ -3,13 +3,11 @@ package service.external;
 import constant.ProjectState;
 import example.db.DatabaseTest;
 import model.domain.Project;
-import model.domain.ProjectCategory;
 import model.dto.ProjectData;
-import model.dto.request.project.CreateProjectByCategoryRequest;
 import model.dto.request.project.CreateProjectRequest;
 import model.dto.request.project.GetProjectByCategoryAndStateRequest;
 import model.dto.response.DataCollectionResponse;
-import model.dto.response.project.CreateProjectByCategoryResponse;
+import model.dto.response.IdResponse;
 import model.dto.response.project.ProjectRewardResponse;
 import model.dto.response.reward.RewardInfoResponse;
 import model.dto.response.reward.RewardUserResponse;
@@ -53,7 +51,7 @@ public class ProjectServiceTest extends DatabaseTest {
         Map<String, UserAddressResponse> list2 = new HashMap<>();
         for (RewardUserResponse reward : response.getRewards()) {
             list.put(reward.getRewardInfoResponse().getName()
-            , reward.getRewardInfoResponse());
+                    , reward.getRewardInfoResponse());
             for (UserAddressResponse user : reward.getUserAddressInfo()) {
                 list2.put(user.getAddress(),
                         user);
@@ -76,35 +74,25 @@ public class ProjectServiceTest extends DatabaseTest {
     void createProject() {
         LocalDateTime endDate = LocalDateTime.now().plusDays(30).truncatedTo(ChronoUnit.MICROS);
 
-        CreateProjectByCategoryResponse response = projectService.createProject(db.maker1.getId(),
-                CreateProjectByCategoryRequest.builder()
-                        .createProjectRequest(CreateProjectRequest.builder()
-                                .title("테스트용 새 프로젝트")
-                                .text("프로젝트 소개")
-                                .purposeAmount(new BigDecimal("123456"))
-                                .endDate(endDate)
-                                .build())
-                        .categoryIds(List.of(db.food.getId(), db.tech.getId()))
-                        .build());
+        IdResponse response = projectService.createProject(
+                db.maker1.getId(),
+                CreateProjectRequest.builder()
+                    .title("[시연 02] 테스트용 새 프로젝트")
+                    .text("[시연 02] 프로젝트 소개")
+                    .purposeAmount(new BigDecimal("123456"))
+                    .endDate(endDate)
+                    .categoryId(db.furniture.getId())
+                    .build()
+        );
 
         Project saved = db.config.getProjectRepository().findById(response.getId()).orElseThrow();
         assertEquals(db.maker1.getId(), saved.getMaker().getId());
-        assertEquals("테스트용 새 프로젝트", saved.getTitle());
-        assertEquals("프로젝트 소개", saved.getText());
+        assertEquals("[시연 02] 테스트용 새 프로젝트", saved.getTitle());
+        assertEquals("[시연 02] 프로젝트 소개", saved.getText());
         assertAmount("123456", saved.getPurposeAmount());
         assertEquals(endDate, saved.getEndDate());
         assertEquals(ProjectState.JUST_USER_INPUT, saved.getState());
-        List<ProjectCategory> list = db.config.getProjectCategoryRepository()
-                        .find(Filter.builder()
-                        .conditions(Map.of("project", saved))
-                        .build());
-
-        assertEquals(saved.getId(), list.getFirst().getProject().getId());
-        assertEquals(Set.of(db.food.getId(), db.tech.getId()),
-                list.stream()
-                .map(projectCategory -> projectCategory.getCategory().getId())
-                .collect(Collectors.toSet()));
-
+        assertEquals(db.furniture.getId(), saved.getCategory().getId());
     }
 
     @Test
@@ -113,7 +101,7 @@ public class ProjectServiceTest extends DatabaseTest {
         DataCollectionResponse<ProjectData> response = projectService.getAllProject();
         LOG.info(response.toJsonString());
         List<Long> idList = response.getDatas().stream()
-                        .map(ProjectData::getId).toList();
+                .map(ProjectData::getId).toList();
         assertTrue(idList.contains(db.maker1ApproveProject.getId()));
         assertTrue(idList.contains(db.maker2ApproveProject.getId()));
         assertTrue(idList.contains(db.maker1PendingProject.getId()));
@@ -131,12 +119,8 @@ public class ProjectServiceTest extends DatabaseTest {
                         .build());
         LOG.info(response.toJsonString());
         List<Long> idList = response.getDatas().stream()
-                        .map(ProjectData::getId).toList();
+                .map(ProjectData::getId).toList();
         assertTrue(idList.contains(db.maker1ApproveProject.getId()));
         assertTrue(idList.contains(db.maker2ApproveProject.getId()));
-
-
     }
-
-
 }

@@ -37,9 +37,6 @@ public class CreateRewardDataRequest extends BaseData {
     @DataField(name = "project.id")
     private Long projectFk;
 
-    @DataField(name = "category.id")
-    private Long categoryFk;
-
     private BigDecimal requiredAmount;
 
     @DataField(name = "maxQuantity")
@@ -55,15 +52,11 @@ public class CreateRewardDataRequest extends BaseData {
     // Service에서 조회한 도메인 객체
     private Project project;
 
-    private Category category;
-
     // 리워드 생성 전 필요한 값 설정
     public void prepareForCreate(
-            Project project,
-            Category category
+            Project project
     ) {
         this.project = project;
-        this.category = category;
 
         // 최초 남은 수량 = 최대 수량
         this.rewardRemainQuantity = rewardMaxQuantity;

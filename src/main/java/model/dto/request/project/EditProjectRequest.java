@@ -1,5 +1,6 @@
 package model.dto.request.project;
 
+import annotation.DataField;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,7 +20,8 @@ public class EditProjectRequest extends Request {
 
     private byte[] imgFile;
 
-    private List<Long> categoryIds;
+    @DataField(name = "category.id")
+    private Long categoryId;
 }
 
 

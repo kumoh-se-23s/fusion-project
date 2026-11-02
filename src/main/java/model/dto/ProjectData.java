@@ -23,6 +23,9 @@ public class ProjectData extends BaseData {
     @DataField(name = "maker.id")
     private Long makerId;
 
+    @DataField(name = "category.id")
+    private Long categoryId;
+
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;

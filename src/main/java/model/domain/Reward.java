@@ -24,9 +24,6 @@ public class Reward extends BaseDomain {
     @JoinColumn(name = "project_fk", nullable = false, onDelete = OnDelete.CASCADE)
     private Project project;
 
-    @JoinColumn(name = "category_fk", nullable = false)
-    private Category category;
-
     @Column(name = "reward_name", nullable = false)
     private String name;
 

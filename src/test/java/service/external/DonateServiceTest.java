@@ -82,18 +82,11 @@ public class DonateServiceTest extends DatabaseTest {
                         .build()
         );
 
-        // 테스트 카테고리 생성
-        Category category = db.config.getCategoryRepository().create(
-                Category.builder()
-                        .name("테스트 카테고리 " + unique)
-                        .build()
-        );
 
         // 초기 재고 10개
         reward = rewardRepository.create(
                 Reward.builder()
                         .project(project)
-                        .category(category)
                         .name("테스트 리워드")
                         .requiredAmount(BigDecimal.valueOf(10000))
                         .maxQuantity(10L)

@@ -5,13 +5,11 @@ import exception.LimitNumberOutException;
 import model.domain.AppUser;
 import model.domain.Donate;
 import model.domain.Project;
-import model.domain.ProjectCategory;
 import model.domain.Review;
 import model.domain.Reward;
 import model.dto.ProjectData;
 import model.dto.UserData;
 import model.dto.request.donate.CreateDonateRequest;
-import model.dto.request.project.CreateProjectByCategoryRequest;
 import model.dto.request.project.CreateProjectRequest;
 import model.dto.request.project.GetProjectByCategoryAndStateRequest;
 import model.dto.request.review.CreateReviewRequest;
@@ -19,7 +17,6 @@ import model.dto.request.reward.CreateRewardDataRequest;
 import model.dto.request.user.UpdateUserRequest;
 import model.dto.response.DataCollectionResponse;
 import model.dto.response.IdResponse;
-import model.dto.response.project.CreateProjectByCategoryResponse;
 import model.dto.response.project.ProjectRewardResponse;
 import model.dto.response.reward.RewardInfoResponse;
 import model.dto.response.reward.RewardUserResponse;
@@ -49,8 +46,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
+
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -127,16 +123,16 @@ public class MainTest extends DatabaseTest {
         void createProject() {
             LocalDateTime endDate = LocalDateTime.now().plusDays(30).truncatedTo(ChronoUnit.MICROS);
 
-            CreateProjectByCategoryResponse response = projectService.createProject(db.maker1.getId(),
-                    CreateProjectByCategoryRequest.builder()
-                            .createProjectRequest(CreateProjectRequest.builder()
-                                    .title("[시연 02] 테스트용 새 프로젝트")
-                                    .text("[시연 02] 프로젝트 소개")
-                                    .purposeAmount(new BigDecimal("123456"))
-                                    .endDate(endDate)
-                                    .build())
-                            .categoryIds(List.of(db.food.getId(), db.tech.getId()))
-                            .build());
+            IdResponse response = projectService.createProject(
+                    db.maker1.getId(),
+                    CreateProjectRequest.builder()
+                        .title("[시연 02] 테스트용 새 프로젝트")
+                        .text("[시연 02] 프로젝트 소개")
+                        .purposeAmount(new BigDecimal("123456"))
+                        .endDate(endDate)
+                        .categoryId(db.furniture.getId())
+                        .build()
+            );
 
             Project saved = db.config.getProjectRepository().findById(response.getId()).orElseThrow();
             assertEquals(db.maker1.getId(), saved.getMaker().getId());
@@ -145,16 +141,7 @@ public class MainTest extends DatabaseTest {
             assertAmount("123456", saved.getPurposeAmount());
             assertEquals(endDate, saved.getEndDate());
             assertEquals(ProjectState.JUST_USER_INPUT, saved.getState());
-            List<ProjectCategory> list = db.config.getProjectCategoryRepository()
-                    .find(Filter.builder()
-                            .conditions(Map.of("project", saved))
-                            .build());
-
-            assertEquals(saved.getId(), list.getFirst().getProject().getId());
-            assertEquals(Set.of(db.food.getId(), db.tech.getId()),
-                    list.stream()
-                            .map(projectCategory -> projectCategory.getCategory().getId())
-                            .collect(Collectors.toSet()));
+            assertEquals(db.furniture.getId(), saved.getCategory().getId());
         }
     }
 
@@ -175,7 +162,6 @@ public class MainTest extends DatabaseTest {
 
             IdResponse response = rewardService.createReward(
                     CreateRewardDataRequest.builder()
-                            .categoryFk(db.food.getId())
                             .projectFk(db.maker1NoRewardProject.getId())
                             .rewardName("[시연 03] 테스트용 새 리워드")
                             .rewardText("[시연 03] 리워드 소개")
@@ -192,7 +178,6 @@ public class MainTest extends DatabaseTest {
             assertEquals("[시연 03] 리워드 소개", saved.getText());
             assertEquals(db.maker1NoRewardProject.getId(), saved.getProject().getId());
             assertEquals(ProjectState.PENDING_APPROVAL, saved.getProject().getState());
-            assertEquals(db.food.getId(), saved.getCategory().getId());
         }
     }
 
@@ -303,15 +288,7 @@ public class MainTest extends DatabaseTest {
             assertTrue(idList.contains(db.maker1ApproveProject.getId()));
             assertTrue(idList.contains(db.maker2ApproveProject.getId()));
 
-//            response = projectService.getByCategoryAndState(
-//                    GetProjectByCategoryAndStateRequest.builder()
-//                            .categoryList(List.of(db.furniture.getName()))
-//                            .projectStateList(List.of(ProjectState.APPROVED))
-//                            .build());
-//            LOG.info(response.toJsonString());
-//            idList = response.getDatas().stream()
-//                    .map(ProjectData::getId).toList();
-//            assertTrue(idList.contains(db.maker1ApproveProject.getId()));
+
         }
     }
 

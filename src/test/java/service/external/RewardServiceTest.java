@@ -123,10 +123,8 @@ public class RewardServiceTest extends DatabaseTest {
                 LocalDateTime.now().plusDays(7),
                 "테스트 리워드 설명",
                 projectId,
-                category.getId(),
                 BigDecimal.valueOf(10000),
                 10L,
-                null,
                 null,
                 null,
                 null,
@@ -230,7 +228,6 @@ public class RewardServiceTest extends DatabaseTest {
             );
 
             assertEquals(project.getId(), saved.getProject().getId());
-            assertEquals(category.getId(), saved.getCategory().getId());
         }
 
         @ParameterizedTest(name = "이름 \"{0}\"")
@@ -267,10 +264,8 @@ public class RewardServiceTest extends DatabaseTest {
                             LocalDateTime.now().plusDays(7),
                             "설명",
                             project.getId(),
-                            category.getId(),
                             new BigDecimal(amount),
                             10L,
-                            null,
                             null,
                             null,
                             null,
@@ -303,10 +298,8 @@ public class RewardServiceTest extends DatabaseTest {
                             LocalDateTime.now().plusDays(7),
                             "설명",
                             project.getId(),
-                            category.getId(),
                             BigDecimal.valueOf(10000),
                             quantity,
-                            null,
                             null,
                             null,
                             null,

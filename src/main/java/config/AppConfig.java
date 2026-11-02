@@ -18,7 +18,6 @@ public class AppConfig {
     private final CategoryRepository categoryRepository = new CategoryRepository();
     private final DenyProjectRepository denyProjectRepository = new DenyProjectRepository();
     private final DonateRepository donateRepository = new DonateRepository();
-    private final ProjectCategoryRepository projectCategoryRepository = new ProjectCategoryRepository();
     private final ProjectLikeRepository projectLikeRepository = new ProjectLikeRepository();
     private final ProjectRepository projectRepository = new ProjectRepository();
     private final ReviewLikeRepository reviewLikeRepository = new ReviewLikeRepository();
@@ -31,7 +30,7 @@ public class AppConfig {
     private final CategoryService categoryService = new CategoryService(categoryRepository);
     private final ProjectService projectService = new ProjectService(
             projectRepository, donateRepository, rewardRepository,
-            userRepository, categoryRepository, projectCategoryRepository);
+            userRepository, categoryRepository);
     private final service.external.RewardService rewardService = new RewardService(
             projectRepository, donateRepository, rewardRepository, categoryRepository);
     private final service.external.DonateService donateService = new DonateService(

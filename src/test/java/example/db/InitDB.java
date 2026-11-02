@@ -17,7 +17,7 @@ import java.util.List;
 public class InitDB {
     private static final List<Class<?>> ENTITIES = List.of(
             AppUser.class, UserRole.class, UserRoleRelation.class, LocalAccount.class, Category.class,
-            Project.class, DenyProject.class, ProjectCategory.class, ProjectLike.class,
+            Project.class, DenyProject.class, ProjectLike.class,
             Reward.class, Donate.class, DonateCancel.class, Review.class, ReviewLike.class);
 
     public final AppConfig config = new AppConfig();
@@ -121,6 +121,7 @@ public class InitDB {
             .title("[시연 0] 메이커1 리워드 없는 프로젝트")
             .text("[시연 0] 메이커1 리워드 없는 소개")
             .state(ProjectState.JUST_USER_INPUT)
+            .category(furniture)
             .purposeAmount(new BigDecimal("100000"))
             .endDate(now.plusDays(30))
             .createdAt(LocalDateTime.now().minusDays(10))
@@ -132,6 +133,7 @@ public class InitDB {
             .title("[시연 0] 메이커1 승인 대기 프로젝트")
             .text("[시연 0] 메이커1 승인 대기 프로젝트 소개")
             .state(ProjectState.PENDING_APPROVAL)
+            .category(travel)
             .purposeAmount(new BigDecimal("100000"))
             .endDate(now.plusDays(30))
             .createdAt(now.minusDays(9))
@@ -143,6 +145,7 @@ public class InitDB {
             .title("[시연 0] 메이커2 승인 대기 프로젝트")
             .text("[시연 0] 메이커2 승인 대기 프로젝트 소개")
             .state(ProjectState.PENDING_APPROVAL)
+            .category(travel)
             .purposeAmount(new BigDecimal("100000"))
             .endDate(now.plusDays(30))
             .createdAt(now.minusDays(8))
@@ -154,6 +157,7 @@ public class InitDB {
             .title("[시연 0] 메이커1 승인 프로젝트")
             .text("[시연 0] 메이커1 승인 프로젝트 소개")
             .state(ProjectState.APPROVED)
+            .category(tech)
             .purposeAmount(new BigDecimal("100000"))
             .donateAmount(new BigDecimal("3000"))
             .endDate(now.plusDays(30))
@@ -165,6 +169,7 @@ public class InitDB {
             .title("[시연 0] 메이커2 승인 프로젝트")
             .text("[시연 0] 메이커2 승인 프로젝트 소개")
             .state(ProjectState.APPROVED)
+            .category(tech)
             .purposeAmount(new BigDecimal("100000"))
             .endDate(now.plusDays(30))
             .createdAt(now.minusDays(6))
@@ -176,6 +181,7 @@ public class InitDB {
             .title("[시연 0] 메이커1 완료 프로젝트")
             .text("[시연 0] 메이커1 완료 프로젝트 소개")
             .state(ProjectState.COMPLETED)
+            .category(tech)
             .purposeAmount(new BigDecimal("3000"))
             .donateAmount(new BigDecimal("3000"))
             .endDate(now.plusDays(30))
@@ -188,6 +194,7 @@ public class InitDB {
             .title("[시연 04] 승인용 프로젝트")
             .text("[시연 04] 승인용 프로젝트 소개")
             .state(ProjectState.PENDING_APPROVAL)
+            .category(tech)
             .purposeAmount(new BigDecimal("1"))
             .donateAmount(new BigDecimal("1"))
             .endDate(now.plusDays(30))
@@ -197,7 +204,6 @@ public class InitDB {
     public Reward maker1PendingReward1 = Reward.builder()
             .id(1L)
             .project(maker1PendingProject)
-            .category(food)
             .name("[시연 0] 메이커1 승인 대기 리워드1")
             .text("[시연 0] 메이커1 승인 대기 리워드1 소개")
             .requiredAmount(new BigDecimal("1000"))
@@ -208,7 +214,6 @@ public class InitDB {
     public Reward maker1PendingReward2 = Reward.builder()
             .id(2L)
             .project(maker1PendingProject)
-            .category(food)
             .name("[시연 0] 메이커1 승인 대기 리워드2")
             .text("[시연 0] 메이커1 승인 대기 리워드2 소개")
             .requiredAmount(new BigDecimal("2000"))
@@ -220,7 +225,6 @@ public class InitDB {
     public Reward maker2PendingReward1 = Reward.builder()
             .id(3L)
             .project(maker2PendingProject)
-            .category(tech)
             .name("[시연 0] 메이커2 승인 대기 리워드1")
             .text("[시연 0] 메이커2 승인 대기 리워드1 소개")
             .requiredAmount(new BigDecimal("1000"))
@@ -231,7 +235,6 @@ public class InitDB {
     public Reward maker2PendingReward2 = Reward.builder()
             .id(4L)
             .project(maker2PendingProject)
-            .category(tech)
             .name("[시연 0] 메이커2 승인 대기 리워드2")
             .text("[시연 0] 메이커2 승인 대기 리워드2 소개")
             .requiredAmount(new BigDecimal("2000"))
@@ -243,7 +246,6 @@ public class InitDB {
     public Reward maker1ApproveReward1 = Reward.builder()
             .id(5L)
             .project(maker1ApproveProject)
-            .category(furniture)
             .name("[시연 0] 메이커1 승인 리워드1")
             .text("[시연 0] 메이커1 승인 리워드1 소개")
             .requiredAmount(new BigDecimal("1000"))
@@ -255,7 +257,6 @@ public class InitDB {
     public Reward maker1ApproveReward2 = Reward.builder()
             .id(6L)
             .project(maker1ApproveProject)
-            .category(furniture)
             .name("[시연 0] 메이커1 승인 리워드2")
             .text("[시연 0] 메이커1 승인 리워드2 소개")
             .requiredAmount(new BigDecimal("2000"))
@@ -267,7 +268,6 @@ public class InitDB {
     public Reward maker2ApproveReward1 = Reward.builder()
             .id(7L)
             .project(maker2ApproveProject)
-            .category(tech)
             .name("[시연 0] 메이커2 승인 리워드1")
             .text("[시연 0] 메이커2 승인 리워드1 소개")
             .requiredAmount(new BigDecimal("1000"))
@@ -278,7 +278,6 @@ public class InitDB {
     public Reward maker2ApproveReward2 = Reward.builder()
             .id(8L)
             .project(maker2ApproveProject)
-            .category(tech)
             .name("[시연 0] 메이커2 승인 리워드2")
             .text("[시연 0] 메이커2 승인 리워드2 소개")
             .requiredAmount(new BigDecimal("2000"))
@@ -290,7 +289,6 @@ public class InitDB {
     public Reward maker1CompleteReward1 = Reward.builder()
             .id(9L)
             .project(maker1CompleteProject)
-            .category(travel)
             .name("[시연 0] 메이커1 완료 리워드1")
             .text("[시연 0] 메이커1 완료 리워드1 소개")
             .requiredAmount(new BigDecimal("1000"))
@@ -302,7 +300,6 @@ public class InitDB {
     public Reward maker1CompleteReward2 = Reward.builder()
             .id(10L)
             .project(maker1CompleteProject)
-            .category(travel)
             .name("[시연 0] 메이커1 완료 리워드2")
             .text("[시연 0] 메이커1 완료 리워드2 소개")
             .requiredAmount(new BigDecimal("2000"))
@@ -313,7 +310,6 @@ public class InitDB {
     public Reward maker1ConcurrencyReward1 = Reward.builder()
             .id(11L)
             .project(maker1ApproveProject)
-            .category(travel)
             .name("[시연 10] 동시성 테스트용 리워드 1")
             .text("[시연 10] 동시성 테스트용 리워드 1 소개")
             .requiredAmount(new BigDecimal("2000"))
@@ -412,15 +408,6 @@ public class InitDB {
                         maker1NoRewardProject)
                 .forEach(config.getProjectRepository()::create);
 
-        bindCategory(maker1PendingProject, food);
-        bindCategory(maker2PendingProject, tech);
-        bindCategory(maker1ApproveProject, furniture);
-        bindCategory(maker1ApproveProject, tech);
-        bindCategory(maker2ApproveProject, tech);
-        bindCategory(maker1CompleteProject, travel);
-        bindCategory(maker1CompleteProject, food);
-        bindCategory(maker1NoRewardProject, food);
-
         List.of(maker1PendingReward1, maker1PendingReward2,
                         maker2PendingReward1, maker2PendingReward2,
                         maker1ApproveReward1, maker1ApproveReward2,
@@ -433,10 +420,4 @@ public class InitDB {
                 .forEach(config.getDonateRepository()::create);
     }
 
-    private void bindCategory(Project project, Category category) {
-        config.getProjectCategoryRepository().create(ProjectCategory.builder()
-                .project(project)
-                .category(category)
-                .build());
-    }
 }

@@ -26,4 +26,7 @@ public class ProjectInfoResponse extends Response {
     private BigDecimal purposeAmount;
 
     private BigDecimal donateAmount;
+
+    @DataField(name = "category.id")
+    private Long categoryId;
 }

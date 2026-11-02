@@ -24,9 +24,9 @@ public class ProjectServiceTest extends DatabaseTest {
     void updateProjectApprove() {
         projectService.updateProjectApprove(db.changeStateProject.getId());
 
-        Project saved = db.config.getProjectRepository().findById(db.changeStateProject.getId())
-                .orElseThrow(NotFoundException::new);
+        Project saved = db.config.getProjectRepository().findById(db.changeStateProject.getId()).orElseThrow();
         assertEquals(ProjectState.APPROVED, saved.getState());
         assertEquals(db.changeStateProject.getTitle(), saved.getTitle());
+
     }
 }

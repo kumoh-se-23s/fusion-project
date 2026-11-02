@@ -17,7 +17,7 @@ import java.math.BigDecimal;
 public class AdminCreateProjectRequest extends Request {
     private Long makerId;
 
-    private CreateProjectByCategoryRequest request;
+    private CreateProjectRequest request;
 
     private BigDecimal donateAmount;
 

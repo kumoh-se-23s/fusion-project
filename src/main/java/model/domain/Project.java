@@ -24,6 +24,9 @@ public class Project extends BaseDomain {
     @JoinColumn(name = "maker_fk", nullable = false, onDelete = OnDelete.CASCADE)
     private AppUser maker;
 
+    @JoinColumn(name = "category_fk", onDelete = OnDelete.SET_NULL)
+    private Category category;
+
     @Builder.Default
     @Column(name = "like_count", nullable = false)
     private Long likeCount = 0L;
@@ -67,4 +70,5 @@ public class Project extends BaseDomain {
 
     @Column(name = "project_img_file")
     private byte[] imgFile;
+
 }

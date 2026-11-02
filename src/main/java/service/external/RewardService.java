@@ -46,8 +46,7 @@ public class RewardService {
             );
         }
 
-        if (request.getProjectFk() == null
-                || request.getCategoryFk() == null) {
+        if (request.getProjectFk() == null) {
             throw new LimitNumberOutException(
                     "프로젝트 또는 카테고리 ID가 없습니다."
             );
@@ -92,17 +91,8 @@ public class RewardService {
                         )
                 );
 
-        // 카테고리 조회(사용자가 직접 입력)
-        Category category = categoryRepository
-                .findById(request.getCategoryFk())
-                .orElseThrow(
-                        () -> new NotFoundException(
-                                "리워드 카테고리를 찾을 수 없습니다."
-                        )
-                );
-
         // Service에서 초기값 설정
-        request.prepareForCreate(project, category);
+        request.prepareForCreate(project);
 
         // Builder 대신 Serializer 사용
         Reward reward = Serializer.toDomain(

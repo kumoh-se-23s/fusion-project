@@ -1,10 +1,12 @@
 package repository;
 
 import constant.ProjectState;
+import model.domain.Category;
 import model.domain.Project;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -29,9 +31,14 @@ public class ProjectRepository extends BaseRepositoryImpl<Project, Long> {
         ));
     }
 
-    public List<Project> findByState(List<ProjectState> stateList) {
+    public List<Project> findByStateAndCategory(List<ProjectState> stateList, List<Category> categoryList) {
+        Map<String, Object> filter = new HashMap<>();
+        if (stateList != null) filter.put("state", stateList);
+
+        if (categoryList != null) filter.put("category", categoryList);
+
         return find(Filter.builder()
-                .conditions(Map.of("state", stateList))
+                .conditions(filter)
                 .build()
         );
     }
