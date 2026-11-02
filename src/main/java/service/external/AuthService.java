@@ -1,36 +1,57 @@
-package service;
+package service.external;
 
+import com.sun.jdi.request.InvalidRequestStateException;
 import exception.*;
+import model.domain.AppUser;
 import model.domain.LocalAccount;
 import model.dto.AccountData;
 import model.dto.TokenPair;
 import model.dto.request.account.ChangePasswordRequest;
+import model.dto.request.account.CreateLocalAccountRequest;
 import model.dto.request.account.DeleteAccountRequest;
+import model.dto.request.user.CreateUserRequest;
 import model.dto.response.IdResponse;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import repository.AccountRepository;
+import repository.UserRepository;
+import service.BaseService;
 import util.AccountUtil;
 import util.JwtTokenProvider;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 
-public class AccountService extends BaseService {
+public class AuthService extends BaseService {
     private final JwtTokenProvider jwtTokenProvider;
     private final AccountUtil accountUtil;
     private final AccountRepository accountRepository;
+    private final UserRepository userRepository;
+
     private final JedisPool jedisPool;
 
-    public AccountService(JwtTokenProvider jwtTokenProvider, AccountUtil accountUtil, AccountRepository accountRepository, JedisPool jedisPool) {
+    public AuthService(JwtTokenProvider jwtTokenProvider, AccountUtil accountUtil, AccountRepository accountRepository, UserRepository userRepository, JedisPool jedisPool) {
         this.jwtTokenProvider = jwtTokenProvider;
         this.accountUtil = accountUtil;
         this.accountRepository = accountRepository;
+        this.userRepository = userRepository;
         this.jedisPool = jedisPool;
     }
 
-    public TokenPair createAccount(SignUpRequest request) {
+    public TokenPair signUp(CreateLocalAccountRequest accountRequest, CreateUserRequest userRequest) {
+        if(userRepository.isExistEmail(userRequest.getUserData().getEmail())) {
+            throw new DuplicateEmailException();
+        } else {
+            return tx.execute(() -> {
+                accountRepository.createAccount(accountRequest.getId(), accountRequest.getPassword());
+                AppUser appuser = userRepository.createUser(userRequest.getUserData()).orElseThrow(InvalidRequestStateException::new);
 
+                String accessToken = jwtTokenProvider.createAccessToken(String.valueOf(appuser.getId()));
+                String refreshToken = jwtTokenProvider.createRefreshToken(String.valueOf(appuser.getId()));
+
+                return new TokenPair(accessToken, refreshToken);
+            });
+        }
     }
 
     public TokenPair login(AccountData accountData) {
