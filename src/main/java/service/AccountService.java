@@ -29,9 +29,9 @@ public class AccountService extends BaseService {
         this.jedisPool = jedisPool;
     }
 
-//    public TokenPair createAccount(SignUpRequest request) {
-//
-//    }
+    public TokenPair createAccount(SignUpRequest request) {
+
+    }
 
     public TokenPair login(AccountData accountData) {
         try {
