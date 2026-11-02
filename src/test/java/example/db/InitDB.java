@@ -176,7 +176,7 @@ public class InitDB {
             .title("[시연 0] 메이커1 완료 펀딩")
             .text("[시연 0] 메이커1 완료 펀딩 소개")
             .state(FundingState.COMPLETED)
-            .purposeAmount(new BigDecimal("1000"))
+            .purposeAmount(new BigDecimal("3000"))
             .donateAmount(new BigDecimal("3000"))
             .endDate(now.plusDays(30))
             .createdAt(now.minusDays(5))
