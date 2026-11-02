@@ -40,4 +40,10 @@ public class UserRepository extends BaseRepositoryImpl<AppUser,Long> {
 
         return updateResult.map(AppUser::getId);
     }
+
+    public boolean isExistEmail(String email) {
+        return isExist(Filter.builder()
+                .conditions(Map.of("email", email))
+                .build());
+    }
 }
