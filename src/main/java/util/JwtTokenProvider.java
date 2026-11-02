@@ -45,59 +45,21 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    //public
-
-    public boolean validateToken(String token) throws JsonProcessingException {
-        Map<String, String> parseToken = parse(token);
-
-        String header = parseToken.get("header");
-        Map<String, Object> decodedHeader = jsonToMap(decoding(header));
-
-        if (!decodedHeader.get("alg").equals(alg)) {
-            return false;
-        }
-
-        String payload = parseToken.get("payload");
-        Map<String, Object> decodedPayload = jsonToMap(decoding(payload));
-
-        long now = System.currentTimeMillis() / 1000;
-        if (((Number) decodedPayload.get("exp")).longValue() < now || decodedPayload.get("sub") == null) {
-            return false;
-        }
-
-        String expectedToken = Jwts.builder()
-                .header()
-                .add("alg", alg)
-                .and()
-                .content(decoding(payload))
-                .signWith(key)
-                .compact();
-
-        if (!expectedToken.equals(token)) {
-            return false;
-        }
-
-        return true;
+    //서명, 만료시간, 형식을 한번에 확인해주고 맞으면 Claims를 넘김
+    private Claims getClaims(String token) {
+        return Jwts.parser()
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
     }
 
-    private Map<String, String> parse(String token) {
-        String[] splitTokens = token.split("\\.");
-
-        Map<String, String> result = new HashMap<String, String>();
-
-        result.put("header", splitTokens[0]);
-        result.put("payload", splitTokens[1]);
-        result.put("signature", splitTokens[2]);
-
-        return result;
+    public boolean validateToken(String token) throws JwtException, IllegalArgumentException {
+        return getClaims(token).getSubject() != null;
     }
 
-    private String decoding(String token) {
-        return new String(Base64.getUrlDecoder().decode(token));
-    }
-
-    private Map<String, Object> jsonToMap(String json) throws JsonProcessingException {
-        return objectMapper.readValue(json, new TypeReference<Map<String, Object>>() {
-        });
+    public boolean isAccessToken(Claims claims) throws JwtException, IllegalArgumentException {
+        String value = claims.get("type", String.class);
+        return "access".equals(value);
     }
 }
