@@ -36,7 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import repository.Filter;
-import service.UserService;
+import service.external.ProfileService;
 import service.external.ProjectService;
 import service.external.ReviewService;
 
@@ -206,11 +206,11 @@ public class MainTest extends DatabaseTest {
     @Nested
     @DisplayName("05. SUPPORTER - 개인정보 수정")
     class Test05UpdateProfile {
-        private UserService userService;
+        private ProfileService profileService;
 
         @BeforeEach
         void setUp() {
-            userService = new UserService(
+            profileService = new ProfileService(
                     db.config.getUserRepository(),
                     db.config.getUserRoleRepository(),
                     db.config.getUserRoleRelationRepository()
@@ -224,13 +224,13 @@ public class MainTest extends DatabaseTest {
             long makerId = maker.getId();
 
 
-            UserResponse userResponse = userService.getMyInfo(makerId);
+            UserResponse userResponse = profileService.getMyInfo(makerId);
             UserData testUserData = userResponse.getUserData();
 
             testUserData.setName("[시연 05] 변경된 이름");
 
 
-            IdResponse response = userService.updateUser(makerId, new UpdateUserRequest(testUserData));
+            IdResponse response = profileService.updateUser(makerId, new UpdateUserRequest(testUserData));
             AppUser result = db.config.getUserRepository().findById(response.getId())
                     .orElseThrow(AssertionError::new);
             assertEquals(makerId, response.getId());

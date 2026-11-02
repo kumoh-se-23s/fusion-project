@@ -42,6 +42,10 @@ public class AuthService extends BaseService {
         if(userRepository.isExistEmail(userRequest.getUserData().getEmail())) {
             throw new DuplicateEmailException();
         } else {
+            if(userRequest.getUserData().getName() == null || userRequest.getUserData().getEmail() == null) {
+                throw new InvalidRequestException("필수 사항을 입력하지 않았습니다.");
+            }
+
             return tx.execute(() -> {
                 accountRepository.createAccount(accountRequest.getId(), accountRequest.getPassword());
                 AppUser appuser = userRepository.createUser(userRequest.getUserData()).orElseThrow(InvalidRequestStateException::new);
