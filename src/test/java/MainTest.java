@@ -335,6 +335,7 @@ public class MainTest extends DatabaseTest {
                             .createdAt(LocalDateTime.now())
                             .rewardFk(db.maker1ApproveReward1.getPk())
                             .userFk(db.notDonateUser1.getPk())
+                            .amount(new BigDecimal("2000"))
                             .build()
             );
             Donate saved = db.config.getDonateRepository().findByPK(response.getPk())
@@ -406,6 +407,7 @@ public class MainTest extends DatabaseTest {
                             .createdAt(LocalDateTime.now())
                             .rewardFk(db.maker1ConcurrencyReward1.getPk())
                             .userFk(db.notDonateUser2.getPk())
+                            .amount(new BigDecimal("2000"))
                             .build()
             );
             Donate saved = db.config.getDonateRepository().findByPK(response.getPk())
