@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.Optional;
 
 
-public abstract class BaseRepositoryImpl<T extends BaseDomain, PK> implements BaseRepository<T, PK> {
+public abstract class BaseRepositoryImpl<T extends BaseDomain, ID> implements BaseRepository<T, ID> {
     protected final EntityManager entityManager = new EntityManagerImpl();
     private final TransactionTemplate transactionTemplate = new TransactionTemplate();
     protected final Class<T> entityClass = resolveEntityClass();
@@ -52,16 +52,16 @@ public abstract class BaseRepositoryImpl<T extends BaseDomain, PK> implements Ba
         return entityManager.findBy(toCriteria(null));
     }
     @Override
-    public Optional<T> findByPK(PK pk) {
-        return Optional.ofNullable(entityManager.find(entityClass, pk));
+    public Optional<T> findById(ID id) {
+        return Optional.ofNullable(entityManager.find(entityClass, id));
     }
 
-    //updateData의 키는 도메인 필드명. PK와 버전은 수정할 수 없다
-    //연관 필드의 값으로는 PK, 엔티티 모두 사용 가능
+    //updateData의 키는 도메인 필드명. ID와 버전은 수정할 수 없다
+    //연관 필드의 값으로는 ID, 엔티티 모두 사용 가능
     @Override
-    public Optional<T> update(PK pk, Map<String, Object> updateData) {
+    public Optional<T> update(ID id, Map<String, Object> updateData) {
         return transactionTemplate.execute(() -> {
-            T entity = entityManager.find(entityClass, pk);
+            T entity = entityManager.find(entityClass, id);
             if (entity == null) {
                 return Optional.empty();
             }
@@ -72,8 +72,8 @@ public abstract class BaseRepositoryImpl<T extends BaseDomain, PK> implements Ba
     }
 
     @Override
-    public boolean delete(PK pk) {
-        return entityManager.remove(entityClass, pk);
+    public boolean delete(ID id) {
+        return entityManager.remove(entityClass, id);
     }
 
     //filter가 null이면 조건 없이 행이 하나라도 있는지 확인 (find(null)과 동일한 의미)
@@ -87,15 +87,15 @@ public abstract class BaseRepositoryImpl<T extends BaseDomain, PK> implements Ba
 
     private void applyField(T entity, String field, Object value) {
         ColumnInfo column = metadata.getColumnByField(field);
-        if (column == metadata.getPk() || column == metadata.getVersion()) {
+        if (column == metadata.getId() || column == metadata.getVersion()) {
             throw new QueryErrorException("'" + field + "' cannot be updated");
         }
-        //연관 필드에 PK가 들어오면 해당 엔티티를 조회해서 넣는다
+        //연관 필드에 ID가 들어오면 해당 엔티티를 조회해서 넣는다
         if (column.isRelation() && value != null && !column.getRelationClass().isInstance(value)) {
-            Object pk = value;
-            value = Optional.ofNullable(entityManager.find(column.getRelationClass(), pk))
+            Object id = value;
+            value = Optional.ofNullable(entityManager.find(column.getRelationClass(), id))
                     .orElseThrow(() -> new NotFoundException(
-                            column.getRelationClass().getSimpleName() + "#" + pk + " not found"));
+                            column.getRelationClass().getSimpleName() + "#" + id + " not found"));
         }
         try {
             column.setValue(entity, value);
@@ -104,12 +104,12 @@ public abstract class BaseRepositoryImpl<T extends BaseDomain, PK> implements Ba
         }
     }
 
-    //연관 필드에 엔티티가 들어오면 해당 엔티티의 PK로 바꾼다
+    //연관 필드에 엔티티가 들어오면 해당 엔티티의 ID로 바꾼다
     private Object toQueryValue(ColumnInfo column, Object value) {
         if (!column.isRelation() || !column.getRelationClass().isInstance(value)) {
             return value;
         }
-        return EntityMetadata.of(column.getRelationClass()).getPk().getValue(value);
+        return EntityMetadata.of(column.getRelationClass()).getId().getValue(value);
     }
 
     //필드명 기반 Filter -> 컬럼명 기반 CriteriaQuery. 메타데이터에 없는 필드는 거부된다

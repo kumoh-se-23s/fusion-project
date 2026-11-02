@@ -30,8 +30,8 @@ class UserRepositoryTest {
         private Optional<AppUser> findByIdResult = Optional.empty();
         private Optional<AppUser> updateResult = Optional.empty();
         private Filter receivedFilter;
-        private Long findByIdPk;
-        private Long updatedPk;
+        private Long findByIdValue;
+        private Long updatedId;
         private Map<String, Object> updatedData;
 
         @Override
@@ -41,21 +41,21 @@ class UserRepositoryTest {
         }
 
         @Override
-        public Optional<AppUser> findByPK(Long pk) {
-            findByIdPk = pk;
+        public Optional<AppUser> findById(Long id) {
+            findByIdValue = id;
             return findByIdResult;
         }
 
         @Override
-        public Optional<AppUser> update(Long pk, Map<String, Object> updateData) {
-            updatedPk = pk;
+        public Optional<AppUser> update(Long id, Map<String, Object> updateData) {
+            updatedId = id;
             updatedData = updateData;
             return updateResult;
         }
     }
 
-    private static AppUser user(long pk) {
-        return AppUser.builder().pk(pk).name("홍길동").email("hong@example.com").build();
+    private static AppUser user(long id) {
+        return AppUser.builder().id(id).name("홍길동").email("hong@example.com").build();
     }
 
     @BeforeEach
@@ -63,17 +63,17 @@ class UserRepositoryTest {
         userRepository = new SpyUserRepository();
     }
 
-    // ===== 기존 테스트 (주석 처리): findUser, findAppUserByUserPk가 UserRepository에서 삭제됨 (3e8251c) =====
+    // ===== 기존 테스트 (주석 처리): findUser, findAppUserByUserId가 UserRepository에서 삭제됨 (3e8251c) =====
 //    @Nested
 //    @DisplayName("findUser")
 //    class FindUser {
 //
 //        @Test
-//        @DisplayName("pk 조건으로 1개만 찾도록 Filter를 만든다")
+//        @DisplayName("id 조건으로 1개만 찾도록 Filter를 만든다")
 //        void buildsFilter() {
 //            userRepository.findUser(1L);
 //
-//            assertEquals(Map.of("pk", 1L), userRepository.receivedFilter.getConditions());
+//            assertEquals(Map.of("id", 1L), userRepository.receivedFilter.getConditions());
 //            assertEquals(1, userRepository.receivedFilter.getLimit());
 //        }
 //
@@ -94,8 +94,8 @@ class UserRepositoryTest {
 //    }
 //
 //    @Nested
-//    @DisplayName("findAppUserByUserPk")
-//    class FindAppUserByUserPk {
+//    @DisplayName("findAppUserByUserId")
+//    class FindAppUserByUserId {
 //
 //        @Test
 //        @DisplayName("findById에 그대로 맡기고 그 결과를 돌려준다")
@@ -103,8 +103,8 @@ class UserRepositoryTest {
 //            AppUser found = user(1L);
 //            userRepository.findByIdResult = Optional.of(found);
 //
-//            assertSame(found, userRepository.findAppUserByUserPk(1L).orElseThrow());
-//            assertEquals(1L, userRepository.findByIdPk);
+//            assertSame(found, userRepository.findAppUserByUserId(1L).orElseThrow());
+//            assertEquals(1L, userRepository.findByIdValue);
 //        }
 //    }
 
@@ -119,7 +119,7 @@ class UserRepositoryTest {
 
             userRepository.updateUser(1L, data);
 
-            assertEquals(1L, userRepository.updatedPk);
+            assertEquals(1L, userRepository.updatedId);
             assertEquals(Map.of("name", "김철수", "phone", "010-0000-0000"), userRepository.updatedData);
         }
 
@@ -140,8 +140,8 @@ class UserRepositoryTest {
         }
 
         @Test
-        @DisplayName("수정에 성공하면 수정된 사용자의 pk를 돌려준다")
-        void returnsPk() {
+        @DisplayName("수정에 성공하면 수정된 사용자의 id를 돌려준다")
+        void returnsId() {
             userRepository.updateResult = Optional.of(user(1L));
 
             assertEquals(Optional.of(1L), userRepository.updateUser(1L, UserData.builder().name("김철수").build()));

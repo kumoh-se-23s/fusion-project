@@ -1,7 +1,7 @@
 package model.domain;
 
 import annotation.Column;
-import annotation.PK;
+import annotation.Id;
 import annotation.Table;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -12,9 +12,9 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserRole extends BaseDomain {
-    @PK
-    @Column(name = "role_pk")
-    private Long pk;
+    @Id
+    @Column(name = "role_id")
+    private Long id;
 
     @Column(name = "role_name", nullable = false, unique = true, length = 50)
     private String roleName;

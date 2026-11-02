@@ -6,10 +6,10 @@ import java.util.List;
 import java.util.Map;
 
 public class CategoryRepository extends BaseRepositoryImpl<Category, Long>{
-    public List<Category> findByPKs(List<Long> pks){
+    public List<Category> findByIds(List<Long> ids){
         return find(
                 Filter.builder()
-                        .conditions(Map.of("pk", pks))
+                        .conditions(Map.of("id", ids))
                         .build()
         );
     }

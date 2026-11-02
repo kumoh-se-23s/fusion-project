@@ -11,7 +11,7 @@ import model.dto.AccountData;
 import model.dto.TokenPair;
 import model.dto.request.account.ChangePasswordRequest;
 import model.dto.request.account.DeleteAccountRequest;
-import model.dto.response.PKResponse;
+import model.dto.response.IdResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class AccountServiceTest {
 
-    private static final long ACCOUNT_PK = 1L;
+    private static final long ACCOUNT_ID = 1L;
     private static final String LOGIN_ID = "hong";
     private static final String PASSWORD = "password1234";
 
@@ -48,39 +48,39 @@ class AccountServiceTest {
 
     static class FakeAccountRepository extends AccountRepository {
         private final Map<Long, LocalAccount> accounts = new HashMap<>();
-        private final List<Long> deletedPks = new ArrayList<>();
-        private Long updatedPk;
+        private final List<Long> deletedIds = new ArrayList<>();
+        private Long updatedId;
         private String updatedPassword;
         private String updatedSalt;
 
         void save(LocalAccount account) {
-            accounts.put(account.getPk(), account);
+            accounts.put(account.getId(), account);
         }
 
         @Override
-        public Optional<LocalAccount> findId(String id) {
+        public Optional<LocalAccount> findByLoginId(String loginId) {
             return accounts.values().stream()
-                    .filter(account -> account.getId().equals(id))
+                    .filter(account -> account.getLoginId().equals(loginId))
                     .findFirst();
         }
 
         @Override
-        public Optional<LocalAccount> findByPK(Long pk) {
-            return Optional.ofNullable(accounts.get(pk));
+        public Optional<LocalAccount> findById(Long id) {
+            return Optional.ofNullable(accounts.get(id));
         }
 
         @Override
-        public boolean updatePassword(long accountPk, String hashedPassword, String salt) {
-            updatedPk = accountPk;
+        public boolean updatePassword(long accountId, String hashedPassword, String salt) {
+            updatedId = accountId;
             updatedPassword = hashedPassword;
             updatedSalt = salt;
             return true;
         }
 
         @Override
-        public boolean delete(Long pk) {
-            deletedPks.add(pk);
-            return accounts.remove(pk) != null;
+        public boolean delete(Long id) {
+            deletedIds.add(id);
+            return accounts.remove(id) != null;
         }
     }
 
@@ -130,9 +130,9 @@ class AccountServiceTest {
 
         salt = accountUtil.generateSalt();
         accountRepository.save(LocalAccount.builder()
-                .pk(ACCOUNT_PK)
-                .user(AppUser.builder().pk(10L).name("홍길동").email("hong@example.com").build())
-                .id(LOGIN_ID)
+                .id(ACCOUNT_ID)
+                .user(AppUser.builder().id(10L).name("홍길동").email("hong@example.com").build())
+                .loginId(LOGIN_ID)
                 .password(accountUtil.hash(PASSWORD, salt))
                 .salt(salt)
                 .build());
@@ -159,12 +159,12 @@ class AccountServiceTest {
     class Login {
 
         @Test
-        @DisplayName("아이디와 비밀번호가 맞으면 계정 pk가 담긴 토큰 두 개를 돌려준다")
+        @DisplayName("아이디와 비밀번호가 맞으면 계정 id가 담긴 토큰 두 개를 돌려준다")
         void success() {
             TokenPair tokenPair = accountService.login(new AccountData(LOGIN_ID, PASSWORD));
 
-            assertEquals(String.valueOf(ACCOUNT_PK), subjectOf(tokenPair.getAccessToken()));
-            assertEquals(String.valueOf(ACCOUNT_PK), subjectOf(tokenPair.getRefreshToken()));
+            assertEquals(String.valueOf(ACCOUNT_ID), subjectOf(tokenPair.getAccessToken()));
+            assertEquals(String.valueOf(ACCOUNT_ID), subjectOf(tokenPair.getRefreshToken()));
         }
 
         @Test
@@ -172,8 +172,8 @@ class AccountServiceTest {
         void savesRefreshToken() {
             TokenPair tokenPair = accountService.login(new AccountData(LOGIN_ID, PASSWORD));
 
-            assertEquals(tokenPair.getRefreshToken(), jedis.store.get("refreshToken" + ACCOUNT_PK));
-            assertEquals(3600L, jedis.ttls.get("refreshToken" + ACCOUNT_PK));
+            assertEquals(tokenPair.getRefreshToken(), jedis.store.get("refreshToken" + ACCOUNT_ID));
+            assertEquals(3600L, jedis.ttls.get("refreshToken" + ACCOUNT_ID));
         }
 
         @Test
@@ -186,7 +186,7 @@ class AccountServiceTest {
 
         @Test
         @DisplayName("없는 아이디면 AccountException이 발생한다")
-        void unknownId() {
+        void unknownLoginId() {
             assertThrows(AccountException.class,
                     () -> accountService.login(new AccountData("nobody", PASSWORD)));
         }
@@ -199,11 +199,11 @@ class AccountServiceTest {
         @Test
         @DisplayName("현재 비밀번호가 맞으면 새 salt로 해시한 새 비밀번호를 저장한다")
         void success() throws Exception {
-            PKResponse response = accountService.changePassword(
-                    ACCOUNT_PK, new ChangePasswordRequest(PASSWORD, "newPassword"));
+            IdResponse response = accountService.changePassword(
+                    ACCOUNT_ID, new ChangePasswordRequest(PASSWORD, "newPassword"));
 
-            assertEquals(ACCOUNT_PK, response.getPk());
-            assertEquals(ACCOUNT_PK, accountRepository.updatedPk);
+            assertEquals(ACCOUNT_ID, response.getId());
+            assertEquals(ACCOUNT_ID, accountRepository.updatedId);
             assertNotEquals(salt, accountRepository.updatedSalt);
             assertTrue(accountUtil.matches(
                     "newPassword", accountRepository.updatedSalt, accountRepository.updatedPassword));
@@ -214,8 +214,8 @@ class AccountServiceTest {
         void wrongCurrentPassword() {
             assertThrows(PasswordMisMatchException.class,
                     () -> accountService.changePassword(
-                            ACCOUNT_PK, new ChangePasswordRequest("wrong", "newPassword")));
-            assertNull(accountRepository.updatedPk);
+                            ACCOUNT_ID, new ChangePasswordRequest("wrong", "newPassword")));
+            assertNull(accountRepository.updatedId);
         }
 
         @Test
@@ -236,15 +236,15 @@ class AccountServiceTest {
         void deletesRefreshToken() {
             accountService.login(new AccountData(LOGIN_ID, PASSWORD));
 
-            accountService.logout(ACCOUNT_PK);
+            accountService.logout(ACCOUNT_ID);
 
-            assertFalse(jedis.store.containsKey("refreshToken" + ACCOUNT_PK));
+            assertFalse(jedis.store.containsKey("refreshToken" + ACCOUNT_ID));
         }
 
         @Test
         @DisplayName("저장된 토큰이 없어도 예외 없이 끝난다")
         void noToken() {
-            assertDoesNotThrow(() -> accountService.logout(ACCOUNT_PK));
+            assertDoesNotThrow(() -> accountService.logout(ACCOUNT_ID));
         }
     }
 
@@ -255,17 +255,17 @@ class AccountServiceTest {
         @Test
         @DisplayName("비밀번호가 맞으면 계정을 삭제한다")
         void success() {
-            accountService.deleteAccount(ACCOUNT_PK, new DeleteAccountRequest(PASSWORD));
+            accountService.deleteAccount(ACCOUNT_ID, new DeleteAccountRequest(PASSWORD));
 
-            assertEquals(List.of(ACCOUNT_PK), accountRepository.deletedPks);
+            assertEquals(List.of(ACCOUNT_ID), accountRepository.deletedIds);
         }
 
         @Test
         @DisplayName("비밀번호가 틀리면 PasswordMisMatchException이 발생하고 삭제하지 않는다")
         void wrongPassword() {
             assertThrows(PasswordMisMatchException.class,
-                    () -> accountService.deleteAccount(ACCOUNT_PK, new DeleteAccountRequest("wrong")));
-            assertTrue(accountRepository.deletedPks.isEmpty());
+                    () -> accountService.deleteAccount(ACCOUNT_ID, new DeleteAccountRequest("wrong")));
+            assertTrue(accountRepository.deletedIds.isEmpty());
         }
 
         @Test

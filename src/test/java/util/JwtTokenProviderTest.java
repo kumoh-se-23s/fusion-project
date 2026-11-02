@@ -45,8 +45,8 @@ class JwtTokenProviderTest {
     class CreateAccessToken {
 
         @Test
-        @DisplayName("subject에 userPK가 들어간다")
-        void subjectIsUserPK() {
+        @DisplayName("subject에 userId가 들어간다")
+        void subjectIsUserId() {
             String token = jwtTokenProvider.createAccessToken("1");
 
             assertEquals("1", parseClaims(token).getSubject());
@@ -76,8 +76,8 @@ class JwtTokenProviderTest {
     class CreateRefreshToken {
 
         @Test
-        @DisplayName("subject에 userPK가 들어간다")
-        void subjectIsUserPK() {
+        @DisplayName("subject에 userId가 들어간다")
+        void subjectIsUserId() {
             String token = jwtTokenProvider.createRefreshToken("42");
 
             assertEquals("42", parseClaims(token).getSubject());

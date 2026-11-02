@@ -19,12 +19,12 @@ public class JwtTokenProvider {
     final private String secretKey = "YEm5Guw205YIM4QuSKDrQqv/nmvssJwbQQc8OPCJ4lM=";
     final private SecretKey key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
 
-    public String createAccessToken(String userPK) {
+    public String createAccessToken(String userId) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + 1000 * 60 * 15);
 
         return Jwts.builder()
-                .subject(userPK)
+                .subject(userId)
                 .claim("type", "access")
                 .issuedAt(now)
                 .expiration(expiry)
@@ -32,12 +32,12 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    public String createRefreshToken(String userPK) {
+    public String createRefreshToken(String userId) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + 1000 * 60 * 15);
 
         return Jwts.builder()
-                .subject(userPK)
+                .subject(userId)
                 .claim("type" , "refresh")
                 .issuedAt(now)
                 .expiration(expiry)

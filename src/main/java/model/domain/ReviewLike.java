@@ -10,9 +10,9 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ReviewLike extends BaseDomain {
-    @PK
-    @Column(name = "review_like_pk")
-    private Long pk;
+    @Id
+    @Column(name = "review_like_id")
+    private Long id;
 
     @JoinColumn(name = "review_fk", nullable = false, uniqueGroup = "like", onDelete = OnDelete.CASCADE)
     private Review review;

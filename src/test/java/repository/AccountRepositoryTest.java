@@ -23,7 +23,7 @@ class AccountRepositoryTest {
         private List<LocalAccount> findResult = List.of();
         private Optional<LocalAccount> updateResult = Optional.empty();
         private Filter receivedFilter;
-        private Long updatedPk;
+        private Long updatedId;
         private Map<String, Object> updatedData;
         private LocalAccount createdEntity;
 
@@ -40,18 +40,18 @@ class AccountRepositoryTest {
         }
 
         @Override
-        public Optional<LocalAccount> update(Long pk, Map<String, Object> updateData) {
-            updatedPk = pk;
+        public Optional<LocalAccount> update(Long id, Map<String, Object> updateData) {
+            updatedId = id;
             updatedData = updateData;
             return updateResult;
         }
     }
 
-    private static LocalAccount account(long pk, String id) {
+    private static LocalAccount account(long id, String loginId) {
         return LocalAccount.builder()
-                .pk(pk)
-                .user(AppUser.builder().pk(10L).name("홍길동").email("hong@example.com").build())
                 .id(id)
+                .user(AppUser.builder().id(10L).name("홍길동").email("hong@example.com").build())
+                .loginId(loginId)
                 .password("hashed")
                 .salt("salt")
                 .build();
@@ -63,15 +63,15 @@ class AccountRepositoryTest {
     }
 
     @Nested
-    @DisplayName("findId")
-    class FindId {
+    @DisplayName("findByLoginId")
+    class FindByLoginId {
 
         @Test
-        @DisplayName("id 조건으로 1개만 찾도록 Filter를 만든다")
+        @DisplayName("loginId 조건으로 1개만 찾도록 Filter를 만든다")
         void buildsFilter() {
-            accountRepository.findId("hong");
+            accountRepository.findByLoginId("hong");
 
-            assertEquals(Map.of("id", "hong"), accountRepository.receivedFilter.getConditions());
+            assertEquals(Map.of("loginId", "hong"), accountRepository.receivedFilter.getConditions());
             assertEquals(1, accountRepository.receivedFilter.getLimit());
         }
 
@@ -81,13 +81,13 @@ class AccountRepositoryTest {
             LocalAccount first = account(1L, "hong");
             accountRepository.findResult = List.of(first, account(2L, "hong"));
 
-            assertSame(first, accountRepository.findId("hong").orElseThrow());
+            assertSame(first, accountRepository.findByLoginId("hong").orElseThrow());
         }
 
         @Test
         @DisplayName("찾은 결과가 없으면 빈 Optional을 돌려준다")
         void returnsEmpty() {
-            assertTrue(accountRepository.findId("nobody").isEmpty());
+            assertTrue(accountRepository.findByLoginId("nobody").isEmpty());
         }
     }
 
@@ -100,7 +100,7 @@ class AccountRepositoryTest {
         void passesPasswordAndSalt() {
             accountRepository.updatePassword(1L, "newHash", "newSalt");
 
-            assertEquals(1L, accountRepository.updatedPk);
+            assertEquals(1L, accountRepository.updatedId);
             assertEquals(Map.of("password", "newHash", "salt", "newSalt"), accountRepository.updatedData);
         }
 
@@ -125,11 +125,11 @@ class AccountRepositoryTest {
 
         // LocalAccount의 user, salt 에는 @NonNull이 붙어 있으므로 createAccount가 이 값들도 채워야 한다.
         @Test
-        @DisplayName("예외 없이 id와 password를 담은 계정을 create에 넘긴다")
+        @DisplayName("예외 없이 loginId와 password를 담은 계정을 create에 넘긴다")
         void createsAccount() {
             assertDoesNotThrow(() -> accountRepository.createAccount("hong", "password"));
 
-            assertEquals("hong", accountRepository.createdEntity.getId());
+            assertEquals("hong", accountRepository.createdEntity.getLoginId());
             assertEquals("password", accountRepository.createdEntity.getPassword());
         }
     }

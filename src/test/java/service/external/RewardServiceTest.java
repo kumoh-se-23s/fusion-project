@@ -6,7 +6,7 @@ import exception.NotFoundException;
 import model.domain.AppUser;
 import model.domain.Category;
 import model.domain.Donate;
-import model.domain.Funding;
+import model.domain.Project;
 import model.domain.Reward;
 import model.dto.RewardData;
 import model.dto.request.reward.CreateRewardDataRequest;
@@ -19,7 +19,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import repository.CategoryRepository;
 import repository.DonateRepository;
-import repository.FundingRepository;
+import repository.ProjectRepository;
 import repository.RewardRepository;
 import repository.UserRepository;
 
@@ -36,28 +36,28 @@ public class RewardServiceTest extends DatabaseTest {
 
     private RewardService rewardService;
     private UserRepository userRepository;
-    private FundingRepository fundingRepository;
+    private ProjectRepository projectRepository;
     private DonateRepository donateRepository;
     private RewardRepository rewardRepository;
     private CategoryRepository categoryRepository;
 
     private AppUser maker;
     private AppUser supporter;
-    private Funding funding;
-    private Funding secondFunding;
+    private Project project;
+    private Project secondProject;
     private Category category;
 
     @BeforeEach
     void setUp() {
 
         userRepository = db.config.getUserRepository();
-        fundingRepository = db.config.getFundingRepository();
+        projectRepository = db.config.getProjectRepository();
         donateRepository = db.config.getDonateRepository();
         rewardRepository = db.config.getRewardRepository();
         categoryRepository = db.config.getCategoryRepository();
 
         rewardService = new RewardService(
-                fundingRepository,
+                projectRepository,
                 donateRepository,
                 rewardRepository,
                 categoryRepository
@@ -81,9 +81,9 @@ public class RewardServiceTest extends DatabaseTest {
         );
 
         assertNotNull(maker);
-        assertNotNull(maker.getPk());
+        assertNotNull(maker.getId());
         assertNotNull(supporter);
-        assertNotNull(supporter.getPk());
+        assertNotNull(supporter.getId());
 
         category = categoryRepository.create(
                 Category.builder()
@@ -92,38 +92,38 @@ public class RewardServiceTest extends DatabaseTest {
         );
 
         assertNotNull(category);
-        assertNotNull(category.getPk());
+        assertNotNull(category.getId());
 
-        funding = createFunding();
-        secondFunding = createFunding();
+        project = createProject();
+        secondProject = createProject();
     }
 
-    // 테스트용 펀딩 생성
-    private Funding createFunding() {
+    // 테스트용 프로젝트 생성
+    private Project createProject() {
 
-        Funding saved = fundingRepository.create(
-                Funding.builder()
+        Project saved = projectRepository.create(
+                Project.builder()
                         .maker(maker)
                         .endDate(LocalDateTime.now().plusDays(30))
                         .build()
         );
 
         assertNotNull(saved);
-        assertNotNull(saved.getPk());
+        assertNotNull(saved.getId());
 
         return saved;
     }
 
     // 정상적인 리워드 등록 요청 생성
-    private CreateRewardDataRequest validRequest(Long fundingPk, String name) {
+    private CreateRewardDataRequest validRequest(Long projectId, String name) {
 
         return new CreateRewardDataRequest(
                 name,
                 null,
                 LocalDateTime.now().plusDays(7),
                 "테스트 리워드 설명",
-                fundingPk,
-                category.getPk(),
+                projectId,
+                category.getId(),
                 BigDecimal.valueOf(10000),
                 10L,
                 null,
@@ -135,9 +135,9 @@ public class RewardServiceTest extends DatabaseTest {
     }
 
     // DB에서 저장된 리워드 조회
-    private Reward findSavedReward(Long fundingPk, String name) {
+    private Reward findSavedReward(Long projectId, String name) {
 
-        return rewardRepository.findByFundingPk(fundingPk)
+        return rewardRepository.findByProjectId(projectId)
                 .stream()
                 .filter(reward -> name.equals(reward.getName()))
                 .findFirst()
@@ -150,50 +150,50 @@ public class RewardServiceTest extends DatabaseTest {
     @AfterEach
     void tearDown() {
 
-        if (supporter != null && supporter.getPk() != null) {
+        if (supporter != null && supporter.getId() != null) {
 
             for (Donate donate :
-                    donateRepository.findByUserPk(supporter.getPk())) {
+                    donateRepository.findByUserId(supporter.getId())) {
 
                 if (donate.getReward() == null ||
-                        donate.getReward().getFunding() == null) {
+                        donate.getReward().getProject() == null) {
                     continue;
                 }
 
-                Long fundingPk = donate.getReward().getFunding().getPk();
+                Long projectId = donate.getReward().getProject().getId();
 
-                if ((funding != null && fundingPk.equals(funding.getPk()))
-                        || (secondFunding != null &&
-                        fundingPk.equals(secondFunding.getPk()))) {
+                if ((project != null && projectId.equals(project.getId()))
+                        || (secondProject != null &&
+                        projectId.equals(secondProject.getId()))) {
 
-                    donateRepository.delete(donate.getPk());
+                    donateRepository.delete(donate.getId());
                 }
             }
         }
 
-        for (Funding f : new Funding[]{funding, secondFunding}) {
+        for (Project f : new Project[]{project, secondProject}) {
 
-            if (f == null || f.getPk() == null) {
+            if (f == null || f.getId() == null) {
                 continue;
             }
 
-            for (Reward reward : rewardRepository.findByFundingPk(f.getPk())) {
-                rewardRepository.delete(reward.getPk());
+            for (Reward reward : rewardRepository.findByProjectId(f.getId())) {
+                rewardRepository.delete(reward.getId());
             }
 
-            fundingRepository.delete(f.getPk());
+            projectRepository.delete(f.getId());
         }
 
-        if (category != null && category.getPk() != null) {
-            categoryRepository.delete(category.getPk());
+        if (category != null && category.getId() != null) {
+            categoryRepository.delete(category.getId());
         }
 
-        if (supporter != null && supporter.getPk() != null) {
-            userRepository.delete(supporter.getPk());
+        if (supporter != null && supporter.getId() != null) {
+            userRepository.delete(supporter.getId());
         }
 
-        if (maker != null && maker.getPk() != null) {
-            userRepository.delete(maker.getPk());
+        if (maker != null && maker.getId() != null) {
+            userRepository.delete(maker.getId());
         }
     }
 
@@ -211,14 +211,14 @@ public class RewardServiceTest extends DatabaseTest {
 
             // Given
             CreateRewardDataRequest request =
-                    validRequest(funding.getPk(), "정상 리워드");
+                    validRequest(project.getId(), "정상 리워드");
 
             // When
             rewardService.createReward(request);
 
             // Then
             Reward saved =
-                    findSavedReward(funding.getPk(), "정상 리워드");
+                    findSavedReward(project.getId(), "정상 리워드");
 
             assertEquals(10L, saved.getMaxQuantity());
             assertEquals(10L, saved.getRemainQuantity());
@@ -229,8 +229,8 @@ public class RewardServiceTest extends DatabaseTest {
                             .compareTo(saved.getRequiredAmount())
             );
 
-            assertEquals(funding.getPk(), saved.getFunding().getPk());
-            assertEquals(category.getPk(), saved.getCategory().getPk());
+            assertEquals(project.getId(), saved.getProject().getId());
+            assertEquals(category.getId(), saved.getCategory().getId());
         }
 
         @ParameterizedTest(name = "이름 \"{0}\"")
@@ -239,10 +239,10 @@ public class RewardServiceTest extends DatabaseTest {
         void blankName(String name) {
 
             CreateRewardDataRequest request =
-                    validRequest(funding.getPk(), name);
+                    validRequest(project.getId(), name);
 
             int before =
-                    rewardRepository.findByFundingPk(funding.getPk()).size();
+                    rewardRepository.findByProjectId(project.getId()).size();
 
             assertThrows(
                     LimitNumberOutException.class,
@@ -251,7 +251,7 @@ public class RewardServiceTest extends DatabaseTest {
 
             assertEquals(
                     before,
-                    rewardRepository.findByFundingPk(funding.getPk()).size()
+                    rewardRepository.findByProjectId(project.getId()).size()
             );
         }
 
@@ -266,8 +266,8 @@ public class RewardServiceTest extends DatabaseTest {
                             null,
                             LocalDateTime.now().plusDays(7),
                             "설명",
-                            funding.getPk(),
-                            category.getPk(),
+                            project.getId(),
+                            category.getId(),
                             new BigDecimal(amount),
                             10L,
                             null,
@@ -278,7 +278,7 @@ public class RewardServiceTest extends DatabaseTest {
                     );
 
             int before =
-                    rewardRepository.findByFundingPk(funding.getPk()).size();
+                    rewardRepository.findByProjectId(project.getId()).size();
 
             assertThrows(
                     LimitNumberOutException.class,
@@ -287,7 +287,7 @@ public class RewardServiceTest extends DatabaseTest {
 
             assertEquals(
                     before,
-                    rewardRepository.findByFundingPk(funding.getPk()).size()
+                    rewardRepository.findByProjectId(project.getId()).size()
             );
         }
 
@@ -302,8 +302,8 @@ public class RewardServiceTest extends DatabaseTest {
                             null,
                             LocalDateTime.now().plusDays(7),
                             "설명",
-                            funding.getPk(),
-                            category.getPk(),
+                            project.getId(),
+                            category.getId(),
                             BigDecimal.valueOf(10000),
                             quantity,
                             null,
@@ -314,7 +314,7 @@ public class RewardServiceTest extends DatabaseTest {
                     );
 
             int before =
-                    rewardRepository.findByFundingPk(funding.getPk()).size();
+                    rewardRepository.findByProjectId(project.getId()).size();
 
             assertThrows(
                     LimitNumberOutException.class,
@@ -323,18 +323,18 @@ public class RewardServiceTest extends DatabaseTest {
 
             assertEquals(
                     before,
-                    rewardRepository.findByFundingPk(funding.getPk()).size()
+                    rewardRepository.findByProjectId(project.getId()).size()
             );
         }
 
         @Test
-        @DisplayName("없는 펀딩이면 NotFoundException")
-        void fundingNotFound() {
+        @DisplayName("없는 프로젝트면 NotFoundException")
+        void projectNotFound() {
 
-            Long nonexistentPk = Long.MAX_VALUE;
+            Long nonexistentId = Long.MAX_VALUE;
 
             CreateRewardDataRequest request =
-                    validRequest(nonexistentPk, "없는 펀딩 리워드");
+                    validRequest(nonexistentId, "없는 프로젝트 리워드");
 
             assertThrows(
                     NotFoundException.class,
@@ -352,32 +352,32 @@ public class RewardServiceTest extends DatabaseTest {
     class GetReward {
 
         @Test
-        @DisplayName("펀딩별 리워드를 조회한다")
-        void byFunding() {
+        @DisplayName("프로젝트별 리워드를 조회한다")
+        void byProject() {
 
             // Given
             rewardService.createReward(
-                    validRequest(funding.getPk(), "펀딩A 상품1")
+                    validRequest(project.getId(), "프로젝트A 상품1")
             );
 
             rewardService.createReward(
-                    validRequest(funding.getPk(), "펀딩A 상품2")
+                    validRequest(project.getId(), "프로젝트A 상품2")
             );
 
             rewardService.createReward(
-                    validRequest(secondFunding.getPk(), "펀딩B 상품")
+                    validRequest(secondProject.getId(), "프로젝트B 상품")
             );
 
             // When
             List<RewardData> result =
-                    rewardService.getRewardByFunding(funding.getPk());
+                    rewardService.getRewardByProject(project.getId());
 
             // Then
             assertEquals(2, result.size());
 
             assertTrue(
                     result.stream().allMatch(
-                            reward -> funding.getPk().equals(reward.getFundingPk())
+                            reward -> project.getId().equals(reward.getProjectId())
                     )
             );
         }
@@ -388,15 +388,15 @@ public class RewardServiceTest extends DatabaseTest {
 
             // Given
             rewardService.createReward(
-                    validRequest(funding.getPk(), "후원한 리워드")
+                    validRequest(project.getId(), "후원한 리워드")
             );
 
             rewardService.createReward(
-                    validRequest(secondFunding.getPk(), "후원 안 한 리워드")
+                    validRequest(secondProject.getId(), "후원 안 한 리워드")
             );
 
             Reward donatedReward =
-                    findSavedReward(funding.getPk(), "후원한 리워드");
+                    findSavedReward(project.getId(), "후원한 리워드");
 
             Donate savedDonate = donateRepository.create(
                     Donate.builder()
@@ -411,14 +411,14 @@ public class RewardServiceTest extends DatabaseTest {
 
             // When
             List<RewardData> result =
-                    rewardService.getRewardByDonate(supporter.getPk());
+                    rewardService.getRewardByDonate(supporter.getId());
 
             // Then
             assertEquals(1, result.size());
 
             assertEquals(
-                    donatedReward.getPk(),
-                    result.get(0).getRewardPk()
+                    donatedReward.getId(),
+                    result.get(0).getRewardId()
             );
         }
 
@@ -428,30 +428,30 @@ public class RewardServiceTest extends DatabaseTest {
 
             // Given
             rewardService.createReward(
-                    validRequest(funding.getPk(), "첫 번째 프로젝트 리워드")
+                    validRequest(project.getId(), "첫 번째 프로젝트 리워드")
             );
 
             rewardService.createReward(
-                    validRequest(secondFunding.getPk(), "두 번째 프로젝트 리워드")
+                    validRequest(secondProject.getId(), "두 번째 프로젝트 리워드")
             );
 
             // When
             List<List<RewardData>> result =
-                    rewardService.getRewardFindByMaker(maker.getPk());
+                    rewardService.getRewardFindByMaker(maker.getId());
 
             // Then
             assertEquals(2, result.size());
 
-            List<Long> allFundingPks = new ArrayList<>();
+            List<Long> allProjectIds = new ArrayList<>();
 
             for (List<RewardData> perProject : result) {
                 for (RewardData reward : perProject) {
-                    allFundingPks.add(reward.getFundingPk());
+                    allProjectIds.add(reward.getProjectId());
                 }
             }
 
-            assertTrue(allFundingPks.contains(funding.getPk()));
-            assertTrue(allFundingPks.contains(secondFunding.getPk()));
+            assertTrue(allProjectIds.contains(project.getId()));
+            assertTrue(allProjectIds.contains(secondProject.getId()));
         }
     }
 }

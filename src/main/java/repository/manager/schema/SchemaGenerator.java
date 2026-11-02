@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 도메인 어노테이션(@Table, @Column, @JoinColumn, @PK, @Version)을 읽어 MySQL 테이블을 생성하는 클래스
+ * 도메인 어노테이션(@Table, @Column, @JoinColumn, @Id, @Version)을 읽어 MySQL 테이블을 생성하는 클래스
  *
  * 모드 (db.ddl-auto)
  *   none              : 아무것도 하지 않음
@@ -70,9 +70,9 @@ public class SchemaGenerator {
         List<String> constraints = new ArrayList<>();
         Map<String, List<String>> uniqueGroups = new LinkedHashMap<>();
 
-        ColumnInfo pk = metadata.getPk();
-        lines.add(pk.columnName() + " " + sqlType(pk) + " NOT NULL" + (metadata.isAutoIncrement() ? " AUTO_INCREMENT" : ""));
-        constraints.add("PRIMARY KEY (" + pk.columnName() + ")");
+        ColumnInfo id = metadata.getId();
+        lines.add(id.columnName() + " " + sqlType(id) + " NOT NULL" + (metadata.isAutoIncrement() ? " AUTO_INCREMENT" : ""));
+        constraints.add("PRIMARY KEY (" + id.columnName() + ")");
 
         for (ColumnInfo column : metadata.getColumns()) {
             if (column == metadata.getVersion()) {
@@ -93,7 +93,7 @@ public class SchemaGenerator {
                 EntityMetadata target = EntityMetadata.of(column.getRelationClass());
                 constraints.add("CONSTRAINT fk_" + table.toLowerCase() + "_" + column.columnName()
                         + " FOREIGN KEY (" + column.columnName() + ")"
-                        + " REFERENCES " + target.getTableName() + " (" + target.getPk().columnName() + ")"
+                        + " REFERENCES " + target.getTableName() + " (" + target.getId().columnName() + ")"
                         + column.field().getAnnotation(JoinColumn.class).onDelete().sql());
             }
         }
@@ -110,8 +110,8 @@ public class SchemaGenerator {
 
     private static String sqlType(ColumnInfo column) {
         if (column.isRelation()) {
-            //FK 컬럼은 참조 대상 PK와 같은 타입
-            return sqlType(EntityMetadata.of(column.getRelationClass()).getPk());
+            //FK 컬럼은 참조 대상 ID와 같은 타입
+            return sqlType(EntityMetadata.of(column.getRelationClass()).getId());
         }
         Column annotation = column.field().getAnnotation(Column.class);
         if (!annotation.columnDefinition().isEmpty()) {

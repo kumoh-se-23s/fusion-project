@@ -3,7 +3,7 @@ package model.domain;
 import annotation.Column;
 import annotation.JoinColumn;
 import annotation.OnDelete;
-import annotation.PK;
+import annotation.Id;
 import annotation.Table;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -14,9 +14,9 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserRoleRelation extends BaseDomain {
-    @PK
-    @Column(name = "user_role_pk")
-    private Long pk;
+    @Id
+    @Column(name = "user_role_id")
+    private Long id;
 
     @JoinColumn(name = "role_fk", nullable = false, uniqueGroup = "user_role", onDelete = OnDelete.CASCADE)
     private UserRole role;

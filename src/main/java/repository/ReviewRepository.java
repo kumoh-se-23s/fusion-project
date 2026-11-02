@@ -1,7 +1,7 @@
 package repository;
 
 import model.domain.AppUser;
-import model.domain.Funding;
+import model.domain.Project;
 import model.domain.Review;
 import model.domain.Reward;
 

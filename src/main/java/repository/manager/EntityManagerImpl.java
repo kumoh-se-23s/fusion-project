@@ -24,7 +24,7 @@ import java.util.function.Function;
 
 public class EntityManagerImpl implements EntityManager {
     private static final String FOR_UPDATE = " FOR UPDATE";
-    //연관 엔티티 IN 조회 시 한 쿼리에 넣는 최대 PK 개수
+    //연관 엔티티 IN 조회 시 한 쿼리에 넣는 최대 ID 개수
     private static final int BATCH_SIZE = 1000;
 
     private final EntityMapper mapper = new EntityMapper();
@@ -42,10 +42,10 @@ public class EntityManagerImpl implements EntityManager {
         checkNotNull(entity, metadata.getInsertColumns());
 
         List<Object> params = values(entity, metadata.getInsertColumns());
-        Class<?> keyType = metadata.isAutoIncrement() ? metadata.getPk().getTargetClass() : null;
+        Class<?> keyType = metadata.isAutoIncrement() ? metadata.getId().getTargetClass() : null;
         Object key = withConnection(c -> SQLExecutor.insert(c, metadata.getInsertSql(), params, keyType));
         if (key != null) {
-            metadata.getPk().setValue(entity, key);
+            metadata.getId().setValue(entity, key);
         }
     }
 
@@ -59,7 +59,7 @@ public class EntityManagerImpl implements EntityManager {
         if (primaryKey == null) {
             return null;
         }
-        String sql = withLock(EntityMetadata.of(entityClass).getSelectByPkSql(), lockMode);
+        String sql = withLock(EntityMetadata.of(entityClass).getSelectByIdSql(), lockMode);
         List<T> result = withConnection(c -> load(c, sql, List.of(primaryKey), entityClass, new HashMap<>()));
         return result.isEmpty() ? null : result.get(0);
     }
@@ -80,11 +80,11 @@ public class EntityManagerImpl implements EntityManager {
     public void merge(Object entity) {
         EntityMetadata metadata = EntityMetadata.of(entity.getClass());
         ColumnInfo version = metadata.getVersion();
-        Object pk = metadata.getPk().getValue(entity);
+        Object id = metadata.getId().getValue(entity);
         checkNotNull(entity, metadata.getUpdatableColumns());
 
         List<Object> params = values(entity, metadata.getUpdatableColumns());
-        params.add(pk);
+        params.add(id);
         if (version != null) {
             params.add(version.getValue(entity));
         }
@@ -93,9 +93,9 @@ public class EntityManagerImpl implements EntityManager {
         if (rows == 0) {
             if (version != null) {
                 throw new OptimisticLockException(
-                        entity.getClass().getSimpleName() + "#" + pk + " was modified or deleted by another transaction");
+                        entity.getClass().getSimpleName() + "#" + id + " was modified or deleted by another transaction");
             }
-            throw new NotFoundException(entity.getClass().getSimpleName() + "#" + pk + " not found");
+            throw new NotFoundException(entity.getClass().getSimpleName() + "#" + id + " not found");
         }
         if (version != null) {
             version.setValue(entity, (Long) version.getValue(entity) + 1);
@@ -112,7 +112,7 @@ public class EntityManagerImpl implements EntityManager {
     }
 
     //조회 후 연관 엔티티를 같은 커넥션으로 즉시 로딩
-    //loaded : 한 번의 조회 안에서 같은 엔티티를 다시 조회하지 않기 위한 캐시 (키: [타입, PK])
+    //loaded : 한 번의 조회 안에서 같은 엔티티를 다시 조회하지 않기 위한 캐시 (키: [타입, ID])
     private <T> List<T> load(Connection c, String sql, List<?> params, Class<T> entityClass,
                              Map<List<Object>, Object> loaded) {
         List<T> entities = SQLExecutor.query(c, sql, params, rs -> mapper.map(rs, entityClass));
@@ -123,8 +123,8 @@ public class EntityManagerImpl implements EntityManager {
         return entities;
     }
 
-    //매퍼가 넣어둔 PK만 있는 연관 엔티티를 실제 엔티티로 교체
-    //엔티티마다 조회하지 않고(N+1), 연관 타입별로 PK를 모아 IN 쿼리로 한 번에 조회한다
+    //매퍼가 넣어둔 ID만 있는 연관 엔티티를 실제 엔티티로 교체
+    //엔티티마다 조회하지 않고(N+1), 연관 타입별로 ID를 모아 IN 쿼리로 한 번에 조회한다
     private void loadRelations(Connection c, Class<?> entityClass, List<?> entities, Map<List<Object>, Object> loaded) {
         if (entities.isEmpty()) {
             return;
@@ -133,18 +133,18 @@ public class EntityManagerImpl implements EntityManager {
                 .filter(ColumnInfo::isRelation)
                 .toList();
 
-        //아직 불러오지 않은 연관 엔티티의 PK를 타입별로 수집
+        //아직 불러오지 않은 연관 엔티티의 ID를 타입별로 수집
         Map<Class<?>, Set<Object>> missing = new LinkedHashMap<>();
         for (ColumnInfo column : relations) {
             for (Object entity : entities) {
                 Object stub = column.getValue(entity);
                 if (stub != null && !loaded.containsKey(cacheKey(stub))) {
-                    Object pk = EntityMetadata.of(stub.getClass()).getPk().getValue(stub);
-                    missing.computeIfAbsent(column.getRelationClass(), k -> new LinkedHashSet<>()).add(pk);
+                    Object id = EntityMetadata.of(stub.getClass()).getId().getValue(stub);
+                    missing.computeIfAbsent(column.getRelationClass(), k -> new LinkedHashSet<>()).add(id);
                 }
             }
         }
-        missing.forEach((type, pks) -> loadByPks(c, type, new ArrayList<>(pks), loaded));
+        missing.forEach((type, ids) -> loadByIds(c, type, new ArrayList<>(ids), loaded));
 
         for (ColumnInfo column : relations) {
             for (Object entity : entities) {
@@ -155,7 +155,7 @@ public class EntityManagerImpl implements EntityManager {
                 Object found = loaded.get(cacheKey(stub));
                 if (found == null) {
                     throw new NotFoundException(stub.getClass().getSimpleName() + "#"
-                            + EntityMetadata.of(stub.getClass()).getPk().getValue(stub) + " referenced by "
+                            + EntityMetadata.of(stub.getClass()).getId().getValue(stub) + " referenced by "
                             + entityClass.getSimpleName() + "." + column.field().getName() + " not found");
                 }
                 column.setValue(entity, found);
@@ -163,17 +163,17 @@ public class EntityManagerImpl implements EntityManager {
         }
     }
 
-    //PK 목록을 BATCH_SIZE씩 나눠 IN 쿼리로 조회. 조회된 엔티티의 연관도 같은 방식으로 로딩된다
-    private void loadByPks(Connection c, Class<?> type, List<Object> pks, Map<List<Object>, Object> loaded) {
+    //ID 목록을 BATCH_SIZE씩 나눠 IN 쿼리로 조회. 조회된 엔티티의 연관도 같은 방식으로 로딩된다
+    private void loadByIds(Connection c, Class<?> type, List<Object> ids, Map<List<Object>, Object> loaded) {
         EntityMetadata metadata = EntityMetadata.of(type);
-        for (int from = 0; from < pks.size(); from += BATCH_SIZE) {
-            List<Object> chunk = pks.subList(from, Math.min(from + BATCH_SIZE, pks.size()));
-            load(c, metadata.getSelectByPksSql(chunk.size()), chunk, type, loaded);
+        for (int from = 0; from < ids.size(); from += BATCH_SIZE) {
+            List<Object> chunk = ids.subList(from, Math.min(from + BATCH_SIZE, ids.size()));
+            load(c, metadata.getSelectByIdsSql(chunk.size()), chunk, type, loaded);
         }
     }
 
     private static List<Object> cacheKey(Object entity) {
-        return List.of(entity.getClass(), EntityMetadata.of(entity.getClass()).getPk().getValue(entity));
+        return List.of(entity.getClass(), EntityMetadata.of(entity.getClass()).getId().getValue(entity));
     }
 
     private String withLock(String sql, LockModeType lockMode) {

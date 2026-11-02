@@ -3,7 +3,7 @@ package service.external;
 import example.db.DatabaseTest;
 import model.domain.Review;
 import model.dto.request.review.CreateReviewRequest;
-import model.dto.response.PKResponse;
+import model.dto.response.IdResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -29,22 +29,22 @@ public class ReviewServiceTest extends DatabaseTest {
     void createReview() {
         List<Review> list = db.config.getReviewRepository().find(
                 Filter.builder()
-                        .conditions(Map.of("reward", db.maker1CompleteReward1.getPk()))
+                        .conditions(Map.of("reward", db.maker1CompleteReward1.getId()))
                         .build()
         );
         for (Review review : list) {
-            db.config.getReviewRepository().delete(review.getPk());
+            db.config.getReviewRepository().delete(review.getId());
         }
 
-        PKResponse response = reviewService.createReview(CreateReviewRequest.builder()
-                .rewardPK(db.maker1CompleteReward1.getPk())
+        IdResponse response = reviewService.createReview(CreateReviewRequest.builder()
+                .rewardId(db.maker1CompleteReward1.getId())
                 .text("리뷰 테스트 데이터")
                 .rating(new BigDecimal("1.0"))
-                .build(), db.donateUser1.getPk());
+                .build(), db.donateUser1.getId());
 
-        Review saved = db.config.getReviewRepository().findByPK(response.getPk()).orElseThrow();
-        assertEquals(db.maker1CompleteReward1.getPk(), saved.getReward().getPk());
-        assertEquals(db.donateUser1.getPk(), saved.getUser().getPk());
+        Review saved = db.config.getReviewRepository().findById(response.getId()).orElseThrow();
+        assertEquals(db.maker1CompleteReward1.getId(), saved.getReward().getId());
+        assertEquals(db.donateUser1.getId(), saved.getUser().getId());
         assertEquals("리뷰 테스트 데이터", saved.getText());
         assertAmount("1.0", saved.getRating());
 

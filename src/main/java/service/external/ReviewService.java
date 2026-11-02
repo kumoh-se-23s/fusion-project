@@ -1,15 +1,15 @@
 package service.external;
 
-import constant.FundingState;
+import constant.ProjectState;
 import exception.AlreadyExistException;
-import exception.NotCompleteFundingException;
+import exception.NotCompleteProjectException;
 import exception.NotFoundException;
 import exception.OutOfRangeException;
 import lombok.RequiredArgsConstructor;
 import model.Serializer;
 import model.domain.*;
 import model.dto.request.review.CreateReviewRequest;
-import model.dto.response.PKResponse;
+import model.dto.response.IdResponse;
 import repository.*;
 import service.BaseService;
 
@@ -27,12 +27,12 @@ public class ReviewService extends BaseService {
     private final RewardRepository rewardRepository;
 
     //9. 리뷰 생성
-    public PKResponse createReview(CreateReviewRequest dto, Long userPk) {
+    public IdResponse createReview(CreateReviewRequest dto, Long userId) {
         return tx.execute(false, () -> {
-            AppUser user = userRepository.findByPK(userPk)
+            AppUser user = userRepository.findById(userId)
                     .orElseThrow(NotFoundException::new);
 
-            Reward reward= rewardRepository.findByPK(dto.getRewardPK())
+            Reward reward= rewardRepository.findById(dto.getRewardId())
                     .orElseThrow(NotFoundException::new);
 
             List<Donate> donateList = donateRepository.findByUserAndReward(user, reward);
@@ -45,8 +45,8 @@ public class ReviewService extends BaseService {
                 }
             }
 
-            if (reward.getFunding().getState() != FundingState.COMPLETED || !isDelivered) {
-                throw new NotCompleteFundingException("Not Allowed Write Review");
+            if (reward.getProject().getState() != ProjectState.COMPLETED || !isDelivered) {
+                throw new NotCompleteProjectException("Not Allowed Write Review");
             }
 
             if (reviewRepository.isExistUserAndReward(user, reward)) {
@@ -65,7 +65,7 @@ public class ReviewService extends BaseService {
                 throw new OutOfRangeException("Rating must be between " + MIN_RATING + " and " + MAX_RATING);
             }
 
-            return new PKResponse(reviewRepository.create(review).getPk());
+            return new IdResponse(reviewRepository.create(review).getId());
         });
     }
 }

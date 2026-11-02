@@ -27,7 +27,7 @@ public class UserRepository extends BaseRepositoryImpl<AppUser,Long> {
         return Optional.of(create(appUser));
     }
 
-    public Optional<Long> updateUser(long userPk, UserData userData) {
+    public Optional<Long> updateUser(long userId, UserData userData) {
         Map<String, Object> updateData = new HashMap<>();
 
         putIfNotNull(updateData, "name" , userData.getName());
@@ -36,8 +36,8 @@ public class UserRepository extends BaseRepositoryImpl<AppUser,Long> {
         putIfNotNull(updateData, "postal" , userData.getPostal());
         putIfNotNull(updateData, "phone" , userData.getPhone());
 
-        Optional<AppUser> updateResult = update(userPk, updateData);
+        Optional<AppUser> updateResult = update(userId, updateData);
 
-        return updateResult.map(AppUser::getPk);
+        return updateResult.map(AppUser::getId);
     }
 }

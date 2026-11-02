@@ -6,7 +6,7 @@ import model.dto.AccountData;
 import model.dto.TokenPair;
 import model.dto.request.account.ChangePasswordRequest;
 import model.dto.request.account.DeleteAccountRequest;
-import model.dto.response.PKResponse;
+import model.dto.response.IdResponse;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import repository.AccountRepository;
@@ -35,18 +35,18 @@ public class AccountService extends BaseService {
 
     public TokenPair login(AccountData accountData) {
         try {
-            LocalAccount localAccount = accountRepository.findId(accountData.getId())
+            LocalAccount localAccount = accountRepository.findByLoginId(accountData.getLoginId())
                     .orElseThrow(AccountException::new);
 
             String salt = localAccount.getSalt();
             String savedPassword = localAccount.getPassword();
 
             if (accountUtil.matches(accountData.getPassword(), salt, savedPassword)) {
-                String accessToken = jwtTokenProvider.createAccessToken(String.valueOf(localAccount.getPk()));
-                String refreshToken = jwtTokenProvider.createRefreshToken(String.valueOf(localAccount.getPk()));
+                String accessToken = jwtTokenProvider.createAccessToken(String.valueOf(localAccount.getId()));
+                String refreshToken = jwtTokenProvider.createRefreshToken(String.valueOf(localAccount.getId()));
 
                 try (Jedis jedis = jedisPool.getResource()) {
-                    jedis.setex("refreshToken" + localAccount.getPk(), 3600, refreshToken);
+                    jedis.setex("refreshToken" + localAccount.getId(), 3600, refreshToken);
                 }
 
                 return new TokenPair(accessToken, refreshToken);
@@ -58,9 +58,10 @@ public class AccountService extends BaseService {
         }
     }
 
-    public PKResponse changePassword(long userPk, ChangePasswordRequest request) {
+    public IdResponse changePassword(long userId, ChangePasswordRequest request) {
         try {
-            LocalAccount result = accountRepository.findByPK(userPk).orElseThrow(NotFoundException::new);
+            // account repository에서 user Id로 pk 조회를 하면 어캄?...
+            LocalAccount result = accountRepository.findById(userId).orElseThrow(NotFoundException::new);
 
             String currentPassword = result.getPassword();
             String hashedInputPassword = accountUtil.hash(request.getCurrentPassword(), result.getSalt());
@@ -69,9 +70,9 @@ public class AccountService extends BaseService {
                 String newSalt = accountUtil.generateSalt();
                 String hashedPassword = accountUtil.hash(request.getNewPassword(), newSalt);
 
-                accountRepository.updatePassword(result.getPk(), hashedPassword, newSalt);
+                accountRepository.updatePassword(result.getId(), hashedPassword, newSalt);
 
-                return new PKResponse(result.getPk());
+                return new IdResponse(result.getId());
             } else {
                 throw new PasswordMisMatchException();
             }
@@ -82,20 +83,21 @@ public class AccountService extends BaseService {
         }
     }
 
-    public void logout(long userPk) {
+    public void logout(long userId) {
         try (Jedis jedis = jedisPool.getResource()) {
-            jedis.del("refreshToken" + userPk);
+            jedis.del("refreshToken" + userId);
         }
     }
 
-    public void deleteAccount(long userPk, DeleteAccountRequest request) {
+    public void deleteAccount(long userId, DeleteAccountRequest request) {
         try {
-            LocalAccount result = accountRepository.findByPK(userPk).orElseThrow(NotFoundException::new);
+            // account repository에서 user Id로 pk 조회를 하면 어캄?...
+            LocalAccount result = accountRepository.findById(userId).orElseThrow(NotFoundException::new);
 
             String hashedInputPassword = accountUtil.hash(request.getCheckPassword(), result.getSalt());
 
             if (hashedInputPassword.equals(result.getPassword())) {
-                accountRepository.delete(result.getPk());
+                accountRepository.delete(result.getId());
             } else {
                 throw new PasswordMisMatchException();
             }

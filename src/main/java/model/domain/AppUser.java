@@ -1,7 +1,7 @@
 package model.domain;
 
 import annotation.Column;
-import annotation.PK;
+import annotation.Id;
 import annotation.Table;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -13,9 +13,9 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AppUser extends BaseDomain {
-    @PK
-    @Column(name = "user_pk")
-    private Long pk;
+    @Id
+    @Column(name = "user_id")
+    private Long id;
 
     @Column(name = "user_name", nullable = false)
     private String name;

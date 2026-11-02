@@ -1,6 +1,6 @@
 package repository;
 
-import annotation.PK;
+import annotation.Id;
 import model.domain.UserRoleRelation;
 
 import java.util.Optional;

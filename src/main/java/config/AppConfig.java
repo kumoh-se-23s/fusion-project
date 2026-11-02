@@ -4,7 +4,7 @@ import lombok.Getter;
 import repository.*;
 import repository.manager.schema.SchemaGenerator;
 import service.external.DonateService;
-import service.external.FundingService;
+import service.external.ProjectService;
 import service.external.ReviewService;
 import service.external.RewardService;
 import service.internal.CategoryService;
@@ -16,11 +16,11 @@ import service.internal.CategoryService;
 @Getter
 public class AppConfig {
     private final CategoryRepository categoryRepository = new CategoryRepository();
-    private final DenyFundingRepository denyFundingRepository = new DenyFundingRepository();
+    private final DenyProjectRepository denyProjectRepository = new DenyProjectRepository();
     private final DonateRepository donateRepository = new DonateRepository();
-    private final FundingCategoryRepository fundingCategoryRepository = new FundingCategoryRepository();
-    private final FundingLikeRepository fundingLikeRepository = new FundingLikeRepository();
-    private final FundingRepository fundingRepository = new FundingRepository();
+    private final ProjectCategoryRepository projectCategoryRepository = new ProjectCategoryRepository();
+    private final ProjectLikeRepository projectLikeRepository = new ProjectLikeRepository();
+    private final ProjectRepository projectRepository = new ProjectRepository();
     private final ReviewLikeRepository reviewLikeRepository = new ReviewLikeRepository();
     private final ReviewRepository reviewRepository = new ReviewRepository();
     private final RewardRepository rewardRepository = new RewardRepository();
@@ -29,17 +29,17 @@ public class AppConfig {
     private final UserRoleRelationRepository userRoleRelationRepository = new UserRoleRelationRepository();
 
     private final CategoryService categoryService = new CategoryService(categoryRepository);
-    private final FundingService fundingService = new FundingService(
-            fundingRepository, donateRepository, rewardRepository,
-            userRepository, categoryRepository, fundingCategoryRepository);
+    private final ProjectService projectService = new ProjectService(
+            projectRepository, donateRepository, rewardRepository,
+            userRepository, categoryRepository, projectCategoryRepository);
     private final service.external.RewardService rewardService = new RewardService(
-            fundingRepository, donateRepository, rewardRepository, categoryRepository);
+            projectRepository, donateRepository, rewardRepository, categoryRepository);
     private final service.external.DonateService donateService = new DonateService(
-            donateRepository, rewardRepository, fundingRepository, userRepository
+            donateRepository, rewardRepository, projectRepository, userRepository
     );
-    //이름이 같은 external.FundingService와 구분하기 위해 전체 경로 사용
-    private final service.internal.FundingService adminFundingService =
-            new service.internal.FundingService(fundingRepository);
+    //이름이 같은 external.ProjectService와 구분하기 위해 전체 경로 사용
+    private final service.internal.ProjectService adminProjectService =
+            new service.internal.ProjectService(projectRepository);
     private final ReviewService reviewService = new ReviewService(
             reviewRepository, userRepository, donateRepository, rewardRepository);
 

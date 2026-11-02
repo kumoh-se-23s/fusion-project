@@ -14,8 +14,8 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @BindDomain(values = Review.class)
 public class CreateReviewRequest extends Request {
-    @DataField(name = "reward.pk")
-    private Long rewardPK;
+    @DataField(name = "reward.id")
+    private Long rewardId;
 
     private String text;
 

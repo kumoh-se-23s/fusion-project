@@ -9,7 +9,7 @@ import model.dto.UserData;
 import model.dto.request.user.CreateUserRequest;
 import model.dto.request.user.UpdateUserRequest;
 import model.dto.response.DeleteResponse;
-import model.dto.response.PKResponse;
+import model.dto.response.IdResponse;
 import model.dto.response.user.UserResponse;
 import repository.Filter;
 import repository.UserRepository;
@@ -31,7 +31,7 @@ public class UserService extends BaseService {
         this.userRoleRelationRepository = userRoleRelationRepository;
     }
 
-    public PKResponse createUser(CreateUserRequest request) {
+    public IdResponse createUser(CreateUserRequest request) {
         UserData userData = request.getUserData();
 
         if(userData.getName() == null || userData.getEmail() == null) {
@@ -40,11 +40,11 @@ public class UserService extends BaseService {
 
         AppUser appUser = userRepository.createUser(userData).orElseThrow();
 
-        return new PKResponse(appUser.getPk());
+        return new IdResponse(appUser.getId());
     }
 
-    public UserResponse getMyInfo(long userPk) {
-        AppUser appUser = userRepository.findByPK(userPk).orElseThrow(NotFoundException::new);
+    public UserResponse getMyInfo(long userId) {
+        AppUser appUser = userRepository.findById(userId).orElseThrow(NotFoundException::new);
 
         UserData userData = Serializer.toData(appUser, UserData.class);
 
@@ -52,26 +52,26 @@ public class UserService extends BaseService {
 
     }
 
-    public PKResponse updateUser(long userPk, UpdateUserRequest request) {
+    public IdResponse updateUser(long userId, UpdateUserRequest request) {
         UserData userData = request.getUserData();
 
-        Long updateResult = userRepository.updateUser(userPk, userData).orElseThrow(NotFoundException::new);
+        Long updateResult = userRepository.updateUser(userId, userData).orElseThrow(NotFoundException::new);
 
-        return new PKResponse(updateResult);
+        return new IdResponse(updateResult);
     }
 
     //키값 검증하는 로직 필요
-    public DeleteResponse deleteUser(long userPk) {
-        return new DeleteResponse(userRepository.delete(userPk));
+    public DeleteResponse deleteUser(long userId) {
+        return new DeleteResponse(userRepository.delete(userId));
 
     }
 
     //List로 만들어야 함
-    public List<UserRoleRelation> getRoles(long userPk) {
-        AppUser appUser = userRepository.findByPK(userPk).orElseThrow(NotFoundException::new);
+    public List<UserRoleRelation> getRoles(long userId) {
+        AppUser appUser = userRepository.findById(userId).orElseThrow(NotFoundException::new);
 
         return userRoleRelationRepository.find(Filter.builder()
-                .conditions(Map.of("user_fk", appUser))
+                .conditions(Map.of("user", appUser))
                 .build()
         );
     }

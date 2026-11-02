@@ -10,8 +10,8 @@ class InitDBTest extends DatabaseTest {
     private static final Logger LOG = LoggerFactory.getLogger(InitDBTest.class);
 
     @Test
-    @DisplayName("전체 펀딩을 출력한다")
+    @DisplayName("전체 프로젝트를 출력한다")
     void load() {
-        LOG.info(db.config.getFundingService().getAllFunding().toJsonString());
+        LOG.info(db.config.getProjectService().getAllProject().toJsonString());
     }
 }
