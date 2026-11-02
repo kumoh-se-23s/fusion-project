@@ -1,12 +1,10 @@
-package service;
+package service.external;
 
-import exception.InvalidRequestException;
 import exception.NotFoundException;
 import model.Serializer;
 import model.domain.AppUser;
 import model.domain.UserRoleRelation;
 import model.dto.UserData;
-import model.dto.request.user.CreateUserRequest;
 import model.dto.request.user.UpdateUserRequest;
 import model.dto.response.DeleteResponse;
 import model.dto.response.IdResponse;
@@ -15,32 +13,21 @@ import repository.Filter;
 import repository.UserRepository;
 import repository.UserRoleRelationRepository;
 import repository.UserRoleRepository;
+import service.BaseService;
 
 
 import java.util.List;
 import java.util.Map;
 
-public class UserService extends BaseService {
+public class ProfileService extends BaseService {
     private final UserRepository userRepository;
     private final UserRoleRepository userRoleRepository;
     private final UserRoleRelationRepository userRoleRelationRepository;
 
-    public UserService(UserRepository userRepository, UserRoleRepository userRoleRepository, UserRoleRelationRepository userRoleRelationRepository) {
+    public ProfileService(UserRepository userRepository, UserRoleRepository userRoleRepository, UserRoleRelationRepository userRoleRelationRepository) {
         this.userRepository = userRepository;
         this.userRoleRepository = userRoleRepository;
         this.userRoleRelationRepository = userRoleRelationRepository;
-    }
-
-    public IdResponse createUser(CreateUserRequest request) {
-        UserData userData = request.getUserData();
-
-        if(userData.getName() == null || userData.getEmail() == null) {
-            throw new InvalidRequestException("필수 사항을 입력하지 않았습니다.");
-        }
-
-        AppUser appUser = userRepository.createUser(userData).orElseThrow();
-
-        return new IdResponse(appUser.getId());
     }
 
     public UserResponse getMyInfo(long userId) {
