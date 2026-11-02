@@ -54,20 +54,20 @@ import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * 검사 항목별 단위 테스트. 각 서비스 테스트에서 메서드를 그대로 옮겨 왔다.
- * IDE에서 클래스 또는 항목 옆의 실행 버튼으로 실행하면 JUnit 결과 화면에 항목별로 표시된다.
- * 콘솔에서 항목별로 실행하려면 {@link Main}을 사용한다.
- */
 @DisplayName("검사 항목")
 @TestClassOrder(ClassOrderer.DisplayName.class)
 public class MainTest extends DatabaseTest {
     private static final Logger LOG = LoggerFactory.getLogger(MainTest.class);
 
+    //Main에서 실행하면 true가 되어, DB 초기화를 Main의 initDB() 호출에만 맡긴다
+    static boolean skipInit = false;
+
     //모든 테이블을 삭제 후 다시 생성해 기본 데이터로 시작한다
     @BeforeAll
     static void initDB() {
-        InitDB.main(new String[0]);
+        if (!skipInit) {
+            InitDB.main(new String[0]);
+        }
     }
 
     @Nested
@@ -130,8 +130,8 @@ public class MainTest extends DatabaseTest {
             CreateFundingByCategoryResponse response = fundingService.createFunding(db.maker1.getPk(),
                     CreateFundingByCategoryRequest.builder()
                             .createFundingRequest(CreateFundingRequest.builder()
-                                    .title("테스트용 새 프로젝트")
-                                    .text("프로젝트 소개")
+                                    .title("[시연 02] 테스트용 새 프로젝트")
+                                    .text("[시연 02] 프로젝트 소개")
                                     .purposeAmount(new BigDecimal("123456"))
                                     .endDate(endDate)
                                     .build())
@@ -140,8 +140,8 @@ public class MainTest extends DatabaseTest {
 
             Funding saved = db.config.getFundingRepository().findByPK(response.getPk()).orElseThrow();
             assertEquals(db.maker1.getPk(), saved.getMaker().getPk());
-            assertEquals("테스트용 새 프로젝트", saved.getTitle());
-            assertEquals("프로젝트 소개", saved.getText());
+            assertEquals("[시연 02] 테스트용 새 프로젝트", saved.getTitle());
+            assertEquals("[시연 02] 프로젝트 소개", saved.getText());
             assertAmount("123456", saved.getPurposeAmount());
             assertEquals(endDate, saved.getEndDate());
             assertEquals(FundingState.JUST_USER_INPUT, saved.getState());
@@ -177,8 +177,8 @@ public class MainTest extends DatabaseTest {
                     CreateRewardDataRequest.builder()
                             .categoryFk(db.food.getPk())
                             .fundingFk(db.maker1NoRewardFunding.getPk())
-                            .rewardName("테스트용 새 리워드")
-                            .rewardText("리워드 소개")
+                            .rewardName("[시연 03] 테스트용 새 리워드")
+                            .rewardText("[시연 03] 리워드 소개")
                             .provideDate(provideDate)
                             .requiredAmount(new BigDecimal("1000"))
                             .rewardMaxQuantity(10L)
@@ -188,8 +188,8 @@ public class MainTest extends DatabaseTest {
             Reward saved = db.config.getRewardRepository().findByPK(response.getPk())
                     .orElseThrow();
 
-            assertEquals("테스트용 새 리워드", saved.getName());
-            assertEquals("리워드 소개", saved.getText());
+            assertEquals("[시연 03] 테스트용 새 리워드", saved.getName());
+            assertEquals("[시연 03] 리워드 소개", saved.getText());
             assertEquals(db.maker1NoRewardFunding.getPk(), saved.getFunding().getPk());
             assertEquals(FundingState.PENDING_APPROVAL, saved.getFunding().getState());
             assertEquals(db.food.getPk(), saved.getCategory().getPk());
@@ -242,7 +242,7 @@ public class MainTest extends DatabaseTest {
             UserResponse userResponse = userService.getMyInfo(makerPK);
             UserData testUserData = userResponse.getUserData();
 
-            testUserData.setName("호날두");
+            testUserData.setName("[시연 05] 변경된 이름");
 
 
             PKResponse response = userService.updateUser(makerPK, new UpdateUserRequest(testUserData));
@@ -250,7 +250,7 @@ public class MainTest extends DatabaseTest {
                     .orElseThrow(AssertionError::new);
             assertEquals(makerPK, response.getPk());
             assertEquals(result.getPk(), response.getPk());
-            assertEquals("호날두", result.getName());
+            assertEquals("[시연 05] 변경된 이름", result.getName());
         }
     }
 
@@ -302,6 +302,16 @@ public class MainTest extends DatabaseTest {
                     .map(FundingData::getPk).toList();
             assertTrue(pkList.contains(db.maker1ApproveFunding.getPk()));
             assertTrue(pkList.contains(db.maker2ApproveFunding.getPk()));
+
+            response = fundingService.getByCategoryAndState(
+                    GetFundingByCategoryAndStateRequest.builder()
+                            .categoryList(List.of(db.furniture.getName()))
+                            .fundingStateList(List.of(FundingState.APPROVED))
+                            .build());
+            LOG.info(response.toJsonString());
+            pkList = response.getDatas().stream()
+                    .map(FundingData::getPk).toList();
+            assertTrue(pkList.contains(db.maker1ApproveFunding.getPk()));
         }
     }
 
@@ -320,7 +330,6 @@ public class MainTest extends DatabaseTest {
         void createDonate() {
             PKResponse response = donateService.createDonate(
                     CreateDonateRequest.builder()
-                            .amount(new BigDecimal("10000"))
                             .quantity(2L)
                             .state(false)
                             .createdAt(LocalDateTime.now())
@@ -335,6 +344,7 @@ public class MainTest extends DatabaseTest {
             assertEquals(db.maker1ApproveReward1.getPk(), saved.getReward().getPk());
             assertEquals(db.notDonateUser1.getPk(), saved.getUser().getPk());
             assertEquals(7L, saved.getReward().getRemainQuantity());
+            assertEquals(saved.getAmount().add(db.maker1ApproveFunding.getDonateAmount()), saved.getReward().getFunding().getDonateAmount());
         }
     }
 
@@ -362,14 +372,14 @@ public class MainTest extends DatabaseTest {
 
             PKResponse response = reviewService.createReview(CreateReviewRequest.builder()
                     .rewardPK(db.maker1CompleteReward1.getPk())
-                    .text("리뷰 테스트 데이터")
+                    .text("[시연 09] 리뷰 생성 테스트 데이터")
                     .rating(new BigDecimal("1.0"))
                     .build(), db.donateUser1.getPk());
 
             Review saved = db.config.getReviewRepository().findByPK(response.getPk()).orElseThrow();
             assertEquals(db.maker1CompleteReward1.getPk(), saved.getReward().getPk());
             assertEquals(db.donateUser1.getPk(), saved.getUser().getPk());
-            assertEquals("리뷰 테스트 데이터", saved.getText());
+            assertEquals("[시연 09] 리뷰 생성 테스트 데이터", saved.getText());
             assertAmount("1.0", saved.getRating());
         }
     }
@@ -385,24 +395,19 @@ public class MainTest extends DatabaseTest {
             donateService = db.config.getDonateService();
         }
 
-        private PKResponse donate(Long userPk) {
-            return donateService.createDonate(
-                    CreateDonateRequest.builder()
-                            .amount(new BigDecimal("10000"))
-                            .quantity(2L)
-                            .state(false)
-                            .createdAt(LocalDateTime.now())
-                            .rewardFk(db.maker1ConcurrencyReward1.getPk())
-                            .userFk(userPk)
-                            .build()
-            );
-        }
-
         @Test
         @Order(1)
         @DisplayName("남은 수량만큼 신청하면 성공한다")
         void createDonate() {
-            PKResponse response = donate(db.notDonateUser2.getPk());
+            PKResponse response = donateService.createDonate(
+                    CreateDonateRequest.builder()
+                            .quantity(2L)
+                            .state(false)
+                            .createdAt(LocalDateTime.now())
+                            .rewardFk(db.maker1ConcurrencyReward1.getPk())
+                            .userFk(db.notDonateUser2.getPk())
+                            .build()
+            );
             Donate saved = db.config.getDonateRepository().findByPK(response.getPk())
                     .orElseThrow();
 
@@ -410,6 +415,7 @@ public class MainTest extends DatabaseTest {
             assertEquals(db.maker1ConcurrencyReward1.getPk(), saved.getReward().getPk());
             assertEquals(db.notDonateUser2.getPk(), saved.getUser().getPk());
             assertEquals(0L, saved.getReward().getRemainQuantity());
+
         }
 
         //앞 테스트에서 수량을 모두 소진한 상태를 이어서 사용한다
@@ -418,7 +424,15 @@ public class MainTest extends DatabaseTest {
         @DisplayName("남은 수량을 넘겨서 신청하면 실패한다")
         void createDonateOverQuantity() {
             assertThrows(LimitNumberOutException.class,
-                    () -> donate(db.notDonateUser3.getPk())
+                    () -> donateService.createDonate(
+                            CreateDonateRequest.builder()
+                                    .quantity(2L)
+                                    .state(false)
+                                    .createdAt(LocalDateTime.now())
+                                    .rewardFk(db.maker1ConcurrencyReward1.getPk())
+                                    .userFk(db.notDonateUser3.getPk())
+                                    .build()
+                    )
             );
         }
     }

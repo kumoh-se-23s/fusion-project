@@ -1,18 +1,17 @@
 import example.db.InitDB;
+import org.junit.platform.engine.TestExecutionResult;
+import org.junit.platform.launcher.TestExecutionListener;
+import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
 import org.junit.platform.launcher.core.LauncherFactory;
-import org.junit.platform.launcher.listeners.SummaryGeneratingListener;
-
-import java.io.PrintWriter;
 
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
 
-/**
- * 검사 항목 실행 클래스. 테스트 본문은 {@link MainTest}에 있다.
- * main에서 항목의 주석을 해제해 실행하면 콘솔에 JUnit 요약이 출력된다.
- */
+
 public class Main {
     public static void main(String[] args) {
+         MainTest.skipInit = true;       // 테스트마다 DB가 초기화되지 않도록 아래 initDB() 호출로만 초기화한다
+
          initDB();                       // 검사에 필요한 사전 데이터를 insert하는 메소드 (모든 테이블을 삭제 후 다시 생성)
 //         검사할 항목 하나만 주석 해제하여 실행
 
@@ -73,12 +72,18 @@ public class Main {
     }
 
     private static void run(Class<?> testClass) {
-        SummaryGeneratingListener listener = new SummaryGeneratingListener();
+        TestExecutionListener listener = new TestExecutionListener() {
+            @Override
+            public void executionFinished(TestIdentifier identifier, TestExecutionResult result) {
+                boolean passed = result.getStatus() == TestExecutionResult.Status.SUCCESSFUL;
+                //@BeforeAll 실패처럼 테스트 메소드가 아닌 곳의 실패도 놓치지 않도록 함께 출력한다
+                if (identifier.isTest() || !passed) {
+                    System.out.println(identifier.getDisplayName() + " : " + passed);
+                    result.getThrowable().ifPresent(cause -> System.out.println("  원인: " + cause));
+                }
+            }
+        };
         LauncherFactory.create().execute(
                 LauncherDiscoveryRequestBuilder.request().selectors(selectClass(testClass)).build(), listener);
-
-        PrintWriter out = new PrintWriter(System.out, true);
-        listener.getSummary().printTo(out);
-        listener.getSummary().printFailuresTo(out);
     }
 }
