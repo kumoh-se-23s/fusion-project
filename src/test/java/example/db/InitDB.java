@@ -2,7 +2,7 @@ package example.db;
 
 import config.AppConfig;
 import config.PooledDataSource;
-import constant.FundingState;
+import constant.ProjectState;
 import model.domain.*;
 import repository.manager.query_dsl.EntityMetadata;
 import repository.manager.schema.SchemaGenerator;
@@ -17,7 +17,7 @@ import java.util.List;
 public class InitDB {
     private static final List<Class<?>> ENTITIES = List.of(
             AppUser.class, UserRole.class, UserRoleRelation.class, LocalAccount.class, Category.class,
-            Funding.class, DenyFunding.class, FundingCategory.class, FundingLike.class,
+            Project.class, DenyProject.class, ProjectLike.class,
             Reward.class, Donate.class, DonateCancel.class, Review.class, ReviewLike.class);
 
     public final AppConfig config = new AppConfig();
@@ -25,7 +25,7 @@ public class InitDB {
     private final LocalDateTime now = LocalDateTime.now();
 
     public AppUser maker1 = AppUser.builder()
-            .pk(1L)
+            .id(1L)
             .name("[시연 0] 메이커1")
             .address("[시연 0] 메이커1 주소")
             .email("[시연 0] 메이커1 이메일")
@@ -33,7 +33,7 @@ public class InitDB {
             .postal("[시연 0] 메이커1 우편번호")
             .build();
     public AppUser maker2 = AppUser.builder()
-            .pk(2L)
+            .id(2L)
             .name("[시연 0] 메이커2")
             .address("[시연 0] 메이커2 주소")
             .email("[시연 0] 메이커2 이메일")
@@ -42,7 +42,7 @@ public class InitDB {
             .build();
 
     public AppUser donateUser1 = AppUser.builder()
-            .pk(3L)
+            .id(3L)
             .name("[시연 0] 후원자1")
             .address("[시연 0] 후원자1 주소")
             .email("[시연 0] 후원자1 이메일")
@@ -50,7 +50,7 @@ public class InitDB {
             .postal("[시연 0] 후원자1 우편번호")
             .build();
     public AppUser donateUser2 = AppUser.builder()
-            .pk(4L)
+            .id(4L)
             .name("[시연 0] 후원자2")
             .address("[시연 0] 후원자2 주소")
             .email("[시연 0] 후원자2 이메일")
@@ -59,7 +59,7 @@ public class InitDB {
             .build();
 
     public AppUser newUser = AppUser.builder()
-            .pk(5L)
+            .id(5L)
             .name("[시연 0] 신규 사용자")
             .address("[시연 0] 신규 사용자 주소")
             .email("[시연 0] 신규 사용자 이메일")
@@ -68,7 +68,7 @@ public class InitDB {
             .build();
 
     public AppUser notDonateUser1 = AppUser.builder()
-            .pk(6L)
+            .id(6L)
             .name("[시연 08] 후원하지 않은 사용자1")
             .address("[시연 08] 후원하지 않은 사용자1 주소")
             .email("[시연 08] 후원하지 않은 사용자1 이메일")
@@ -77,7 +77,7 @@ public class InitDB {
             .build();
 
     public AppUser notDonateUser2 = AppUser.builder()
-            .pk(7L)
+            .id(7L)
             .name("[시연 10] 후원하지 않은 사용자2")
             .address("[시연 10] 후원하지 않은 사용자2 주소")
             .email("[시연 10] 후원하지 않은 사용자2 이메일")
@@ -86,7 +86,7 @@ public class InitDB {
             .build();
 
     public AppUser notDonateUser3 = AppUser.builder()
-            .pk(8L)
+            .id(8L)
             .name("[시연 10] 후원하지 않은 사용자3")
             .address("[시연 10] 후원하지 않은 사용자3 주소")
             .email("[시연 10] 후원하지 않은 사용자3 이메일")
@@ -95,99 +95,106 @@ public class InitDB {
             .build();
 
     public Category food = Category.builder()
-            .pk(1L)
+            .id(1L)
             .name("[시연 0] food")
             .description("[시연 0] 음식")
             .build();
 
     public Category tech = Category.builder()
-            .pk(2L)
+            .id(2L)
             .name("[시연 0] tech")
             .description("[시연 0] 기술")
             .build();
     public Category furniture = Category.builder()
-            .pk(3L)
+            .id(3L)
             .name("[시연 0] furniture")
             .description("[시연 0] 가구").build();
     public Category travel = Category.builder()
-            .pk(4L)
+            .id(4L)
             .name("[시연 0] travel")
             .description("[시연 0] 여행")
             .build();
 
-    public Funding maker1NoRewardFunding = Funding.builder()
-            .pk(7L)
+    public Project maker1NoRewardProject = Project.builder()
+            .id(7L)
             .maker(maker1)
-            .title("[시연 0] 메이커1 리워드 없는 펀딩")
+            .title("[시연 0] 메이커1 리워드 없는 프로젝트")
             .text("[시연 0] 메이커1 리워드 없는 소개")
-            .state(FundingState.JUST_USER_INPUT)
+            .state(ProjectState.JUST_USER_INPUT)
+            .category(furniture)
             .purposeAmount(new BigDecimal("100000"))
             .endDate(now.plusDays(30))
             .createdAt(LocalDateTime.now().minusDays(10))
             .build();
 
-    public Funding maker1PendingFunding = Funding.builder()
-            .pk(1L)
+    public Project maker1PendingProject = Project.builder()
+            .id(1L)
             .maker(maker1)
-            .title("[시연 0] 메이커1 승인 대기 펀딩")
-            .text("[시연 0] 메이커1 승인 대기 펀딩 소개")
-            .state(FundingState.PENDING_APPROVAL)
+            .title("[시연 0] 메이커1 승인 대기 프로젝트")
+            .text("[시연 0] 메이커1 승인 대기 프로젝트 소개")
+            .state(ProjectState.PENDING_APPROVAL)
+            .category(travel)
             .purposeAmount(new BigDecimal("100000"))
             .endDate(now.plusDays(30))
             .createdAt(now.minusDays(9))
             .build();
 
-    public Funding maker2PendingFunding = Funding.builder()
-            .pk(2L)
+    public Project maker2PendingProject = Project.builder()
+            .id(2L)
             .maker(maker2)
-            .title("[시연 0] 메이커2 승인 대기 펀딩")
-            .text("[시연 0] 메이커2 승인 대기 펀딩 소개")
-            .state(FundingState.PENDING_APPROVAL)
+            .title("[시연 0] 메이커2 승인 대기 프로젝트")
+            .text("[시연 0] 메이커2 승인 대기 프로젝트 소개")
+            .state(ProjectState.PENDING_APPROVAL)
+            .category(travel)
             .purposeAmount(new BigDecimal("100000"))
             .endDate(now.plusDays(30))
             .createdAt(now.minusDays(8))
             .build();
 
-    public Funding maker1ApproveFunding = Funding.builder()
-            .pk(3L)
+    public Project maker1ApproveProject = Project.builder()
+            .id(3L)
             .maker(maker1)
-            .title("[시연 0] 메이커1 승인 펀딩")
-            .text("[시연 0] 메이커1 승인 펀딩 소개")
-            .state(FundingState.APPROVED)
+            .title("[시연 0] 메이커1 승인 프로젝트")
+            .text("[시연 0] 메이커1 승인 프로젝트 소개")
+            .state(ProjectState.APPROVED)
+            .category(tech)
             .purposeAmount(new BigDecimal("100000"))
             .donateAmount(new BigDecimal("3000"))
             .endDate(now.plusDays(30))
             .createdAt(now.minusDays(7))
             .build();
-    public Funding maker2ApproveFunding = Funding.builder()
-            .pk(4L)
+    public Project maker2ApproveProject = Project.builder()
+            .id(4L)
             .maker(maker2)
-            .title("[시연 0] 메이커2 승인 펀딩")
-            .text("[시연 0] 메이커2 승인 펀딩 소개")
-            .state(FundingState.APPROVED)
+            .title("[시연 0] 메이커2 승인 프로젝트")
+            .text("[시연 0] 메이커2 승인 프로젝트 소개")
+            .state(ProjectState.APPROVED)
+            .category(tech)
             .purposeAmount(new BigDecimal("100000"))
             .endDate(now.plusDays(30))
             .createdAt(now.minusDays(6))
             .build();
 
-    public Funding maker1CompleteFunding = Funding.builder()
-            .pk(5L)
+    public Project maker1CompleteProject = Project.builder()
+            .id(5L)
             .maker(maker1)
-            .title("[시연 0] 메이커1 완료 펀딩")
-            .text("[시연 0] 메이커1 완료 펀딩 소개")
-            .state(FundingState.COMPLETED)
+            .title("[시연 0] 메이커1 완료 프로젝트")
+            .text("[시연 0] 메이커1 완료 프로젝트 소개")
+            .state(ProjectState.COMPLETED)
+            .category(tech)
             .purposeAmount(new BigDecimal("3000"))
             .donateAmount(new BigDecimal("3000"))
             .endDate(now.plusDays(30))
             .createdAt(now.minusDays(5))
             .build();
 
-    public Funding changeStateFunding = Funding.builder()
-            .pk(6L)
+    public Project changeStateProject = Project.builder()
+            .id(6L)
             .maker(maker1)
-            .title("[시연 04] 승인용 펀딩")
-            .text("[시연 04] 승인용 펀딩 소개")
-            .state(FundingState.PENDING_APPROVAL)
+            .title("[시연 04] 승인용 프로젝트")
+            .text("[시연 04] 승인용 프로젝트 소개")
+            .state(ProjectState.PENDING_APPROVAL)
+            .category(tech)
             .purposeAmount(new BigDecimal("1"))
             .donateAmount(new BigDecimal("1"))
             .endDate(now.plusDays(30))
@@ -195,9 +202,8 @@ public class InitDB {
             .build();
 
     public Reward maker1PendingReward1 = Reward.builder()
-            .pk(1L)
-            .funding(maker1PendingFunding)
-            .category(food)
+            .id(1L)
+            .project(maker1PendingProject)
             .name("[시연 0] 메이커1 승인 대기 리워드1")
             .text("[시연 0] 메이커1 승인 대기 리워드1 소개")
             .requiredAmount(new BigDecimal("1000"))
@@ -206,9 +212,8 @@ public class InitDB {
             .provideDate(now.plusDays(60))
             .build();
     public Reward maker1PendingReward2 = Reward.builder()
-            .pk(2L)
-            .funding(maker1PendingFunding)
-            .category(food)
+            .id(2L)
+            .project(maker1PendingProject)
             .name("[시연 0] 메이커1 승인 대기 리워드2")
             .text("[시연 0] 메이커1 승인 대기 리워드2 소개")
             .requiredAmount(new BigDecimal("2000"))
@@ -218,9 +223,8 @@ public class InitDB {
             .build();
 
     public Reward maker2PendingReward1 = Reward.builder()
-            .pk(3L)
-            .funding(maker2PendingFunding)
-            .category(tech)
+            .id(3L)
+            .project(maker2PendingProject)
             .name("[시연 0] 메이커2 승인 대기 리워드1")
             .text("[시연 0] 메이커2 승인 대기 리워드1 소개")
             .requiredAmount(new BigDecimal("1000"))
@@ -229,9 +233,8 @@ public class InitDB {
             .provideDate(now.plusDays(60))
             .build();
     public Reward maker2PendingReward2 = Reward.builder()
-            .pk(4L)
-            .funding(maker2PendingFunding)
-            .category(tech)
+            .id(4L)
+            .project(maker2PendingProject)
             .name("[시연 0] 메이커2 승인 대기 리워드2")
             .text("[시연 0] 메이커2 승인 대기 리워드2 소개")
             .requiredAmount(new BigDecimal("2000"))
@@ -241,9 +244,8 @@ public class InitDB {
             .build();
 
     public Reward maker1ApproveReward1 = Reward.builder()
-            .pk(5L)
-            .funding(maker1ApproveFunding)
-            .category(furniture)
+            .id(5L)
+            .project(maker1ApproveProject)
             .name("[시연 0] 메이커1 승인 리워드1")
             .text("[시연 0] 메이커1 승인 리워드1 소개")
             .requiredAmount(new BigDecimal("1000"))
@@ -253,9 +255,8 @@ public class InitDB {
             .build();
 
     public Reward maker1ApproveReward2 = Reward.builder()
-            .pk(6L)
-            .funding(maker1ApproveFunding)
-            .category(furniture)
+            .id(6L)
+            .project(maker1ApproveProject)
             .name("[시연 0] 메이커1 승인 리워드2")
             .text("[시연 0] 메이커1 승인 리워드2 소개")
             .requiredAmount(new BigDecimal("2000"))
@@ -265,9 +266,8 @@ public class InitDB {
             .build();
 
     public Reward maker2ApproveReward1 = Reward.builder()
-            .pk(7L)
-            .funding(maker2ApproveFunding)
-            .category(tech)
+            .id(7L)
+            .project(maker2ApproveProject)
             .name("[시연 0] 메이커2 승인 리워드1")
             .text("[시연 0] 메이커2 승인 리워드1 소개")
             .requiredAmount(new BigDecimal("1000"))
@@ -276,9 +276,8 @@ public class InitDB {
             .provideDate(now.plusDays(60))
             .build();
     public Reward maker2ApproveReward2 = Reward.builder()
-            .pk(8L)
-            .funding(maker2ApproveFunding)
-            .category(tech)
+            .id(8L)
+            .project(maker2ApproveProject)
             .name("[시연 0] 메이커2 승인 리워드2")
             .text("[시연 0] 메이커2 승인 리워드2 소개")
             .requiredAmount(new BigDecimal("2000"))
@@ -288,9 +287,8 @@ public class InitDB {
             .build();
 
     public Reward maker1CompleteReward1 = Reward.builder()
-            .pk(9L)
-            .funding(maker1CompleteFunding)
-            .category(travel)
+            .id(9L)
+            .project(maker1CompleteProject)
             .name("[시연 0] 메이커1 완료 리워드1")
             .text("[시연 0] 메이커1 완료 리워드1 소개")
             .requiredAmount(new BigDecimal("1000"))
@@ -300,9 +298,8 @@ public class InitDB {
             .build();
 
     public Reward maker1CompleteReward2 = Reward.builder()
-            .pk(10L)
-            .funding(maker1CompleteFunding)
-            .category(travel)
+            .id(10L)
+            .project(maker1CompleteProject)
             .name("[시연 0] 메이커1 완료 리워드2")
             .text("[시연 0] 메이커1 완료 리워드2 소개")
             .requiredAmount(new BigDecimal("2000"))
@@ -311,9 +308,8 @@ public class InitDB {
             .provideDate(now.plusDays(60))
             .build();
     public Reward maker1ConcurrencyReward1 = Reward.builder()
-            .pk(11L)
-            .funding(maker1ApproveFunding)
-            .category(travel)
+            .id(11L)
+            .project(maker1ApproveProject)
             .name("[시연 10] 동시성 테스트용 리워드 1")
             .text("[시연 10] 동시성 테스트용 리워드 1 소개")
             .requiredAmount(new BigDecimal("2000"))
@@ -322,7 +318,7 @@ public class InitDB {
             .provideDate(now.plusDays(60))
             .build();
     public Donate donateUser1CompleteDonate = Donate.builder()
-            .pk(1L)
+            .id(1L)
             .user(donateUser1)
             .reward(maker1CompleteReward1)
             .amount(new BigDecimal("1000"))
@@ -330,7 +326,7 @@ public class InitDB {
             .state(true)
             .build();
     public Donate donateUser2CompleteDonate = Donate.builder()
-            .pk(2L)
+            .id(2L)
             .user(donateUser2)
             .reward(maker1CompleteReward2)
             .amount(new BigDecimal("2000"))
@@ -338,7 +334,7 @@ public class InitDB {
             .state(false)
             .build();
     public Donate donateUser1ApproveDonate = Donate.builder()
-            .pk(3L)
+            .id(3L)
             .user(donateUser1)
             .reward(maker1ApproveReward1)
             .amount(new BigDecimal("1000"))
@@ -346,7 +342,7 @@ public class InitDB {
             .state(false)
             .build();
     public Donate donateUser2ApproveDonate = Donate.builder()
-            .pk(4L)
+            .id(4L)
             .user(donateUser2)
             .reward(maker1ApproveReward2)
             .amount(new BigDecimal("2000"))
@@ -364,7 +360,7 @@ public class InitDB {
         init();
     }
 
-    //기본 데이터의 pk와 값이 담긴 객체를 돌려준다. DB를 조회하거나 변경하지 않는다
+    //기본 데이터의 id와 값이 담긴 객체를 돌려준다. DB를 조회하거나 변경하지 않는다
     public static InitDB load() {
         return new InitDB();
     }
@@ -399,7 +395,7 @@ public class InitDB {
         }
     }
 
-    //필드에 정해둔 기본 데이터를 리포지토리로 삽입. 필드의 pk와 맞도록 순서를 유지한다
+    //필드에 정해둔 기본 데이터를 리포지토리로 삽입. 필드의 id와 맞도록 순서를 유지한다
     private void insert() {
         List.of(maker1, maker2, donateUser1, donateUser2, newUser, notDonateUser1, notDonateUser2, notDonateUser3)
                 .forEach(config.getUserRepository()::create);
@@ -407,19 +403,10 @@ public class InitDB {
         List.of(food, tech, furniture, travel)
                 .forEach(config.getCategoryRepository()::create);
 
-        List.of(maker1PendingFunding, maker2PendingFunding, maker1ApproveFunding,
-                maker2ApproveFunding, maker1CompleteFunding, changeStateFunding,
-                        maker1NoRewardFunding)
-                .forEach(config.getFundingRepository()::create);
-
-        bindCategory(maker1PendingFunding, food);
-        bindCategory(maker2PendingFunding, tech);
-        bindCategory(maker1ApproveFunding, furniture);
-        bindCategory(maker1ApproveFunding, tech);
-        bindCategory(maker2ApproveFunding, tech);
-        bindCategory(maker1CompleteFunding, travel);
-        bindCategory(maker1CompleteFunding, food);
-        bindCategory(maker1NoRewardFunding, food);
+        List.of(maker1PendingProject, maker2PendingProject, maker1ApproveProject,
+                maker2ApproveProject, maker1CompleteProject, changeStateProject,
+                        maker1NoRewardProject)
+                .forEach(config.getProjectRepository()::create);
 
         List.of(maker1PendingReward1, maker1PendingReward2,
                         maker2PendingReward1, maker2PendingReward2,
@@ -433,10 +420,4 @@ public class InitDB {
                 .forEach(config.getDonateRepository()::create);
     }
 
-    private void bindCategory(Funding funding, Category category) {
-        config.getFundingCategoryRepository().create(FundingCategory.builder()
-                .funding(funding)
-                .category(category)
-                .build());
-    }
 }

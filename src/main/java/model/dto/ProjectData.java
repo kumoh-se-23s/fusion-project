@@ -2,12 +2,12 @@ package model.dto;
 
 import annotation.BindDomain;
 import annotation.DataField;
-import constant.FundingState;
+import constant.ProjectState;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import model.domain.Funding;
+import model.domain.Project;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -16,12 +16,15 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@BindDomain(values = Funding.class)
-public class FundingData extends BaseData {
-    private Long pk;
+@BindDomain(values = Project.class)
+public class ProjectData extends BaseData {
+    private Long id;
 
-    @DataField(name = "maker.pk")
-    private Long makerPK;
+    @DataField(name = "maker.id")
+    private Long makerId;
+
+    @DataField(name = "category.id")
+    private Long categoryId;
 
     private LocalDateTime createdAt;
 
@@ -39,7 +42,7 @@ public class FundingData extends BaseData {
 
     private BigDecimal donateAmount;
 
-    private FundingState state;
+    private ProjectState state;
 
     private String title;
 

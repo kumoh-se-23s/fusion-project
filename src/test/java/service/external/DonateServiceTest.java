@@ -8,7 +8,7 @@ import exception.NotFoundException;
 import model.domain.AppUser;
 import model.domain.Category;
 import model.domain.Donate;
-import model.domain.Funding;
+import model.domain.Project;
 import model.domain.Reward;
 import model.dto.request.donate.CreateDonateRequest;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import repository.DonateRepository;
-import repository.FundingRepository;
+import repository.ProjectRepository;
 import repository.RewardRepository;
 import repository.UserRepository;
 
@@ -39,7 +39,7 @@ public class DonateServiceTest extends DatabaseTest {
 
     private AppUser user;
     private AppUser maker;
-    private Funding funding;
+    private Project project;
     private Reward reward;
 
     @BeforeEach
@@ -47,13 +47,13 @@ public class DonateServiceTest extends DatabaseTest {
 
         donateRepository = db.config.getDonateRepository();
         rewardRepository = db.config.getRewardRepository();
-        FundingRepository fundingRepository = db.config.getFundingRepository();
+        ProjectRepository projectRepository = db.config.getProjectRepository();
         UserRepository userRepository = db.config.getUserRepository();
 
         donateService = new DonateService(
                 donateRepository,
                 rewardRepository,
-                fundingRepository,
+                projectRepository,
                 userRepository
         );
 
@@ -74,26 +74,19 @@ public class DonateServiceTest extends DatabaseTest {
                         .build()
         );
 
-        // 테스트 펀딩 생성
-        funding = fundingRepository.create(
-                Funding.builder()
+        // 테스트 프로젝트 생성
+        project = projectRepository.create(
+                Project.builder()
                         .maker(maker)
                         .endDate(LocalDateTime.now().plusDays(30))
                         .build()
         );
 
-        // 테스트 카테고리 생성
-        Category category = db.config.getCategoryRepository().create(
-                Category.builder()
-                        .name("테스트 카테고리 " + unique)
-                        .build()
-        );
 
         // 초기 재고 10개
         reward = rewardRepository.create(
                 Reward.builder()
-                        .funding(funding)
-                        .category(category)
+                        .project(project)
                         .name("테스트 리워드")
                         .requiredAmount(BigDecimal.valueOf(10000))
                         .maxQuantity(10L)
@@ -106,8 +99,8 @@ public class DonateServiceTest extends DatabaseTest {
     // 정상 후원 요청 생성
     private CreateDonateRequest validRequest() {
         return new CreateDonateRequest(
-                user.getPk(),
-                reward.getPk(),
+                user.getId(),
+                reward.getId(),
                 BigDecimal.valueOf(10000),
                 1L
         );
@@ -115,21 +108,21 @@ public class DonateServiceTest extends DatabaseTest {
 
     // DB에서 현재 재고 조회
     private Long currentStock() {
-        return rewardRepository.findByPK(reward.getPk())
+        return rewardRepository.findById(reward.getId())
                 .orElseThrow()
                 .getRemainQuantity();
     }
 
-    // DB에서 현재 사용자의 해당 펀딩 후원 건수 조회
+    // DB에서 현재 사용자의 해당 프로젝트 후원 건수 조회
     private long donationCount() {
         List<Donate> donations =
-                donateRepository.findByUserPk(user.getPk());
+                donateRepository.findByUserId(user.getId());
 
         return donations.stream()
                 .filter(d -> d.getReward() != null)
-                .filter(d -> d.getReward().getFunding() != null)
-                .filter(d -> funding.getPk().equals(
-                        d.getReward().getFunding().getPk()
+                .filter(d -> d.getReward().getProject() != null)
+                .filter(d -> project.getId().equals(
+                        d.getReward().getProject().getId()
                 ))
                 .count();
     }
@@ -160,9 +153,9 @@ public class DonateServiceTest extends DatabaseTest {
             );
 
             assertTrue(
-                    donateRepository.existsByUserPkAndFundingPk(
-                            user.getPk(),
-                            funding.getPk()
+                    donateRepository.existsByUserIdAndProjectId(
+                            user.getId(),
+                            project.getId()
                     )
             );
         }
@@ -190,8 +183,8 @@ public class DonateServiceTest extends DatabaseTest {
 
             CreateDonateRequest request =
                     new CreateDonateRequest(
-                            user.getPk(),
-                            reward.getPk(),
+                            user.getId(),
+                            reward.getId(),
                             new BigDecimal(amount),
                             1L
                     );
@@ -215,8 +208,8 @@ public class DonateServiceTest extends DatabaseTest {
 
             CreateDonateRequest request =
                     new CreateDonateRequest(
-                            user.getPk(),
-                            reward.getPk(),
+                            user.getId(),
+                            reward.getId(),
                             BigDecimal.valueOf(10000),
                             quantity
                     );
@@ -240,7 +233,7 @@ public class DonateServiceTest extends DatabaseTest {
             CreateDonateRequest request =
                     new CreateDonateRequest(
                             Long.MAX_VALUE,
-                            reward.getPk(),
+                            reward.getId(),
                             BigDecimal.valueOf(10000),
                             1L
                     );
@@ -263,7 +256,7 @@ public class DonateServiceTest extends DatabaseTest {
 
             // Given: 재고를 0으로 설정
             rewardRepository.update(
-                    reward.getPk(),
+                    reward.getId(),
                     java.util.Map.of("remainQuantity", 0L)
             );
 
@@ -287,14 +280,14 @@ public class DonateServiceTest extends DatabaseTest {
 
             // Given: 재고 2개
             rewardRepository.update(
-                    reward.getPk(),
+                    reward.getId(),
                     java.util.Map.of("remainQuantity", 2L)
             );
 
             CreateDonateRequest request =
                     new CreateDonateRequest(
-                            user.getPk(),
-                            reward.getPk(),
+                            user.getId(),
+                            reward.getId(),
                             BigDecimal.valueOf(10000),
                             3L
                     );
@@ -312,7 +305,7 @@ public class DonateServiceTest extends DatabaseTest {
         }
 
         @Test
-        @DisplayName("같은 펀딩에 이미 후원했으면 AlreadyDonatedException")
+        @DisplayName("같은 프로젝트에 이미 후원했으면 AlreadyDonatedException")
         void duplicate() {
 
             // Given: 첫 번째 후원 성공
@@ -321,7 +314,7 @@ public class DonateServiceTest extends DatabaseTest {
             assertEquals(9L, currentStock());
             assertEquals(1L, donationCount());
 
-            // When: 동일한 펀딩에 재후원
+            // When: 동일한 프로젝트에 재후원
             CreateDonateRequest secondRequest = validRequest();
 
             // Then

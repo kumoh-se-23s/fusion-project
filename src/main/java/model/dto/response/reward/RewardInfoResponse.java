@@ -15,8 +15,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @BindDomain(values = Reward.class)
 public class RewardInfoResponse extends Response {
-    @DataField(name = "pk")
-    private Long rewardPk;
+    @DataField(name = "id")
+    private Long rewardId;
 
     private String name;
     private BigDecimal requiredAmount;

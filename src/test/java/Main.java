@@ -15,7 +15,7 @@ public class Main {
          initDB();                       // 검사에 필요한 사전 데이터를 insert하는 메소드 (모든 테이블을 삭제 후 다시 생성)
 //         검사할 항목 하나만 주석 해제하여 실행
 
-         test01ViewFundingStatus();      // MAKER     - 프로젝트별 펀딩 현황 보기
+         test01ViewProjectStatus();      // MAKER     - 프로젝트별 현황 보기
          test02RegisterProject();        // MAKER     - 프로젝트 기본 정보 등록
          test03RegisterReward();         // MAKER     - 리워드 등록 및 프로젝트 신청
          test04ApproveProject();         // ADMIN     - 프로젝트 등록 승인
@@ -31,8 +31,8 @@ public class Main {
         InitDB.main(new String[0]);
     }
 
-    private static void test01ViewFundingStatus() {
-        run(MainTest.Test01ViewFundingStatus.class);
+    private static void test01ViewProjectStatus() {
+        run(MainTest.Test01ViewProjectStatus.class);
     }
 
     private static void test02RegisterProject() {

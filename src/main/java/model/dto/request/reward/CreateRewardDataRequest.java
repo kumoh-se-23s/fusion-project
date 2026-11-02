@@ -9,7 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import model.domain.Category;
-import model.domain.Funding;
+import model.domain.Project;
 import model.domain.Reward;
 import model.dto.BaseData;
 
@@ -34,11 +34,8 @@ public class CreateRewardDataRequest extends BaseData {
     @DataField(name = "text")
     private String rewardText;
 
-    @DataField(name = "funding.pk")
-    private Long fundingFk;
-
-    @DataField(name = "category.pk")
-    private Long categoryFk;
+    @DataField(name = "project.id")
+    private Long projectFk;
 
     private BigDecimal requiredAmount;
 
@@ -53,17 +50,13 @@ public class CreateRewardDataRequest extends BaseData {
     private LocalDateTime updatedAt;
 
     // Service에서 조회한 도메인 객체
-    private Funding funding;
-
-    private Category category;
+    private Project project;
 
     // 리워드 생성 전 필요한 값 설정
     public void prepareForCreate(
-            Funding funding,
-            Category category
+            Project project
     ) {
-        this.funding = funding;
-        this.category = category;
+        this.project = project;
 
         // 최초 남은 수량 = 최대 수량
         this.rewardRemainQuantity = rewardMaxQuantity;

@@ -3,26 +3,29 @@ package model.domain;
 import annotation.Column;
 import annotation.JoinColumn;
 import annotation.OnDelete;
-import annotation.PK;
+import annotation.Id;
 import annotation.Table;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import constant.FundingState;
+import constant.ProjectState;
 
-@Table(name = "FUNDING")
+@Table(name = "PROJECT")
 @SuperBuilder(toBuilder = true)
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Funding extends BaseDomain {
-    @PK
-    @Column(name = "funding_pk")
-    private Long pk;
+public class Project extends BaseDomain {
+    @Id
+    @Column(name = "project_id")
+    private Long id;
 
     @JoinColumn(name = "maker_fk", nullable = false, onDelete = OnDelete.CASCADE)
     private AppUser maker;
+
+    @JoinColumn(name = "category_fk", onDelete = OnDelete.SET_NULL)
+    private Category category;
 
     @Builder.Default
     @Column(name = "like_count", nullable = false)
@@ -56,15 +59,16 @@ public class Funding extends BaseDomain {
     private BigDecimal donateAmount = BigDecimal.ZERO;
 
     @Builder.Default
-    @Column(name = "funding_state", nullable = false, length = 30)
-    private FundingState state = FundingState.JUST_USER_INPUT;
+    @Column(name = "project_state", nullable = false, length = 30)
+    private ProjectState state = ProjectState.JUST_USER_INPUT;
 
-    @Column(name = "funding_title")
+    @Column(name = "project_title")
     private String title;
 
-    @Column(name = "funding_text", columnDefinition = "TEXT")
+    @Column(name = "project_text", columnDefinition = "TEXT")
     private String text;
 
-    @Column(name = "funding_img_file")
+    @Column(name = "project_img_file")
     private byte[] imgFile;
+
 }

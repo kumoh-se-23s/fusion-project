@@ -10,7 +10,7 @@ import java.util.List;
  */
 
 public interface EntityManager {
-    //INSERT 후 생성된 PK를 엔티티에 채운다
+    //INSERT 후 생성된 ID를 엔티티에 채운다
     void persist(Object entity);
 
     <T> T find(Class<T> entityClass, Object primaryKey);

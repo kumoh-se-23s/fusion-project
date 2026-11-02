@@ -3,23 +3,23 @@ package model.domain;
 import annotation.Column;
 import annotation.JoinColumn;
 import annotation.OnDelete;
-import annotation.PK;
+import annotation.Id;
 import annotation.Table;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
-@Table(name = "FUNDING_LIKE")
+@Table(name = "PROJECT_LIKE")
 @SuperBuilder(toBuilder = true)
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class FundingLike extends BaseDomain {
-    @PK
-    @Column(name = "funding_like_pk")
-    private Long pk;
+public class ProjectLike extends BaseDomain {
+    @Id
+    @Column(name = "project_like_id")
+    private Long id;
 
-    @JoinColumn(name = "funding_fk", nullable = false, uniqueGroup = "like", onDelete = OnDelete.CASCADE)
-    private Funding funding;
+    @JoinColumn(name = "project_fk", nullable = false, uniqueGroup = "like", onDelete = OnDelete.CASCADE)
+    private Project project;
 
     @JoinColumn(name = "user_fk", nullable = false, uniqueGroup = "like", onDelete = OnDelete.CASCADE)
     private AppUser user;

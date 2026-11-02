@@ -1,4 +1,4 @@
-package model.dto.request.deny_funding;
+package model.dto;
 
 import annotation.BindDomain;
 import annotation.DataField;
@@ -6,15 +6,19 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import model.domain.DenyFunding;
-import model.dto.request.Request;
+import model.domain.DenyProject;
 
 @Getter
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
-@BindDomain(values = DenyFunding.class)
-public class DenyFundingRequest extends Request {
+@NoArgsConstructor
+@BindDomain(values = DenyProject.class)
+public class DenyProjectData extends BaseData {
+    private Long id;
+
+    @DataField(name = "project.id")
+    private Long projectId;
+
     @DataField(name = "reason")
     private String denyReason;
 }

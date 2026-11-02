@@ -7,7 +7,7 @@ import model.domain.UserRoleRelation;
 import model.dto.UserData;
 import model.dto.request.user.UpdateUserRequest;
 import model.dto.response.DeleteResponse;
-import model.dto.response.PKResponse;
+import model.dto.response.IdResponse;
 import model.dto.response.user.UserResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class UserServiceTest {
 
-    private static final long USER_PK = 1L;
+    private static final long USER_ID = 1L;
 
     private UserService userService;
     private FakeUserRepository userRepository;
@@ -39,40 +39,40 @@ class UserServiceTest {
     static class FakeUserRepository extends UserRepository {
         private final Map<Long, AppUser> users = new HashMap<>();
         private Optional<Long> updateResult;
-        private Long updatedPk;
+        private Long updatedId;
         private UserData updatedData;
-        private Long deletedPk;
+        private Long deletedId;
 
         // ===== 기존 코드 (주석 처리): UserRepository에서 두 메서드가 삭제됨 (3e8251c) =====
 //        @Override
-//        public Optional<AppUser> findUser(Long userPk) {
-//            return Optional.ofNullable(users.get(userPk));
+//        public Optional<AppUser> findUser(Long userId) {
+//            return Optional.ofNullable(users.get(userId));
 //        }
 //
 //        @Override
-//        public Optional<AppUser> findAppUserByUserPk(long userPk) {
-//            return Optional.ofNullable(users.get(userPk));
+//        public Optional<AppUser> findAppUserByUserId(long userId) {
+//            return Optional.ofNullable(users.get(userId));
 //        }
 
-        // UserService가 이제 userRepository.findByPK(...)를 직접 부름
+        // UserService가 이제 userRepository.findById(...)를 직접 부름
         @Override
-        public Optional<AppUser> findByPK(Long userPk) {
-            return Optional.ofNullable(users.get(userPk));
+        public Optional<AppUser> findById(Long userId) {
+            return Optional.ofNullable(users.get(userId));
         }
 
         @Override
-        public Optional<Long> updateUser(long userPk, UserData userData) {
-            updatedPk = userPk;
+        public Optional<Long> updateUser(long userId, UserData userData) {
+            updatedId = userId;
             updatedData = userData;
             if (updateResult != null) return updateResult;
             // 진짜 저장소처럼 없는 사용자를 수정하면 빈 결과를 돌려준다.
-            return users.containsKey(userPk) ? Optional.of(userPk) : Optional.empty();
+            return users.containsKey(userId) ? Optional.of(userId) : Optional.empty();
         }
 
         @Override
-        public boolean delete(Long pk) {
-            deletedPk = pk;
-            return users.remove(pk) != null;
+        public boolean delete(Long id) {
+            deletedId = id;
+            return users.remove(id) != null;
         }
     }
 
@@ -94,7 +94,7 @@ class UserServiceTest {
     @BeforeEach
     void setUp() {
         user = AppUser.builder()
-                .pk(USER_PK)
+                .id(USER_ID)
                 .name("홍길동")
                 .email("hong@example.com")
                 .postal("12345")
@@ -103,7 +103,7 @@ class UserServiceTest {
                 .build();
 
         userRepository = new FakeUserRepository();
-        userRepository.users.put(USER_PK, user);
+        userRepository.users.put(USER_ID, user);
         userRoleRelationRepository = new FakeUserRoleRelationRepository();
 
         userService = new UserService(userRepository, new UserRoleRepository(), userRoleRelationRepository);
@@ -118,7 +118,7 @@ class UserServiceTest {
         @Test
         @DisplayName("사용자 정보를 UserData에 담아 돌려준다")
         void success() {
-            UserResponse response = userService.getMyInfo(USER_PK);
+            UserResponse response = userService.getMyInfo(USER_ID);
             UserData data = response.getUserData();
 
             assertEquals("홍길동", data.getName());
@@ -140,14 +140,14 @@ class UserServiceTest {
     class UpdateUser {
 
         @Test
-        @DisplayName("요청의 UserData를 그대로 저장소에 넘기고, 수정된 pk를 돌려준다")
+        @DisplayName("요청의 UserData를 그대로 저장소에 넘기고, 수정된 id를 돌려준다")
         void success() {
             UserData newData = UserData.builder().name("김철수").build();
 
-            PKResponse response = userService.updateUser(USER_PK, new UpdateUserRequest(newData));
+            IdResponse response = userService.updateUser(USER_ID, new UpdateUserRequest(newData));
 
-            assertEquals(USER_PK, response.getPk());
-            assertEquals(USER_PK, userRepository.updatedPk);
+            assertEquals(USER_ID, response.getId());
+            assertEquals(USER_ID, userRepository.updatedId);
             assertSame(newData, userRepository.updatedData);
         }
 
@@ -165,7 +165,7 @@ class UserServiceTest {
             userRepository.updateResult = Optional.empty();
             UpdateUserRequest request = new UpdateUserRequest(UserData.builder().name("김철수").build());
 
-            assertThrows(NotFoundException.class, () -> userService.updateUser(USER_PK, request));
+            assertThrows(NotFoundException.class, () -> userService.updateUser(USER_ID, request));
         }
     }
 
@@ -176,10 +176,10 @@ class UserServiceTest {
         @Test
         @DisplayName("삭제에 성공하면 result가 true다")
         void success() {
-            DeleteResponse response = userService.deleteUser(USER_PK);
+            DeleteResponse response = userService.deleteUser(USER_ID);
 
             assertTrue(response.getResult());
-            assertEquals(USER_PK, userRepository.deletedPk);
+            assertEquals(USER_ID, userRepository.deletedId);
         }
 
         @Test
@@ -195,9 +195,9 @@ class UserServiceTest {
     @DisplayName("getRoles")
     class GetRoles {
 
-        private UserRoleRelation relation(long pk) {
+        private UserRoleRelation relation(long id) {
             return UserRoleRelation.builder()
-                    .pk(pk)
+                    .id(id)
                     .role(new UserRole())
                     .user(user)
                     .build();
@@ -209,7 +209,7 @@ class UserServiceTest {
             UserRoleRelation relation = relation(100L);
             userRoleRelationRepository.relations = List.of(relation);
 
-            assertEquals(List.of(relation), userService.getRoles(USER_PK));
+            assertEquals(List.of(relation), userService.getRoles(USER_ID));
         }
 
         @Test
@@ -218,14 +218,14 @@ class UserServiceTest {
             List<UserRoleRelation> relations = List.of(relation(100L), relation(101L));
             userRoleRelationRepository.relations = relations;
 
-            assertEquals(relations, userService.getRoles(USER_PK));
+            assertEquals(relations, userService.getRoles(USER_ID));
         }
 
-        // 관계 테이블 자신의 pk가 아니라, 사용자(user_fk)를 기준으로 찾아야 한다.
+        // 관계 테이블 자신의 id가 아니라, 사용자(user_fk)를 기준으로 찾아야 한다.
         @Test
         @DisplayName("찾은 사용자를 user_fk 조건으로, 개수 제한 없이 조회한다")
         void filterUsesUserWithoutLimit() {
-            userService.getRoles(USER_PK);
+            userService.getRoles(USER_ID);
 
             Filter filter = userRoleRelationRepository.receivedFilter;
             assertEquals(Map.of("user_fk", user), filter.getConditions());

@@ -1,11 +1,9 @@
-package model.dto.request.funding;
+package model.dto.request.project;
 
 import annotation.BindDomain;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import model.domain.Funding;
+import annotation.DataField;
+import lombok.*;
+import model.domain.Project;
 import model.dto.request.Request;
 
 import java.math.BigDecimal;
@@ -16,8 +14,8 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@BindDomain(values = Funding.class)
-public class CreateFundingRequest extends Request {
+@BindDomain(values = Project.class)
+public class CreateProjectRequest extends Request {
 
     private LocalDateTime startDate;
 
@@ -30,4 +28,7 @@ public class CreateFundingRequest extends Request {
     private String text;
 
     private byte[] imgFile;
+
+    @DataField(name = "category.id")
+    private Long categoryId;
 }

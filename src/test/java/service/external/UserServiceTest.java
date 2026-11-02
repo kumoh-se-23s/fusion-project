@@ -5,7 +5,7 @@ import model.Serializer;
 import model.domain.AppUser;
 import model.dto.UserData;
 import model.dto.request.user.UpdateUserRequest;
-import model.dto.response.PKResponse;
+import model.dto.response.IdResponse;
 import model.dto.response.user.UserResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -39,20 +39,20 @@ public class UserServiceTest extends DatabaseTest {
         @DisplayName("유저 정보를 업데이트한다.")
         void success() {
             AppUser maker = db.maker1;
-            long makerPK = maker.getPk();
+            long makerId = maker.getId();
 
 
-            UserResponse userResponse = userService.getMyInfo(makerPK);
+            UserResponse userResponse = userService.getMyInfo(makerId);
             UserData testUserData = userResponse.getUserData();
 
             testUserData.setName("호날두");
 
 
-            PKResponse response = userService.updateUser(makerPK, new UpdateUserRequest(testUserData));
-            AppUser result = db.config.getUserRepository().findByPK(response.getPk())
+            IdResponse response = userService.updateUser(makerId, new UpdateUserRequest(testUserData));
+            AppUser result = db.config.getUserRepository().findById(response.getId())
                     .orElseThrow(AssertionError::new);
-            assertEquals(makerPK, response.getPk());
-            assertEquals(result.getPk(), response.getPk());
+            assertEquals(makerId, response.getId());
+            assertEquals(result.getId(), response.getId());
             assertEquals("호날두", result.getName());
         }
     }

@@ -1,5 +1,6 @@
-package model.dto.request.funding;
+package model.dto.request.project;
 
+import annotation.DataField;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,14 +13,15 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class EditFundingRequest extends Request {
+public class EditProjectRequest extends Request {
     private String title;
 
     private String text;
 
     private byte[] imgFile;
 
-    private List<Long> categoryPKs;
+    @DataField(name = "category.id")
+    private Long categoryId;
 }
 
 

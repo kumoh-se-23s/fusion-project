@@ -1,26 +1,23 @@
-import constant.FundingState;
+import constant.ProjectState;
 import example.db.DatabaseTest;
 import example.db.InitDB;
 import exception.LimitNumberOutException;
 import model.domain.AppUser;
 import model.domain.Donate;
-import model.domain.Funding;
-import model.domain.FundingCategory;
+import model.domain.Project;
 import model.domain.Review;
 import model.domain.Reward;
-import model.dto.FundingData;
+import model.dto.ProjectData;
 import model.dto.UserData;
 import model.dto.request.donate.CreateDonateRequest;
-import model.dto.request.funding.CreateFundingByCategoryRequest;
-import model.dto.request.funding.CreateFundingRequest;
-import model.dto.request.funding.GetFundingByCategoryAndStateRequest;
+import model.dto.request.project.CreateProjectRequest;
+import model.dto.request.project.GetProjectByCategoryAndStateRequest;
 import model.dto.request.review.CreateReviewRequest;
 import model.dto.request.reward.CreateRewardDataRequest;
 import model.dto.request.user.UpdateUserRequest;
 import model.dto.response.DataCollectionResponse;
-import model.dto.response.PKResponse;
-import model.dto.response.funding.CreateFundingByCategoryResponse;
-import model.dto.response.funding.FundingRewardResponse;
+import model.dto.response.IdResponse;
+import model.dto.response.project.ProjectRewardResponse;
 import model.dto.response.reward.RewardInfoResponse;
 import model.dto.response.reward.RewardUserResponse;
 import model.dto.response.user.UserAddressResponse;
@@ -40,7 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import repository.Filter;
 import service.UserService;
-import service.external.FundingService;
+import service.external.ProjectService;
 import service.external.ReviewService;
 
 import java.math.BigDecimal;
@@ -49,8 +46,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
+
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -71,22 +67,22 @@ public class MainTest extends DatabaseTest {
     }
 
     @Nested
-    @DisplayName("01. MAKER - 프로젝트별 펀딩 현황 보기")
-    class Test01ViewFundingStatus {
-        private FundingService fundingService;
+    @DisplayName("01. MAKER - 프로젝트별 현황 보기")
+    class Test01ViewProjectStatus {
+        private ProjectService projectService;
 
         @BeforeEach
         void setUp() {
-            fundingService = db.config.getFundingService();
+            projectService = db.config.getProjectService();
         }
 
         @Test
-        @DisplayName("펀딩의 리워드와 리워드별 후원자를 조회한다")
-        void getFundingByReward() {
-            FundingRewardResponse response = fundingService.getFundingByReward(db.maker1CompleteFunding.getPk());
+        @DisplayName("프로젝트의 리워드와 리워드별 후원자를 조회한다")
+        void getProjectByReward() {
+            ProjectRewardResponse response = projectService.getProjectByReward(db.maker1CompleteProject.getId());
             LOG.info(response.toJsonString());
 
-            assertEquals(db.maker1CompleteFunding.getPk(), response.getFundingInfo().getFundingPK());
+            assertEquals(db.maker1CompleteProject.getId(), response.getProjectInfo().getProjectId());
             assertEquals(2, response.getRewards().size());
             Map<String, RewardInfoResponse> list = new HashMap<>();
             Map<String, UserAddressResponse> list2 = new HashMap<>();
@@ -99,62 +95,53 @@ public class MainTest extends DatabaseTest {
                 }
             }
             assertEquals(
-                    db.maker1CompleteReward1.getPk(),
-                    list.get(db.maker1CompleteReward1.getName()).getRewardPk());
+                    db.maker1CompleteReward1.getId(),
+                    list.get(db.maker1CompleteReward1.getName()).getRewardId());
 
             assertEquals(
-                    db.maker1CompleteReward2.getPk(),
-                    list.get(db.maker1CompleteReward2.getName()).getRewardPk());
+                    db.maker1CompleteReward2.getId(),
+                    list.get(db.maker1CompleteReward2.getName()).getRewardId());
 
             assertEquals(
-                    db.donateUser1.getPk(),
-                    list2.get(db.donateUser1.getAddress()).getUserPK());
+                    db.donateUser1.getId(),
+                    list2.get(db.donateUser1.getAddress()).getUserId());
         }
     }
 
     @Nested
     @DisplayName("02. MAKER - 프로젝트 기본 정보 등록")
     class Test02RegisterProject {
-        private FundingService fundingService;
+        private ProjectService projectService;
 
         @BeforeEach
         void setUp() {
-            fundingService = db.config.getFundingService();
+            projectService = db.config.getProjectService();
         }
 
         @Test
-        @DisplayName("펀딩을 생성한다")
-        void createFunding() {
+        @DisplayName("프로젝트를 생성한다")
+        void createProject() {
             LocalDateTime endDate = LocalDateTime.now().plusDays(30).truncatedTo(ChronoUnit.MICROS);
 
-            CreateFundingByCategoryResponse response = fundingService.createFunding(db.maker1.getPk(),
-                    CreateFundingByCategoryRequest.builder()
-                            .createFundingRequest(CreateFundingRequest.builder()
-                                    .title("[시연 02] 테스트용 새 프로젝트")
-                                    .text("[시연 02] 프로젝트 소개")
-                                    .purposeAmount(new BigDecimal("123456"))
-                                    .endDate(endDate)
-                                    .build())
-                            .categoryPKs(List.of(db.food.getPk(), db.tech.getPk()))
-                            .build());
+            IdResponse response = projectService.createProject(
+                    db.maker1.getId(),
+                    CreateProjectRequest.builder()
+                        .title("[시연 02] 테스트용 새 프로젝트")
+                        .text("[시연 02] 프로젝트 소개")
+                        .purposeAmount(new BigDecimal("123456"))
+                        .endDate(endDate)
+                        .categoryId(db.furniture.getId())
+                        .build()
+            );
 
-            Funding saved = db.config.getFundingRepository().findByPK(response.getPk()).orElseThrow();
-            assertEquals(db.maker1.getPk(), saved.getMaker().getPk());
+            Project saved = db.config.getProjectRepository().findById(response.getId()).orElseThrow();
+            assertEquals(db.maker1.getId(), saved.getMaker().getId());
             assertEquals("[시연 02] 테스트용 새 프로젝트", saved.getTitle());
             assertEquals("[시연 02] 프로젝트 소개", saved.getText());
             assertAmount("123456", saved.getPurposeAmount());
             assertEquals(endDate, saved.getEndDate());
-            assertEquals(FundingState.JUST_USER_INPUT, saved.getState());
-            List<FundingCategory> list = db.config.getFundingCategoryRepository()
-                    .find(Filter.builder()
-                            .conditions(Map.of("funding", saved))
-                            .build());
-
-            assertEquals(saved.getPk(), list.getFirst().getFunding().getPk());
-            assertEquals(Set.of(db.food.getPk(), db.tech.getPk()),
-                    list.stream()
-                            .map(fundingCategory -> fundingCategory.getCategory().getPk())
-                            .collect(Collectors.toSet()));
+            assertEquals(ProjectState.JUST_USER_INPUT, saved.getState());
+            assertEquals(db.furniture.getId(), saved.getCategory().getId());
         }
     }
 
@@ -173,10 +160,9 @@ public class MainTest extends DatabaseTest {
         void createReward() {
             LocalDateTime provideDate = LocalDateTime.now().plusDays(30).truncatedTo(ChronoUnit.MICROS);
 
-            PKResponse response = rewardService.createReward(
+            IdResponse response = rewardService.createReward(
                     CreateRewardDataRequest.builder()
-                            .categoryFk(db.food.getPk())
-                            .fundingFk(db.maker1NoRewardFunding.getPk())
+                            .projectFk(db.maker1NoRewardProject.getId())
                             .rewardName("[시연 03] 테스트용 새 리워드")
                             .rewardText("[시연 03] 리워드 소개")
                             .provideDate(provideDate)
@@ -185,35 +171,34 @@ public class MainTest extends DatabaseTest {
                             .rewardRemainQuantity(5L)
                             .build()
             );
-            Reward saved = db.config.getRewardRepository().findByPK(response.getPk())
+            Reward saved = db.config.getRewardRepository().findById(response.getId())
                     .orElseThrow();
 
             assertEquals("[시연 03] 테스트용 새 리워드", saved.getName());
             assertEquals("[시연 03] 리워드 소개", saved.getText());
-            assertEquals(db.maker1NoRewardFunding.getPk(), saved.getFunding().getPk());
-            assertEquals(FundingState.PENDING_APPROVAL, saved.getFunding().getState());
-            assertEquals(db.food.getPk(), saved.getCategory().getPk());
+            assertEquals(db.maker1NoRewardProject.getId(), saved.getProject().getId());
+            assertEquals(ProjectState.PENDING_APPROVAL, saved.getProject().getState());
         }
     }
 
     @Nested
     @DisplayName("04. ADMIN - 프로젝트 등록 승인")
     class Test04ApproveProject {
-        private service.internal.FundingService fundingService;
+        private service.internal.ProjectService projectService;
 
         @BeforeEach
         void setUp() {
-            fundingService = db.config.getAdminFundingService();
+            projectService = db.config.getAdminProjectService();
         }
 
         @Test
-        @DisplayName("승인 대기 펀딩을 승인한다")
-        void updateFundingApprove() {
-            fundingService.updateFundingApprove(db.changeStateFunding.getPk());
+        @DisplayName("승인 대기 프로젝트를 승인한다")
+        void updateProjectApprove() {
+            projectService.updateProjectApprove(db.changeStateProject.getId());
 
-            Funding saved = db.config.getFundingRepository().findByPK(db.changeStateFunding.getPk()).orElseThrow();
-            assertEquals(FundingState.APPROVED, saved.getState());
-            assertEquals(db.changeStateFunding.getTitle(), saved.getTitle());
+            Project saved = db.config.getProjectRepository().findById(db.changeStateProject.getId()).orElseThrow();
+            assertEquals(ProjectState.APPROVED, saved.getState());
+            assertEquals(db.changeStateProject.getTitle(), saved.getTitle());
 
         }
     }
@@ -236,20 +221,20 @@ public class MainTest extends DatabaseTest {
         @DisplayName("유저 정보를 업데이트한다.")
         void success() {
             AppUser maker = db.maker1;
-            long makerPK = maker.getPk();
+            long makerId = maker.getId();
 
 
-            UserResponse userResponse = userService.getMyInfo(makerPK);
+            UserResponse userResponse = userService.getMyInfo(makerId);
             UserData testUserData = userResponse.getUserData();
 
             testUserData.setName("[시연 05] 변경된 이름");
 
 
-            PKResponse response = userService.updateUser(makerPK, new UpdateUserRequest(testUserData));
-            AppUser result = db.config.getUserRepository().findByPK(response.getPk())
+            IdResponse response = userService.updateUser(makerId, new UpdateUserRequest(testUserData));
+            AppUser result = db.config.getUserRepository().findById(response.getId())
                     .orElseThrow(AssertionError::new);
-            assertEquals(makerPK, response.getPk());
-            assertEquals(result.getPk(), response.getPk());
+            assertEquals(makerId, response.getId());
+            assertEquals(result.getId(), response.getId());
             assertEquals("[시연 05] 변경된 이름", result.getName());
         }
     }
@@ -257,61 +242,53 @@ public class MainTest extends DatabaseTest {
     @Nested
     @DisplayName("06. SUPPORTER - 프로젝트 보기")
     class Test06ViewProjects {
-        private FundingService fundingService;
+        private ProjectService projectService;
 
         @BeforeEach
         void setUp() {
-            fundingService = db.config.getFundingService();
+            projectService = db.config.getProjectService();
         }
 
         @Test
-        @DisplayName("전체 펀딩을 조회한다")
-        void getAllFunding() {
-            DataCollectionResponse<FundingData> response = fundingService.getAllFunding();
+        @DisplayName("전체 프로젝트를 조회한다")
+        void getAllProject() {
+            DataCollectionResponse<ProjectData> response = projectService.getAllProject();
             LOG.info(response.toJsonString());
-            List<Long> pkList = response.getDatas().stream()
-                    .map(FundingData::getPk).toList();
-            assertTrue(pkList.contains(db.maker1ApproveFunding.getPk()));
-            assertTrue(pkList.contains(db.maker2ApproveFunding.getPk()));
-            assertTrue(pkList.contains(db.maker1PendingFunding.getPk()));
-            assertTrue(pkList.contains(db.maker2PendingFunding.getPk()));
-            assertTrue(pkList.contains(db.maker1CompleteFunding.getPk()));
+            List<Long> idList = response.getDatas().stream()
+                    .map(ProjectData::getId).toList();
+            assertTrue(idList.contains(db.maker1ApproveProject.getId()));
+            assertTrue(idList.contains(db.maker2ApproveProject.getId()));
+            assertTrue(idList.contains(db.maker1PendingProject.getId()));
+            assertTrue(idList.contains(db.maker2PendingProject.getId()));
+            assertTrue(idList.contains(db.maker1CompleteProject.getId()));
         }
     }
 
     @Nested
     @DisplayName("07. SUPPORTER - 프로젝트 필터링")
     class Test07FilterProjects {
-        private FundingService fundingService;
+        private ProjectService projectService;
 
         @BeforeEach
         void setUp() {
-            fundingService = db.config.getFundingService();
+            projectService = db.config.getProjectService();
         }
 
         @Test
         @DisplayName("카테고리와 상태로 필터링한다")
         void getByCategoryAndState() {
-            DataCollectionResponse<FundingData> response = fundingService.getByCategoryAndState(
-                    GetFundingByCategoryAndStateRequest.builder()
+            DataCollectionResponse<ProjectData> response = projectService.getByCategoryAndState(
+                    GetProjectByCategoryAndStateRequest.builder()
                             .categoryList(List.of(db.tech.getName()))
-                            .fundingStateList(List.of(FundingState.APPROVED))
+                            .projectStateList(List.of(ProjectState.APPROVED))
                             .build());
             LOG.info(response.toJsonString());
-            List<Long> pkList = response.getDatas().stream()
-                    .map(FundingData::getPk).toList();
-            assertTrue(pkList.contains(db.maker1ApproveFunding.getPk()));
-            assertTrue(pkList.contains(db.maker2ApproveFunding.getPk()));
+            List<Long> idList = response.getDatas().stream()
+                    .map(ProjectData::getId).toList();
+            assertTrue(idList.contains(db.maker1ApproveProject.getId()));
+            assertTrue(idList.contains(db.maker2ApproveProject.getId()));
 
-            response = fundingService.getByCategoryAndState(
-                    GetFundingByCategoryAndStateRequest.builder()
-                            .categoryList(List.of(db.furniture.getName()))
-                            .fundingStateList(List.of(FundingState.APPROVED))
-                            .build());
-            LOG.info(response.toJsonString());
-            pkList = response.getDatas().stream()
-                    .map(FundingData::getPk).toList();
-            assertTrue(pkList.contains(db.maker1ApproveFunding.getPk()));
+
         }
     }
 
@@ -328,24 +305,24 @@ public class MainTest extends DatabaseTest {
         @Test
         @DisplayName("리워드를 신청한다")
         void createDonate() {
-            PKResponse response = donateService.createDonate(
+            IdResponse response = donateService.createDonate(
                     CreateDonateRequest.builder()
                             .quantity(2L)
                             .state(false)
                             .createdAt(LocalDateTime.now())
-                            .rewardFk(db.maker1ApproveReward1.getPk())
-                            .userFk(db.notDonateUser1.getPk())
+                            .rewardFk(db.maker1ApproveReward1.getId())
+                            .userFk(db.notDonateUser1.getId())
                             .amount(new BigDecimal("2000"))
                             .build()
             );
-            Donate saved = db.config.getDonateRepository().findByPK(response.getPk())
+            Donate saved = db.config.getDonateRepository().findById(response.getId())
                     .orElseThrow();
 
             assertEquals(false, saved.getState());
-            assertEquals(db.maker1ApproveReward1.getPk(), saved.getReward().getPk());
-            assertEquals(db.notDonateUser1.getPk(), saved.getUser().getPk());
+            assertEquals(db.maker1ApproveReward1.getId(), saved.getReward().getId());
+            assertEquals(db.notDonateUser1.getId(), saved.getUser().getId());
             assertEquals(7L, saved.getReward().getRemainQuantity());
-            assertEquals(saved.getAmount().add(db.maker1ApproveFunding.getDonateAmount()), saved.getReward().getFunding().getDonateAmount());
+            assertEquals(saved.getAmount().add(db.maker1ApproveProject.getDonateAmount()), saved.getReward().getProject().getDonateAmount());
         }
     }
 
@@ -364,22 +341,22 @@ public class MainTest extends DatabaseTest {
         void createReview() {
             List<Review> list = db.config.getReviewRepository().find(
                     Filter.builder()
-                            .conditions(Map.of("reward", db.maker1CompleteReward1.getPk()))
+                            .conditions(Map.of("reward", db.maker1CompleteReward1.getId()))
                             .build()
             );
             for (Review review : list) {
-                db.config.getReviewRepository().delete(review.getPk());
+                db.config.getReviewRepository().delete(review.getId());
             }
 
-            PKResponse response = reviewService.createReview(CreateReviewRequest.builder()
-                    .rewardPK(db.maker1CompleteReward1.getPk())
+            IdResponse response = reviewService.createReview(CreateReviewRequest.builder()
+                    .rewardId(db.maker1CompleteReward1.getId())
                     .text("[시연 09] 리뷰 생성 테스트 데이터")
                     .rating(new BigDecimal("1.0"))
-                    .build(), db.donateUser1.getPk());
+                    .build(), db.donateUser1.getId());
 
-            Review saved = db.config.getReviewRepository().findByPK(response.getPk()).orElseThrow();
-            assertEquals(db.maker1CompleteReward1.getPk(), saved.getReward().getPk());
-            assertEquals(db.donateUser1.getPk(), saved.getUser().getPk());
+            Review saved = db.config.getReviewRepository().findById(response.getId()).orElseThrow();
+            assertEquals(db.maker1CompleteReward1.getId(), saved.getReward().getId());
+            assertEquals(db.donateUser1.getId(), saved.getUser().getId());
             assertEquals("[시연 09] 리뷰 생성 테스트 데이터", saved.getText());
             assertAmount("1.0", saved.getRating());
         }
@@ -400,22 +377,22 @@ public class MainTest extends DatabaseTest {
         @Order(1)
         @DisplayName("남은 수량만큼 신청하면 성공한다")
         void createDonate() {
-            PKResponse response = donateService.createDonate(
+            IdResponse response = donateService.createDonate(
                     CreateDonateRequest.builder()
                             .quantity(2L)
                             .state(false)
                             .createdAt(LocalDateTime.now())
-                            .rewardFk(db.maker1ConcurrencyReward1.getPk())
-                            .userFk(db.notDonateUser2.getPk())
+                            .rewardFk(db.maker1ConcurrencyReward1.getId())
+                            .userFk(db.notDonateUser2.getId())
                             .amount(new BigDecimal("2000"))
                             .build()
             );
-            Donate saved = db.config.getDonateRepository().findByPK(response.getPk())
+            Donate saved = db.config.getDonateRepository().findById(response.getId())
                     .orElseThrow();
 
             assertEquals(false, saved.getState());
-            assertEquals(db.maker1ConcurrencyReward1.getPk(), saved.getReward().getPk());
-            assertEquals(db.notDonateUser2.getPk(), saved.getUser().getPk());
+            assertEquals(db.maker1ConcurrencyReward1.getId(), saved.getReward().getId());
+            assertEquals(db.notDonateUser2.getId(), saved.getUser().getId());
             assertEquals(0L, saved.getReward().getRemainQuantity());
 
         }
@@ -431,8 +408,8 @@ public class MainTest extends DatabaseTest {
                                     .quantity(2L)
                                     .state(false)
                                     .createdAt(LocalDateTime.now())
-                                    .rewardFk(db.maker1ConcurrencyReward1.getPk())
-                                    .userFk(db.notDonateUser3.getPk())
+                                    .rewardFk(db.maker1ConcurrencyReward1.getId())
+                                    .userFk(db.notDonateUser3.getId())
                                     .build()
                     )
             );

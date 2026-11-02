@@ -37,7 +37,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * <ul>
  *   <li>바인딩은 DataObject 쪽에만 {@link BindDomain} 으로 선언한다.</li>
  *   <li>DataObject 필드는 기본적으로 같은 이름의 도메인 필드와 매핑되며,
- *       {@link DataField#name()} 으로 다른 이름이나 경로("maker.pk")를 지정할 수 있다.</li>
+ *       {@link DataField#name()} 으로 다른 이름이나 경로("maker.id")를 지정할 수 있다.</li>
  *   <li>필드 타입이 바인딩된 Domain/DataObject 이거나 그 컬렉션이면 재귀적으로 변환한다.</li>
  *   <li>DataObject 에 없는 도메인 필드(ex. version)는 변환 시 소거된다.</li>
  * </ul>
@@ -221,7 +221,7 @@ public final class Serializer {
             mappings.add(new Mapping(dataField, domainPath, converter));
         }
 
-        // 직접 필드(user)를 먼저 쓰고 경로 필드(user.pk)를 나중에 써야
+        // 직접 필드(user)를 먼저 쓰고 경로 필드(user.id)를 나중에 써야
         // 경로 필드로 만든 연관 객체가 직접 필드의 null 로 덮이지 않는다.
         mappings.sort(Comparator.comparingInt(mapping -> mapping.domainPath().size()));
 
@@ -318,7 +318,7 @@ public final class Serializer {
         return current;
     }
 
-    /** 경로 중간의 연관 객체가 비어 있으면 기본 생성자로 만들어 채운다. (makerPK -> maker = AppUser{pk}) */
+    /** 경로 중간의 연관 객체가 비어 있으면 기본 생성자로 만들어 채운다. (makerId -> maker = AppUser{id}) */
     private static void writePath(Object root, List<Field> path, Object value) {
         Object current = root;
 

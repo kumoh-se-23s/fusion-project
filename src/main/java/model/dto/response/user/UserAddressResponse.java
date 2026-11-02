@@ -15,8 +15,8 @@ import model.dto.response.Response;
 @AllArgsConstructor
 @BindDomain(values = AppUser.class)
 public class UserAddressResponse extends Response {
-    @DataField(name = "pk")
-    private Long userPK;
+    @DataField(name = "id")
+    private Long userId;
 
     private String address;
 

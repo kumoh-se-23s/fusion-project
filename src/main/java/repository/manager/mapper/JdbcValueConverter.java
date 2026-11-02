@@ -8,7 +8,7 @@ import java.sql.SQLException;
 
 /**
  * 자바 값 <-> JDBC 값 변환
- * enum은 name()으로 저장하고, 연관 엔티티는 PK로 저장한다.
+ * enum은 name()으로 저장하고, 연관 엔티티는 ID로 저장한다.
  */
 public final class JdbcValueConverter {
 
@@ -24,7 +24,7 @@ public final class JdbcValueConverter {
             return e.name();
         }
         if (value.getClass().isAnnotationPresent(Table.class)) {
-            return EntityMetadata.of(value.getClass()).getPk().getValue(value);
+            return EntityMetadata.of(value.getClass()).getId().getValue(value);
         }
         return value;
     }

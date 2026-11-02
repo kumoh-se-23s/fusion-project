@@ -1,7 +1,7 @@
 package constant;
 
-public enum FundingState {
-    //펀딩 생성만 됨
+public enum ProjectState {
+    //프로젝트 생성만 됨
     JUST_USER_INPUT,
 
     //승인 대기

@@ -14,13 +14,13 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @BindDomain(values = Review.class)
 public class ReviewData extends BaseData {
-    private Long pk;
+    private Long id;
 
-    @DataField(name = "reward.pk")
-    private Long rewardPK;
+    @DataField(name = "reward.id")
+    private Long rewardId;
 
-    @DataField(name = "user.pk")
-    private Long userPK;
+    @DataField(name = "user.id")
+    private Long userId;
 
     private String text;
 

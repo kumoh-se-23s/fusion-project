@@ -15,7 +15,7 @@ class UserDataTest {
 
     private static AppUser user() {
         return AppUser.builder()
-                .pk(1L)
+                .id(1L)
                 .name("홍길동")
                 .email("hong@example.com")
                 .postal("12345")

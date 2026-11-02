@@ -1,4 +1,4 @@
-package model.dto.request;
+package model.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class PKQueryRequest extends Request {
-    private Long pk;
+public class IdResponse extends Response {
+    private Long id;
 }

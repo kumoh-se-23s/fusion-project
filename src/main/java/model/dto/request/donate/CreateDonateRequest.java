@@ -23,10 +23,10 @@ import java.time.LocalDateTime;
 @BindDomain(values = {Donate.class})
 public class CreateDonateRequest extends BaseData {
 
-    @DataField(name = "user.pk")
+    @DataField(name = "user.id")
     private Long userFk;
 
-    @DataField(name = "reward.pk")
+    @DataField(name = "reward.id")
     private Long rewardFk;
 
     private BigDecimal amount;

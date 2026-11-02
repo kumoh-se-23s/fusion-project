@@ -12,14 +12,14 @@ import model.Serializer;
 
 import model.domain.AppUser;
 import model.domain.Donate;
-import model.domain.Funding;
+import model.domain.Project;
 import model.domain.Reward;
 
 import model.dto.request.donate.CreateDonateRequest;
 
-import model.dto.response.PKResponse;
+import model.dto.response.IdResponse;
 import repository.DonateRepository;
-import repository.FundingRepository;
+import repository.ProjectRepository;
 import repository.RewardRepository;
 import repository.UserRepository;
 import service.BaseService;
@@ -32,28 +32,28 @@ public class DonateService extends BaseService {
 
     private final DonateRepository donateRepository;
     private final RewardRepository rewardRepository;
-    private final FundingRepository fundingRepository;
+    private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
 
 
     // 중복 후원 검사
-    public void checkDuplicateDonate(Long fundingPk, Long userPk) {
+    public void checkDuplicateDonate(Long projectId, Long userId) {
 
-        if (fundingPk == null || userPk == null) {
+        if (projectId == null || userId == null) {
             throw new InvalidRequestException(
                     "중복 후원 검사에 필요한 정보가 없습니다."
             );
         }
 
-        Funding funding = fundingRepository
-                .findByPK(fundingPk)
+        Project project = projectRepository
+                .findById(projectId)
                 .orElseThrow(() -> new NotFoundException(
-                        "후원하려는 펀딩을 찾을 수 없습니다."
+                        "후원하려는 프로젝트를 찾을 수 없습니다."
                 ));
 
-        if (donateRepository.existsByUserPkAndFundingPk(
-                userPk,
-                funding.getPk()
+        if (donateRepository.existsByUserIdAndProjectId(
+                userId,
+                project.getId()
         )) {
             throw new AlreadyDonatedException(
                     "이미 후원한 프로젝트입니다."
@@ -63,7 +63,7 @@ public class DonateService extends BaseService {
 
 
     // 후원 신청 생성
-    public PKResponse createDonate(CreateDonateRequest request) {
+    public IdResponse createDonate(CreateDonateRequest request) {
 
         // 요청 정보 검사
         if (request == null) {
@@ -75,7 +75,7 @@ public class DonateService extends BaseService {
         if (request.getUserFk() == null
                 || request.getRewardFk() == null) {
             throw new InvalidRequestException(
-                    "사용자 또는 리워드 PK가 없습니다."
+                    "사용자 또는 리워드 ID가 없습니다."
             );
         }
 
@@ -96,22 +96,22 @@ public class DonateService extends BaseService {
 
         // 사용자 조회
         AppUser user = userRepository
-                .findByPK(request.getUserFk())
+                .findById(request.getUserFk())
                 .orElseThrow(() -> new NotFoundException(
                         "후원자를 찾을 수 없습니다."
                 ));
 
         // 리워드 조회
         Reward reward = rewardRepository
-                .findByPK(request.getRewardFk())
+                .findById(request.getRewardFk())
                 .orElseThrow(() -> new NotFoundException(
                         "신청할 리워드를 찾을 수 없습니다."
                 ));
 
-        if (reward.getFunding() == null
-                || reward.getFunding().getPk() == null) {
+        if (reward.getProject() == null
+                || reward.getProject().getId() == null) {
             throw new NotFoundException(
-                    "리워드에 연결된 펀딩이 없습니다."
+                    "리워드에 연결된 프로젝트가 없습니다."
             );
         }
         // 리워드 남은 수량 확인
@@ -134,8 +134,8 @@ public class DonateService extends BaseService {
 
         // 중복 후원 확인
         checkDuplicateDonate(
-                reward.getFunding().getPk(),
-                user.getPk()
+                reward.getProject().getId(),
+                user.getId()
         );
 
         // 후원 생성 초기값 설정
@@ -161,14 +161,14 @@ public class DonateService extends BaseService {
 
 // 리워드 재고 업데이트
         rewardRepository.update(
-                reward.getPk(),
+                reward.getId(),
                 Map.of("remainQuantity", newRemainQuantity)
         ).orElseThrow(() -> new TransactionException(
                 "리워드 재고 업데이트에 실패했습니다."
         ));
 
-        BigDecimal resultAmount = reward.getFunding().getDonateAmount().add(result.getAmount());
-        fundingRepository.updateByDonateAmount(reward.getFunding().getPk(), resultAmount);
-        return new PKResponse(result.getPk());
+        BigDecimal resultAmount = reward.getProject().getDonateAmount().add(result.getAmount());
+        projectRepository.updateByDonateAmount(reward.getProject().getId(), resultAmount);
+        return new IdResponse(result.getId());
     }
 }

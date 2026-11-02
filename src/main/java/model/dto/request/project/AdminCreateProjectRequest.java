@@ -1,7 +1,7 @@
-package model.dto.request.funding;
+package model.dto.request.project;
 
 
-import constant.FundingState;
+import constant.ProjectState;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,13 +14,13 @@ import java.math.BigDecimal;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class AdminCreateFundingRequest extends Request {
-    private Long makerPK;
+public class AdminCreateProjectRequest extends Request {
+    private Long makerId;
 
-    private CreateFundingByCategoryRequest request;
+    private CreateProjectRequest request;
 
     private BigDecimal donateAmount;
 
-    private FundingState state;
+    private ProjectState state;
 
 }

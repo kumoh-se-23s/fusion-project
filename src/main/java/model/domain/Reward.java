@@ -3,7 +3,7 @@ package model.domain;
 import annotation.Column;
 import annotation.JoinColumn;
 import annotation.OnDelete;
-import annotation.PK;
+import annotation.Id;
 import annotation.Table;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -17,15 +17,12 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Reward extends BaseDomain {
-    @PK
-    @Column(name = "reward_pk")
-    private Long pk;
+    @Id
+    @Column(name = "reward_id")
+    private Long id;
 
-    @JoinColumn(name = "funding_fk", nullable = false, onDelete = OnDelete.CASCADE)
-    private Funding funding;
-
-    @JoinColumn(name = "category_fk", nullable = false)
-    private Category category;
+    @JoinColumn(name = "project_fk", nullable = false, onDelete = OnDelete.CASCADE)
+    private Project project;
 
     @Column(name = "reward_name", nullable = false)
     private String name;

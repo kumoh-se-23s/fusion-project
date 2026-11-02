@@ -1,6 +1,6 @@
 package service.external;
 
-import constant.FundingState;
+import constant.ProjectState;
 import exception.NotFoundException;
 import exception.LimitNumberOutException;
 import exception.TransactionException;
@@ -11,16 +11,16 @@ import model.Serializer;
 
 import model.domain.Category;
 import model.domain.Donate;
-import model.domain.Funding;
+import model.domain.Project;
 import model.domain.Reward;
 
 import model.dto.RewardData;
 import model.dto.request.reward.CreateRewardDataRequest;
 
-import model.dto.response.PKResponse;
+import model.dto.response.IdResponse;
 import repository.CategoryRepository;
 import repository.DonateRepository;
-import repository.FundingRepository;
+import repository.ProjectRepository;
 import repository.RewardRepository;
 
 import java.math.BigDecimal;
@@ -30,14 +30,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RewardService {
 
-    private final FundingRepository fundingRepository;
+    private final ProjectRepository projectRepository;
     private final DonateRepository donateRepository;
     private final RewardRepository rewardRepository;
     private final CategoryRepository categoryRepository;
 
 
-    // 1. 펀딩에 리워드 등록
-    public PKResponse createReward(CreateRewardDataRequest request) {
+    // 1. 프로젝트에 리워드 등록
+    public IdResponse createReward(CreateRewardDataRequest request) {
 
         // 요청값 검사
         if (request == null) {
@@ -46,10 +46,9 @@ public class RewardService {
             );
         }
 
-        if (request.getFundingFk() == null
-                || request.getCategoryFk() == null) {
+        if (request.getProjectFk() == null) {
             throw new LimitNumberOutException(
-                    "펀딩 또는 카테고리 PK가 없습니다."
+                    "프로젝트 또는 카테고리 ID가 없습니다."
             );
         }
 
@@ -83,26 +82,17 @@ public class RewardService {
             );
         }
 
-        // 펀딩 조회
-        Funding funding = fundingRepository
-                .findByPK(request.getFundingFk())
+        // 프로젝트 조회
+        Project project = projectRepository
+                .findById(request.getProjectFk())
                 .orElseThrow(
                         () -> new NotFoundException(
-                                "리워드를 등록할 펀딩을 찾을 수 없습니다."
-                        )
-                );
-
-        // 카테고리 조회(사용자가 직접 입력)
-        Category category = categoryRepository
-                .findByPK(request.getCategoryFk())
-                .orElseThrow(
-                        () -> new NotFoundException(
-                                "리워드 카테고리를 찾을 수 없습니다."
+                                "리워드를 등록할 프로젝트를 찾을 수 없습니다."
                         )
                 );
 
         // Service에서 초기값 설정
-        request.prepareForCreate(funding, category);
+        request.prepareForCreate(project);
 
         // Builder 대신 Serializer 사용
         Reward reward = Serializer.toDomain(
@@ -117,25 +107,25 @@ public class RewardService {
                     "리워드 저장에 실패했습니다."
             );
         }
-        //첫 리워드 작성 시 펀딩을 승인 대기로 변경
-        if (funding.getState() == FundingState.JUST_USER_INPUT) {
-            fundingRepository.updateByPending(funding.getPk());
+        //첫 리워드 작성 시 프로젝트를 승인 대기로 변경
+        if (project.getState() == ProjectState.JUST_USER_INPUT) {
+            projectRepository.updateByPending(project.getId());
         }
-        return new PKResponse(result.getPk());
+        return new IdResponse(result.getId());
     }
 
 
-    //  펀딩 PK로 리워드 조회
-    public List<RewardData> getRewardByFunding(Long fundingPk) {
+    //  프로젝트 ID로 리워드 조회
+    public List<RewardData> getRewardByProject(Long projectId) {
 
-        if (fundingPk == null) {
+        if (projectId == null) {
             throw new LimitNumberOutException(
-                    "조회할 펀딩 PK가 없습니다."
+                    "조회할 프로젝트 ID가 없습니다."
             );
         }
 
         List<Reward> rewardList =
-                rewardRepository.findByFundingPk(fundingPk);
+                rewardRepository.findByProjectId(projectId);
 
         return Serializer.toDataList(
                 rewardList,
@@ -145,16 +135,16 @@ public class RewardService {
 
 
     //  본인이 후원한 리워드 조회
-    public List<RewardData> getRewardByDonate(Long userPk) {
+    public List<RewardData> getRewardByDonate(Long userId) {
 
-        if (userPk == null) {
+        if (userId == null) {
             throw new LimitNumberOutException(
-                    "조회할 사용자 PK가 없습니다."
+                    "조회할 사용자 ID가 없습니다."
             );
         }
 
         List<Donate> donateList =
-                donateRepository.findByUserPk(userPk);
+                donateRepository.findByUserId(userId);
 
         List<Reward> rewardList = new ArrayList<>();
 
@@ -176,24 +166,24 @@ public class RewardService {
 
     //  메이커의 프로젝트별 리워드 조회
     public List<List<RewardData>> getRewardFindByMaker(
-            Long makerPk
+            Long makerId
     ) {
 
-        if (makerPk == null) {
+        if (makerId == null) {
             throw new LimitNumberOutException(
-                    "조회할 메이커 PK가 없습니다."
+                    "조회할 메이커 ID가 없습니다."
             );
         }
 
-        List<Funding> fundingList =
-                fundingRepository.findByUserPK(makerPk);
+        List<Project> projectList =
+                projectRepository.findByUserId(makerId);
 
         List<List<RewardData>> dtoList = new ArrayList<>();
 
-        for (Funding funding : fundingList) {
+        for (Project project : projectList) {
 
             dtoList.add(
-                    getRewardByFunding(funding.getPk())
+                    getRewardByProject(project.getId())
             );
         }
 

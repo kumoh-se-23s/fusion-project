@@ -10,7 +10,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AccountData extends BaseData{
-    private String id;
+    private String loginId;
 
     private String password;
 }

@@ -18,18 +18,18 @@ import java.time.LocalDateTime;
 @BindDomain(values = {Reward.class})
 public class RewardData extends BaseData {
 
-    @DataField(name = "pk")
-    private Long rewardPk;
+    @DataField(name = "id")
+    private Long rewardId;
 
     private String name;
 
     private byte[] imgFile;
 
-    @DataField(name = "funding.pk")
-    private Long fundingPk;
+    @DataField(name = "project.id")
+    private Long projectId;
 
-    @DataField(name = "funding.maker.pk")
-    private Long makerPk;
+    @DataField(name = "project.maker.id")
+    private Long makerId;
 
     @DataField(name = "provideDate")
     private LocalDateTime providerDate;

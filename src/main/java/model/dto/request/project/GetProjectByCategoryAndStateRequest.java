@@ -1,6 +1,6 @@
-package model.dto.request.funding;
+package model.dto.request.project;
 
-import constant.FundingState;
+import constant.ProjectState;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,7 +13,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class GetFundingByCategoryAndStateRequest extends Request {
+public class GetProjectByCategoryAndStateRequest extends Request {
     private List<String> categoryList;
-    private List<FundingState> fundingStateList;
+    private List<ProjectState> projectStateList;
 }

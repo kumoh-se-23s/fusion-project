@@ -7,9 +7,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 조회 조건. conditions의 키는 도메인 필드명 (예: "funding"), 값은 일치 조건
+ * 조회 조건. conditions의 키는 도메인 필드명 (예: "project"), 값은 일치 조건
  * 값이 Collection이면 IN 조건 (예: Map.of("reward", List.of(1L, 2L))). 빈 Collection이면 결과가 없다
- * 연관 필드의 값으로는 PK, 엔티티 모두 사용 가능
+ * 연관 필드의 값으로는 ID, 엔티티 모두 사용 가능
  */
 @Getter
 @Builder

@@ -13,7 +13,7 @@ import model.domain.Category;
 @NoArgsConstructor
 @BindDomain(values = Category.class)
 public class CategoryData extends BaseData {
-    private Long pk;
+    private Long id;
 
     private String name;
 
