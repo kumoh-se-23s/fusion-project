@@ -12,6 +12,6 @@ class InitDBTest extends DatabaseTest {
     @Test
     @DisplayName("전체 프로젝트를 출력한다")
     void load() {
-        LOG.info(db.config.getProjectService().getAllProject().toJsonString());
+        LOG.info(db.config.getProjectQueryService().getAllProject().toJsonString());
     }
 }

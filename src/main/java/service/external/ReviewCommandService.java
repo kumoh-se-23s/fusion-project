@@ -17,7 +17,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @RequiredArgsConstructor
-public class ReviewService extends BaseService {
+public class ReviewCommandService extends BaseService {
     private static final BigDecimal MIN_RATING = new BigDecimal("0.0");
     private static final BigDecimal MAX_RATING = new BigDecimal("5.0");
 

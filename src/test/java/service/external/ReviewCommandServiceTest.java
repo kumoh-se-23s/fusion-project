@@ -15,13 +15,13 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@DisplayName("ReviewService")
-public class ReviewServiceTest extends DatabaseTest {
-    private ReviewService reviewService;
+@DisplayName("ReviewCommandService")
+public class ReviewCommandServiceTest extends DatabaseTest {
+    private ReviewCommandService reviewCommandService;
 
     @BeforeEach
     void setUp() {
-        reviewService = db.config.getReviewService();
+        reviewCommandService = db.config.getReviewCommandService();
     }
 
     @Test
@@ -36,7 +36,7 @@ public class ReviewServiceTest extends DatabaseTest {
             db.config.getReviewRepository().delete(review.getId());
         }
 
-        IdResponse response = reviewService.createReview(CreateReviewRequest.builder()
+        IdResponse response = reviewCommandService.createReview(CreateReviewRequest.builder()
                 .rewardId(db.maker1CompleteReward1.getId())
                 .text("리뷰 테스트 데이터")
                 .rating(new BigDecimal("1.0"))

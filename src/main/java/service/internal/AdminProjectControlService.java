@@ -9,10 +9,8 @@ import model.dto.response.IdResponse;
 import repository.ProjectRepository;
 import service.BaseService;
 
-import java.time.LocalDateTime;
-
 @RequiredArgsConstructor
-public class ProjectService extends BaseService {
+public class AdminProjectControlService extends BaseService {
     private final ProjectRepository projectRepository;
 
     //4. 관리자가 메이커의 프로젝트 승인

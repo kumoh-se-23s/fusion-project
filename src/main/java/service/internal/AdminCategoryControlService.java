@@ -14,7 +14,7 @@ import service.BaseService;
 
 
 @RequiredArgsConstructor
-public class CategoryService extends BaseService {
+public class AdminCategoryControlService extends BaseService {
     private final CategoryRepository categoryRepository;
 
     public IdResponse createCategory(CreateCategoryRequest dto) {

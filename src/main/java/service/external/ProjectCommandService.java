@@ -1,16 +1,12 @@
 package service.external;
 
-import constant.ProjectState;
 import exception.NotFoundException;
 import exception.NotNullException;
 import exception.OutOfRangeException;
 import lombok.RequiredArgsConstructor;
 import model.Serializer;
 import model.domain.*;
-import model.dto.ProjectData;
 import model.dto.request.project.CreateProjectRequest;
-import model.dto.request.project.GetProjectByCategoryAndStateRequest;
-import model.dto.response.DataCollectionResponse;
 import model.dto.response.IdResponse;
 import model.dto.response.project.ProjectInfoResponse;
 import model.dto.response.reward.RewardInfoResponse;
@@ -23,7 +19,7 @@ import service.BaseService;
 import java.util.*;
 
 @RequiredArgsConstructor
-public class ProjectService extends BaseService {
+public class ProjectCommandService extends BaseService {
     private final ProjectRepository projectRepository;
     private final DonateRepository donateRepository;
     private final RewardRepository rewardRepository;
@@ -93,37 +89,6 @@ public class ProjectService extends BaseService {
 
             return new IdResponse(projectRepository.create(project).getId());
 
-        });
-    }
-
-    //6. 전체 프로젝트 조회
-    public DataCollectionResponse<ProjectData> getAllProject() {
-        return tx.execute(true, () -> {
-            List<ProjectData> dtos = new ArrayList<>();
-            for (Project project : projectRepository.findAllOrderByCreatedAt()) {
-                dtos.add(Serializer.toData(project, ProjectData.class));
-            }
-
-            return DataCollectionResponse.<ProjectData>builder()
-                    .datas(dtos)
-                    .amount((long) dtos.size())
-                    .build();
-        });
-    }
-
-    //7. 프로젝트 필터링. 목록이 null이거나 비어 있으면 그 조건은 적용하지 않는다
-    public DataCollectionResponse<ProjectData> getByCategoryAndState(GetProjectByCategoryAndStateRequest dto)  {
-        return tx.execute(true, () -> {
-
-            List<ProjectState> stateList = dto.getProjectStateList();
-            List<String> categoryNames = dto.getCategoryList();
-            List<Category> categoryIdList = categoryRepository.findByName(categoryNames);
-
-            List<Project> projectList = projectRepository.findByStateAndCategory(stateList, categoryIdList);
-            return DataCollectionResponse.<ProjectData>builder()
-                    .datas(Serializer.toDataList(projectList, ProjectData.class))
-                    .amount((long) projectList.size())
-                    .build();
         });
     }
 
