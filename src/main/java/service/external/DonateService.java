@@ -86,7 +86,6 @@ public class DonateService extends BaseService {
                     "후원 금액은 0원보다 커야 합니다."
             );
         }
-
         // 신청 수량 검사
         if (request.getQuantity() == null
                 || request.getQuantity() <= 0) {
@@ -168,6 +167,8 @@ public class DonateService extends BaseService {
                 "리워드 재고 업데이트에 실패했습니다."
         ));
 
+        BigDecimal resultAmount = reward.getFunding().getDonateAmount().add(result.getAmount());
+        fundingRepository.updateByDonateAmount(reward.getFunding().getPk(), resultAmount);
         return new PKResponse(result.getPk());
     }
 }

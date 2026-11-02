@@ -3,6 +3,7 @@ package repository;
 import constant.FundingState;
 import model.domain.Funding;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -15,7 +16,12 @@ public class FundingRepository extends BaseRepositoryImpl<Funding, Long> {
                 "updatedAt", LocalDateTime.now()
         ));
     }
-
+    public Optional<Funding> updateByDonateAmount(Long fundingPK, BigDecimal amount) {
+        return update(fundingPK, Map.of(
+                "donateAmount", amount,
+                "updatedAt", LocalDateTime.now()
+        ));
+    }
     public Optional<Funding> updateByPending(Long fundingPK) {
         return update(fundingPK, Map.of(
                 "state", FundingState.PENDING_APPROVAL,
