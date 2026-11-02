@@ -2,7 +2,11 @@ package repository;
 
 import model.Serializer;
 import model.domain.AppUser;
+import model.domain.UserRole;
 import model.dto.UserData;
+import model.dto.request.user.UpdateUserRequest;
+import repository.BaseRepositoryImpl;
+import repository.Filter;
 
 import java.util.HashMap;
 import java.util.List;
@@ -35,6 +39,12 @@ public class UserRepository extends BaseRepositoryImpl<AppUser,Long> {
         Optional<AppUser> updateResult = update(userId, updateData);
 
         return updateResult.map(AppUser::getId);
+    }
+
+    public boolean isExistEmail(String email) {
+        return isExist(Filter.builder()
+                .conditions(Map.of("email", email))
+                .build());
     }
 
     public List<AppUser> findByNickName(String nickName) {
