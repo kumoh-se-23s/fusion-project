@@ -19,6 +19,8 @@ import org.junit.jupiter.api.Test;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import repository.AccountRepository;
+import repository.UserRepository;
+import service.external.AuthService;
 import util.AccountUtil;
 import util.JwtTokenProvider;
 
@@ -31,13 +33,13 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class AccountServiceTest {
+class AuthServiceTest {
 
     private static final long ACCOUNT_ID = 1L;
     private static final String LOGIN_ID = "hong";
     private static final String PASSWORD = "password1234";
 
-    private AccountService accountService;
+    private AuthService authService;
     private FakeAccountRepository accountRepository;
     private FakeJedis jedis;
     private AccountUtil accountUtil;
@@ -137,8 +139,8 @@ class AccountServiceTest {
                 .salt(salt)
                 .build());
 
-        accountService = new AccountService(
-                new JwtTokenProvider(), accountUtil, accountRepository, new FakeJedisPool(jedis));
+        authService = new AuthService(
+                new JwtTokenProvider(), accountUtil, accountRepository, new UserRepository(), new FakeJedisPool(jedis));
     }
 
     private String subjectOf(String token) {
@@ -161,7 +163,7 @@ class AccountServiceTest {
         @Test
         @DisplayName("아이디와 비밀번호가 맞으면 계정 id가 담긴 토큰 두 개를 돌려준다")
         void success() {
-            TokenPair tokenPair = accountService.login(new AccountData(LOGIN_ID, PASSWORD));
+            TokenPair tokenPair = authService.login(new AccountData(LOGIN_ID, PASSWORD));
 
             assertEquals(String.valueOf(ACCOUNT_ID), subjectOf(tokenPair.getAccessToken()));
             assertEquals(String.valueOf(ACCOUNT_ID), subjectOf(tokenPair.getRefreshToken()));
@@ -170,7 +172,7 @@ class AccountServiceTest {
         @Test
         @DisplayName("로그인하면 refresh token을 Redis에 1시간(3600초) 동안 저장한다")
         void savesRefreshToken() {
-            TokenPair tokenPair = accountService.login(new AccountData(LOGIN_ID, PASSWORD));
+            TokenPair tokenPair = authService.login(new AccountData(LOGIN_ID, PASSWORD));
 
             assertEquals(tokenPair.getRefreshToken(), jedis.store.get("refreshToken" + ACCOUNT_ID));
             assertEquals(3600L, jedis.ttls.get("refreshToken" + ACCOUNT_ID));
@@ -180,7 +182,7 @@ class AccountServiceTest {
         @DisplayName("비밀번호가 틀리면 PasswordMisMatchException이 발생하고 Redis에 저장하지 않는다")
         void wrongPassword() {
             assertThrows(PasswordMisMatchException.class,
-                    () -> accountService.login(new AccountData(LOGIN_ID, "wrong")));
+                    () -> authService.login(new AccountData(LOGIN_ID, "wrong")));
             assertTrue(jedis.store.isEmpty());
         }
 
@@ -188,7 +190,7 @@ class AccountServiceTest {
         @DisplayName("없는 아이디면 AccountException이 발생한다")
         void unknownLoginId() {
             assertThrows(AccountException.class,
-                    () -> accountService.login(new AccountData("nobody", PASSWORD)));
+                    () -> authService.login(new AccountData("nobody", PASSWORD)));
         }
     }
 
@@ -199,7 +201,7 @@ class AccountServiceTest {
         @Test
         @DisplayName("현재 비밀번호가 맞으면 새 salt로 해시한 새 비밀번호를 저장한다")
         void success() throws Exception {
-            IdResponse response = accountService.changePassword(
+            IdResponse response = authService.changePassword(
                     ACCOUNT_ID, new ChangePasswordRequest(PASSWORD, "newPassword"));
 
             assertEquals(ACCOUNT_ID, response.getId());
@@ -213,7 +215,7 @@ class AccountServiceTest {
         @DisplayName("현재 비밀번호가 틀리면 PasswordMisMatchException이 발생하고 저장하지 않는다")
         void wrongCurrentPassword() {
             assertThrows(PasswordMisMatchException.class,
-                    () -> accountService.changePassword(
+                    () -> authService.changePassword(
                             ACCOUNT_ID, new ChangePasswordRequest("wrong", "newPassword")));
             assertNull(accountRepository.updatedId);
         }
@@ -222,7 +224,7 @@ class AccountServiceTest {
         @DisplayName("없는 계정이면 NotFoundException이 발생한다")
         void unknownAccount() {
             assertThrows(NotFoundException.class,
-                    () -> accountService.changePassword(
+                    () -> authService.changePassword(
                             999L, new ChangePasswordRequest(PASSWORD, "newPassword")));
         }
     }
@@ -234,9 +236,9 @@ class AccountServiceTest {
         @Test
         @DisplayName("Redis에 저장된 refresh token을 지운다")
         void deletesRefreshToken() {
-            accountService.login(new AccountData(LOGIN_ID, PASSWORD));
+            authService.login(new AccountData(LOGIN_ID, PASSWORD));
 
-            accountService.logout(ACCOUNT_ID);
+            authService.logout(ACCOUNT_ID);
 
             assertFalse(jedis.store.containsKey("refreshToken" + ACCOUNT_ID));
         }
@@ -244,7 +246,7 @@ class AccountServiceTest {
         @Test
         @DisplayName("저장된 토큰이 없어도 예외 없이 끝난다")
         void noToken() {
-            assertDoesNotThrow(() -> accountService.logout(ACCOUNT_ID));
+            assertDoesNotThrow(() -> authService.logout(ACCOUNT_ID));
         }
     }
 
@@ -255,7 +257,7 @@ class AccountServiceTest {
         @Test
         @DisplayName("비밀번호가 맞으면 계정을 삭제한다")
         void success() {
-            accountService.deleteAccount(ACCOUNT_ID, new DeleteAccountRequest(PASSWORD));
+            authService.deleteAccount(ACCOUNT_ID, new DeleteAccountRequest(PASSWORD));
 
             assertEquals(List.of(ACCOUNT_ID), accountRepository.deletedIds);
         }
@@ -264,7 +266,7 @@ class AccountServiceTest {
         @DisplayName("비밀번호가 틀리면 PasswordMisMatchException이 발생하고 삭제하지 않는다")
         void wrongPassword() {
             assertThrows(PasswordMisMatchException.class,
-                    () -> accountService.deleteAccount(ACCOUNT_ID, new DeleteAccountRequest("wrong")));
+                    () -> authService.deleteAccount(ACCOUNT_ID, new DeleteAccountRequest("wrong")));
             assertTrue(accountRepository.deletedIds.isEmpty());
         }
 
@@ -272,7 +274,7 @@ class AccountServiceTest {
         @DisplayName("없는 계정이면 NotFoundException이 발생한다")
         void unknownAccount() {
             assertThrows(NotFoundException.class,
-                    () -> accountService.deleteAccount(999L, new DeleteAccountRequest(PASSWORD)));
+                    () -> authService.deleteAccount(999L, new DeleteAccountRequest(PASSWORD)));
         }
     }
 }
