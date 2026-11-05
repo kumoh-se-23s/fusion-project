@@ -1,6 +1,7 @@
 package service.external;
 
 import constant.ProjectState;
+import exception.InvalidException;
 import exception.NotFoundException;
 import exception.LimitNumberOutException;
 import exception.TransactionException;
@@ -9,10 +10,7 @@ import lombok.RequiredArgsConstructor;
 
 import model.Serializer;
 
-import model.domain.Category;
-import model.domain.Donate;
-import model.domain.Project;
-import model.domain.Reward;
+import model.domain.*;
 
 import model.dto.RewardData;
 import model.dto.request.reward.CreateRewardDataRequest;
@@ -24,8 +22,7 @@ import repository.ProjectRepository;
 import repository.RewardRepository;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @RequiredArgsConstructor
 public class RewardService {
@@ -188,5 +185,47 @@ public class RewardService {
         }
 
         return dtoList;
+    }
+    //리워드수정
+    //소속 펀딩pk도 수정이 가능하게 만들기
+    //메이커가 본인 펀딩을 수정하는 것
+    //Cortroller에서 로그인하는 것과 본인펀딩인지 확인하는건 다른 것, 로그인한 사용자라는 것은 알 수 있으나 본인 프로젝트라는 것은 알 수 없기 때문에
+    //근데 생각해보니 수정 삭제 기능을 넣어야 하나..??? 만들고나서는 수정 삭제 하면 안되지 않나
+    public void updateReward(Long rewardId, CreateRewardDataRequest request){
+        Reward reward = rewardRepository.findById(rewardId)
+                .orElseThrow(NotFoundException::new);//null값 통과 시키지말고 없으면 에러 일으키기
+        Project project = reward.getProject();
+        AppUser maker = project.getMaker();
+        Long loginUserID;//이걸 어떻게 가져오면 좋을지?
+        Map <String,Object> updates = new HashMap<>();
+        if(!maker.getId().equals(loginUserId)){
+            throw new UnsupportedOperationException();
+        }else{
+            //모든 필드 하나씩 전부 검사
+            if(request.getRewardName()!=null){
+                updates.put("name",request.getRewardName());
+            }
+
+
+        }
+        if(!updates.isEmpty()){
+            rewardRepository.update(rewardId,updates);
+        }
+
+    }
+
+    //리워드 삭제
+    public void deleteReward(Long rewardId){
+        //여기서도
+        Reward reward = rewardRepository.findById(rewardId)
+                .orElseThrow(NotFoundException::new);//null값 통과 시키지말고 없으면 에러 일으키기
+        Project project = reward.getProject();
+        AppUser maker = project.getMaker();
+        AppUser loginUser;
+        if(!maker.equals(loginUser)){
+            throw new InvalidException();//권한이슈
+        }else{
+            rewardRepository.delete(rewardId);
+        }
     }
 }
