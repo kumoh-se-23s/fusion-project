@@ -1,0 +1,12 @@
+1. Donate에서 Amount 자동 계산
+- (reward requiredAmount * quantity로)
+- requestDto에서는 Amount를 받지 않게
+- 프로젝트도 Amount 수정되게 (해당 건은 완료)
+
+2. 이미지 처리
+- 리워드, 프로젝트 이미지 다운로드 가능하게
+
+3. 리워드 카테고리 삭제
+- 프로젝트 카테고리 1대 다로 변경
+
+4. 프로젝트 목표 Amount 가 리워드 추가 될때마다 갱신 되어야함

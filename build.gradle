@@ -12,9 +12,8 @@ repositories {
 dependencies {
     testImplementation platform('org.junit:junit-bom:6.0.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-
-    implementation("com.mysql:mysql-connector-j:26.7.0")
+    testImplementation 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'org.slf4j:slf4j-simple:1.7.36'
 
     implementation("com.mysql:mysql-connector-j:26.7.0")
     
@@ -23,8 +22,17 @@ dependencies {
 
     implementation("org.apache.commons:commons-dbcp2:2.13.0")
 
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
+
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.18.2'
+
+    implementation 'redis.clients:jedis:5.2.0'
+
 }
 
 test {
     useJUnitPlatform()
+    testLogging.showStandardStreams = true
 }

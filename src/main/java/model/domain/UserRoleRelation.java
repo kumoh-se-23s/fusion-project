@@ -2,25 +2,25 @@ package model.domain;
 
 import annotation.Column;
 import annotation.JoinColumn;
-import annotation.PK;
+import annotation.OnDelete;
+import annotation.Id;
 import annotation.Table;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Table(name = "USER_ROLE_RELATION")
-@Builder(toBuilder = true)
+@SuperBuilder(toBuilder = true)
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserRoleRelation extends BaseDomain {
-    @PK
-    @Column(name = "user_role_pk")
-    private Long pk;
+    @Id
+    @Column(name = "user_role_id")
+    private Long id;
 
-    @NonNull
-    @JoinColumn(name = "role_fk")
+    @JoinColumn(name = "role_fk", nullable = false, uniqueGroup = "user_role", onDelete = OnDelete.CASCADE)
     private UserRole role;
 
-    @NonNull
-    @JoinColumn(name = "user_fk")
+    @JoinColumn(name = "user_fk", nullable = false, uniqueGroup = "user_role", onDelete = OnDelete.CASCADE)
     private AppUser user;
 }

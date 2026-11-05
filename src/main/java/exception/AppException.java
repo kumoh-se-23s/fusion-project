@@ -2,8 +2,10 @@ package exception;
 
 
 public abstract class AppException extends RuntimeException {
+
+
     public AppException(String message) {
-        super(message);
+        this(message, null);
     }
 
     public AppException(String message, Throwable cause) {
@@ -18,7 +20,7 @@ public abstract class AppException extends RuntimeException {
                 + "}";
     }
 
-    private static String quote(String value) {
+    protected static String quote(String value) {
         if (value == null) {
             return "null";
         }

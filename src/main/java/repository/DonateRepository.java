@@ -1,27 +1,51 @@
 package repository;
-
+import model.domain.AppUser;
 import model.domain.Donate;
 import model.domain.Reward;
-import model.dto.RewardData;
-
-
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.logging.Filter;
+
 
 public class DonateRepository extends BaseRepositoryImpl<Donate, Long> {
 
-
-    public List<Donate> findByUserPk(Long userPk) {
+    public List<Donate> findByUserId(Long userId) {//rewardService에서 사용할
         return find(
                 Filter.builder()
-                        .conditions(Map.of("user", userPk))//펀딩 pk로 필터링
-                        .sort(Sort.by(Order.asc("donated_at")))//후원일 기준 정렬
+                        .conditions(Map.of("user", userId))//프로젝트 id로 필터링
+                        .sort(Sort.by(Order.asc("createdAt")))//후원일 기준 정렬
                         .build()//필터 객체 완성
         );
     }
 
+    public boolean existsByUserIdAndProjectId(Long userId, Long projectId) {//하나의 프로젝트에는 후원 한 번만 가능
+        //이미 구현하심
+        List<Donate> donateList = findByUserId(userId);
 
+        for (Donate donate : donateList) {
 
+            Reward reward = donate.getReward();
+
+            if (reward != null && reward.getProject().getId().equals(projectId)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public List<Donate> findByRewards(List<Reward> rewards) {
+        return find(Filter.builder()
+                .conditions(Map.of("reward", rewards))
+                .sort(Sort.by(Order.asc("id")))
+                .build()
+        );
+    }
+    public List<Donate> findByUserAndReward(AppUser user, Reward reward) {
+        return find(Filter.builder()
+                .conditions(Map.of(
+                        "user", user,
+                        "reward", reward))
+                .build()
+        );
+
+    }
 }

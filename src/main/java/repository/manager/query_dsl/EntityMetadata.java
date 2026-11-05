@@ -2,14 +2,17 @@ package repository.manager.query_dsl;
 
 import annotation.Column;
 import annotation.JoinColumn;
-import annotation.PK;
+import annotation.Id;
 import annotation.Table;
 import annotation.Version;
 import exception.AnnotationMissingException;
+import exception.QueryErrorException;
 import lombok.Getter;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -28,21 +31,21 @@ public class EntityMetadata {
 
     private final Class<?> entityClass;
     private final String tableName;
-    private final ColumnInfo pk;
+    private final ColumnInfo id;
+    private final boolean autoIncrement;
     private final ColumnInfo version;
     private final List<ColumnInfo> columns;
     private final List<ColumnInfo> updatableColumns;
+    private final List<ColumnInfo> insertColumns;
+    private final Map<String, ColumnInfo> columnsByField;
 
     private final String insertSql;
     private final String updateSql;
-    private final String selectByPkSql;
+    private final String selectByIdSql;
     private final String deleteSql;
 
     public static EntityMetadata of(Class<?> entityClass) {
-        if (!CACHE.containsKey(entityClass)) { //없거나 비었으면
-            CACHE.put(entityClass, new EntityMetadata(entityClass));
-        }
-        return CACHE.get(entityClass);
+        return CACHE.computeIfAbsent(entityClass, EntityMetadata::new);
     }
 
     private EntityMetadata(Class<?> entityClass) {
@@ -53,7 +56,7 @@ public class EntityMetadata {
         this.entityClass = entityClass;
         this.tableName = table.name();
 
-        ColumnInfo pkInfo = null;
+        ColumnInfo idInfo = null;
         ColumnInfo versionInfo = null;
         List<ColumnInfo> cols = new ArrayList<>();
 
@@ -61,14 +64,14 @@ public class EntityMetadata {
             for (Field field : c.getDeclaredFields()) {
                 ColumnInfo info = toColumnInfo(field);
                 if (info == null) {
-                    if (field.isAnnotationPresent(PK.class)) {
-                        throw new AnnotationMissingException("@PK field needs @Column: " + field);
+                    if (field.isAnnotationPresent(Id.class)) {
+                        throw new AnnotationMissingException("@Id field needs @Column: " + field);
                     }
                     continue;
                 }
-                if (field.isAnnotationPresent(PK.class)) {
-                    if (pkInfo != null) throw new AnnotationMissingException("Multiple @PK: " + entityClass.getName());
-                    pkInfo = info;
+                if (field.isAnnotationPresent(Id.class)) {
+                    if (idInfo != null) throw new AnnotationMissingException("Multiple @Id: " + entityClass.getName());
+                    idInfo = info;
                 } else {
                     cols.add(info);
                     if (field.isAnnotationPresent(Version.class)) {
@@ -78,20 +81,47 @@ public class EntityMetadata {
                 }
             }
         }
-        if (pkInfo == null) {
-            throw new AnnotationMissingException("@PK is missing: " + entityClass.getName());
+        if (idInfo == null) {
+            throw new AnnotationMissingException("@Id is missing: " + entityClass.getName());
         }
 
-        this.pk = pkInfo;
+        this.id = idInfo;
+        this.autoIncrement = idInfo.field().getAnnotation(Id.class).autoIncrement();
         this.version = versionInfo;
         this.columns = List.copyOf(cols);
         final ColumnInfo v = versionInfo;
         this.updatableColumns = cols.stream().filter(col -> col != v).toList();
 
+        //ID를 DB가 생성하지 않으면 INSERT에 ID도 포함
+        List<ColumnInfo> inserts = new ArrayList<>();
+        if (!autoIncrement) inserts.add(idInfo);
+        inserts.addAll(cols);
+        this.insertColumns = List.copyOf(inserts);
+
+        Map<String, ColumnInfo> byField = new HashMap<>();
+        byField.put(idInfo.field().getName(), idInfo);
+        cols.forEach(col -> byField.put(col.field().getName(), col));
+        this.columnsByField = Map.copyOf(byField);
+
         this.insertSql = buildInsertSql();
         this.updateSql = buildUpdateSql();
-        this.selectByPkSql = "SELECT * FROM " + tableName + " WHERE " + pk.columnName() + " = ?";
-        this.deleteSql = "DELETE FROM " + tableName + " WHERE " + pk.columnName() + " = ?";
+        this.selectByIdSql = "SELECT * FROM " + tableName + " WHERE " + id.columnName() + " = ?";
+        this.deleteSql = "DELETE FROM " + tableName + " WHERE " + id.columnName() + " = ?";
+    }
+
+    //필드명으로 컬럼 정보 조회 (Filter, Sort, update 맵의 키 검증용)
+    public ColumnInfo getColumnByField(String fieldName) {
+        ColumnInfo info = columnsByField.get(fieldName);
+        if (info == null) {
+            throw new QueryErrorException("Unknown field '" + fieldName + "' in " + entityClass.getSimpleName());
+        }
+        return info;
+    }
+
+    //ID 여러 개로 한 번에 조회 (연관 엔티티 일괄 로딩용)
+    public String getSelectByIdsSql(int count) {
+        String marks = String.join(", ", Collections.nCopies(count, "?"));
+        return "SELECT * FROM " + tableName + " WHERE " + id.columnName() + " IN (" + marks + ")";
     }
 
     private static ColumnInfo toColumnInfo(Field field) {
@@ -99,15 +129,26 @@ public class EntityMetadata {
         Column column = field.getAnnotation(Column.class);
         if (join == null && column == null) return null;
 
+        if (join != null) {
+            requireEntityType(field);
+        }
+
         field.setAccessible(true);
         return join != null
                 ? new ColumnInfo(field, join.name(), true)
                 : new ColumnInfo(field, column.name(), false);
     }
 
+    //@JoinColumn 필드는 @Table 엔티티 타입이어야 한다
+    private static void requireEntityType(Field field) {
+        if (!field.getType().isAnnotationPresent(Table.class)) {
+            throw new AnnotationMissingException("@JoinColumn field must be an @Table entity: " + field);
+        }
+    }
+
     private String buildInsertSql() {
-        String names = columns.stream().map(ColumnInfo::columnName).collect(Collectors.joining(", "));
-        String marks = columns.stream().map(c -> "?").collect(Collectors.joining(", "));
+        String names = insertColumns.stream().map(ColumnInfo::columnName).collect(Collectors.joining(", "));
+        String marks = insertColumns.stream().map(c -> "?").collect(Collectors.joining(", "));
         return "INSERT INTO " + tableName + " (" + names + ") VALUES (" + marks + ")";
     }
 
@@ -119,7 +160,7 @@ public class EntityMetadata {
         if (version != null) {
             sets.add(version.columnName() + " = " + version.columnName() + " + 1");
         }
-        String where = pk.columnName() + " = ?";
+        String where = id.columnName() + " = ?";
         if (version != null) {
             where += " AND " + version.columnName() + " = ?";
         }

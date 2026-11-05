@@ -12,4 +12,6 @@ public interface EntityTransaction {
     void rollback();
 
     boolean isActive();
+
+    boolean isReadOnly();
 }
