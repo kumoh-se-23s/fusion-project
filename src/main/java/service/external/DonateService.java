@@ -15,6 +15,7 @@ import model.domain.Donate;
 import model.domain.Project;
 import model.domain.Reward;
 
+import model.dto.DonateData;
 import model.dto.request.donate.CreateDonateRequest;
 
 import model.dto.response.IdResponse;
@@ -25,6 +26,7 @@ import repository.UserRepository;
 import service.BaseService;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 
 @RequiredArgsConstructor
@@ -171,4 +173,47 @@ public class DonateService extends BaseService {
         projectRepository.updateByDonateAmount(reward.getProject().getId(), resultAmount);
         return new IdResponse(result.getId());
     }
+
+    //유저id로 조회
+        public List<DonateData> findDonateByUser(Long userId){
+            if(userId == null){
+                throw new LimitNumberOutException("조회할 유저id가 없습니다");
+            }
+
+            List<Donate>donateList = donateRepository.findByUserId(userId);
+            return Serializer.toDataList(
+                    donateList,
+                    DonateData.class
+            );
+        }
+    //리워드id로 조회
+        public List<DonateData> findDonateByReward(Long rewardId){
+            if(rewardId == null){
+            throw new LimitNumberOutException("조회할 유저id가 없습니다");
+            }
+
+         List<Donate>donateList = donateRepository.findByUserId(rewardId);
+         return Serializer.toDataList(
+                donateList,
+                DonateData.class
+        );
+    }
+
+    //프로젝트id로 조회
+
+    public List<DonateData> findDonateByFunding(Long fundingId){
+        if(fundingId == null){
+            throw new LimitNumberOutException("조회할 유저id가 없습니다");
+        }
+
+        List<Donate>donateList = donateRepository.findByUserId(fundingId);
+        return Serializer.toDataList(
+                donateList,
+                DonateData.class
+        );
+    }
+
+    //후원 환불
+
+    //후원 총금액
 }

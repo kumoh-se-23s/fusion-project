@@ -202,13 +202,37 @@ public class RewardService {
             throw new UnsupportedOperationException();
         }else{
             //모든 필드 하나씩 전부 검사
+            if(request.getProject()!=null){
+                updates.put("project",request.getProject());
+            }
             if(request.getRewardName()!=null){
                 updates.put("name",request.getRewardName());
+            }//이름
+            if(request.getRewardImg()!=null){
+                updates.put("imgFile",request.getRewardImg());
+            }//사진
+            if(request.getRewardText()!=null){
+                updates.put("text",request.getRewardText());
+            }
+            if(request.getRequiredAmount()!=null){
+                updates.put("maxQuantity",request.getRewardMaxQuantity());
+            }
+            if(request.getRewardRemainQuantity()!=null){
+                updates.put("remainQuantaity",request.getRewardRemainQuantity());
+            }
+            if(request.getProvideDate()!=null){
+                updates.put("name",request.getRewardName());
+            }
+            //생성날짜시간은 request로 안 받음(수정x)
+            if(request.getUpdatedAt()!=null){
+                updates.put("updatedAt", request.getUpdatedAt());
             }
 
 
+
+
         }
-        if(!updates.isEmpty()){
+        if(!updates.isEmpty()){//해시가 안 비워져있으면 수정
             rewardRepository.update(rewardId,updates);
         }
 

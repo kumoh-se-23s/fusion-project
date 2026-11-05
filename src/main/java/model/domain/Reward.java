@@ -45,14 +45,14 @@ public class Reward extends BaseDomain {
     @Column(name = "reward_remain_quantity", nullable = false)
     private Long remainQuantity = 0L;
 
-    @Column(name = "provide_date", nullable = false)
+    @Column(name = "provide_date", nullable = false)//제공 날짜
     private LocalDateTime provideDate;
 
     @Builder.Default
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", nullable = false)//리워드 생성 날짜
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @Builder.Default
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "updated_at", nullable = false)//수정날짜/시간
     private LocalDateTime updatedAt = LocalDateTime.now();
 }
