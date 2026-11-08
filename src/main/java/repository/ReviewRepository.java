@@ -29,6 +29,12 @@ public class ReviewRepository extends BaseRepositoryImpl<Review, Long>{
                 .build()
         );
     }
+    public List<Review> findByRewards(List<Reward> rewards) {
+        return find(Filter.builder()
+                .conditions(Map.of("reward", rewards))
+                .build()
+        );
+    }
     public void updateByLike(Long reviewId, Long likeCount) {
         update(reviewId, Map.of("likeCount", likeCount));
     }

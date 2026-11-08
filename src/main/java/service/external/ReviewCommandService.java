@@ -18,6 +18,12 @@ import service.BaseService;
 import java.math.BigDecimal;
 import java.util.List;
 
+/**
+ * 일반유저가 리뷰를 관리하는 서비스 클래스
+ * @since 2026-11-05 완성
+ * @author 김민규
+ * @version 1.0
+**/
 @RequiredArgsConstructor
 public class ReviewCommandService extends BaseService {
     private static final BigDecimal MIN_RATING = new BigDecimal("0.0");
@@ -68,25 +74,6 @@ public class ReviewCommandService extends BaseService {
             }
 
             return new IdResponse(reviewRepository.create(review).getId());
-        });
-    }
-
-    public DataCollectionResponse<ReviewData> getUserReview(Long userId) {
-        return tx.execute(true, () -> {
-            List<ReviewData> dtoList = Serializer.toDataList(reviewRepository.findByUser(userId), ReviewData.class);
-            return DataCollectionResponse.<ReviewData>builder()
-                .datas(dtoList)
-                .amount((long) dtoList.size())
-                .build();
-        });
-    }
-    public DataCollectionResponse<ReviewData> getRewardReview(Long rewardId) {
-        return tx.execute(true, () -> {
-            List<ReviewData> dtoList = Serializer.toDataList(reviewRepository.findByReward(rewardId), ReviewData.class);
-            return DataCollectionResponse.<ReviewData>builder()
-                .datas(dtoList)
-                .amount((long) dtoList.size())
-                .build();
         });
     }
 
