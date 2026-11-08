@@ -5,30 +5,28 @@ import exception.*;
 import lombok.RequiredArgsConstructor;
 import model.Serializer;
 import model.domain.*;
-import model.dto.DenyProjectData;
-import model.dto.ProjectData;
-import model.dto.request.project.AdminCreateProjectRequest;
-import model.dto.request.project.CreateProjectRequest;
-import model.dto.request.project.EditProjectRequest;
-import model.dto.response.DataCollectionResponse;
+import model.dto.request.project.AdminProjectRequest;
 import model.dto.response.DeleteResponse;
 import model.dto.response.IdResponse;
-import model.dto.response.project.ProjectInfoResponse;
-import model.dto.response.project.ProjectRewardResponse;
-import model.dto.response.reward.RewardInfoResponse;
-import model.dto.response.reward.RewardUserResponse;
-import model.dto.response.user.UserAddressResponse;
 import repository.*;
 import service.BaseService;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
+/**
+ * 관리자 권한으로 프로젝트를 관리하는 서비스 클래스
+ * @since 2026-11-08 완성
+ * @author 김민규
+ * @version 1.0
+**/
 @RequiredArgsConstructor
 public class AdminProjectControlService extends BaseService {
     private final ProjectRepository projectRepository;
+    private final UserRepository userRepository;
+    private final CategoryRepository categoryRepository;
+    private final ProjectLikeRepository projectLikeRepository;
 
     //4. 관리자가 메이커의 프로젝트 승인
     public IdResponse updateProjectApprove(Long projectId) {
@@ -43,16 +41,17 @@ public class AdminProjectControlService extends BaseService {
             return new IdResponse(approved.getId());
         });
     }
-    public IdResponse createProject(AdminCreateProjectRequest request) {
+    public IdResponse createProject(AdminProjectRequest request) {
         return tx.execute(false, () -> {
-            AppUser maker = userRepository.findById(makerId)
+            AppUser maker = userRepository.findById(request.getMakerId())
                     .orElseThrow(NotFoundException::new);
             if (request.getCategoryId() == null) {
                 throw new NotNullException("Category Id is Null");
             }
+
             Category category = categoryRepository.findById(request.getCategoryId())
                     .orElseThrow(NotFoundException::new);
-            //요청에서 비운 startDate, purposeAmount는 도메인 기본값을 유지하고 state는 JUST_USER_INPUT으로 시작
+
             Project project = Serializer.toDomain(request, Project.class)
                     .toBuilder()
                     .maker(maker)
@@ -62,62 +61,57 @@ public class AdminProjectControlService extends BaseService {
             if (project.getPurposeAmount() == null || project.getPurposeAmount().signum() <= 0) {
                 throw new OutOfRangeException("purposeAmount must be greater than 0");
             }
+
             if (project.getEndDate() == null || !project.getEndDate().isAfter(project.getStartDate())) {
                 throw new OutOfRangeException("endDate must be after startDate");
             }
 
             return new IdResponse(projectRepository.create(project).getId());
-
         });
     }
-//
-//    public IdResponse editProject(Long projectId, EditProjectRequest request) {
-//        return tx.execute(false, () -> {
-//            Map<String, Object> dtoMap = request.getProjectDataDTO().toUpdateMap();
-//            dtoMap.put("category", request.getCategoryId());
-//
-//            return new IdResponse(
-//                    projectRepository.update(projectId, dtoMap).
-//                        orElseThrow(NotFoundException::new).getId()
-//            );
-//        });
-//    }
-//    public DataCollectionResponse<ProjectData> getMakerProject(Long makerId) {
-//        return tx.execute(true, () -> {
-//            List<ProjectData> dtoList = Serializer.toDataList(projectRepository.findByUserId(makerId), ProjectData.class);
-//            return DataCollectionResponse.<ProjectData>builder()
-//                    .datas(dtoList)
-//                    .amount((long) dtoList.size())
-//                    .build();
-//        });
-//    }
-//
-//    public DeleteResponse deleteMakerSelfProject(Long makerId, Long projectId) {
-//        return tx.execute(false, () -> {
-//            Project project =  projectRepository.findById(projectId)
-//                    .orElseThrow(NotFoundException::new);
-//            if (project.getMaker().getId() != makerId) {
-//                throw new InvalidMakerException();
-//            }
-//            return new DeleteResponse(projectRepository.delete(projectId));
-//        });
-//    }
-//
-//    public DataCollectionResponse<DenyProjectData> getAllDenyProjects(Long makerId) {
-//        List<Project> projectList = projectRepository.findByUserId(makerId);
-//
-//        List<DenyProjectData> dtoList =
-//                Serializer.toDataList(
-//                        denyProjectRepository.findByProject(projectList),
-//                        DenyProjectData.class
-//                );
-//
-//        return DataCollectionResponse.<DenyProjectData>builder()
-//                .datas(dtoList)
-//                .amount((long)dtoList.size())
-//                .build();
-//    }
 
-}
 
+    public IdResponse editProject(Long projectId, AdminProjectRequest request) {
+        return tx.execute(false, () -> {
+            Map<String, Object> dtoMap = request.getRequest().toUpdateMap();
+            dtoMap.put("category", request.getCategoryId());
+            dtoMap.put("maker", request.getMakerId());
+
+            return new IdResponse(
+                    projectRepository.update(projectId, dtoMap).
+                        orElseThrow(NotFoundException::new).getId()
+            );
+        });
+    }
+    public DeleteResponse deleteProject(Long projectId) {
+        return tx.execute(false, () -> {
+            if (projectRepository.isExistById(projectId)) {
+                return new DeleteResponse(projectRepository.delete(projectId));
+            } else {
+                return new DeleteResponse(false);
+            }
+        });
+    }
+
+    public DeleteResponse deleteProjectAllLikes(Long projectId) {
+        return tx.execute(() -> {
+            boolean result = true;
+            List<ProjectLike> projectLikeList = projectLikeRepository.findByProject(projectId);
+            for (ProjectLike projectLike : projectLikeList) {
+                updateLikeValue(projectLike.getProject(), projectLike.getLikeType(), -1);
+                if (!projectLikeRepository.delete(projectLike.getId())) {
+                    result = false;
+                }
+            }
+            return new DeleteResponse(result);
+        });
+    }
+
+    private void updateLikeValue(Project project, Boolean likeType, int change) {
+        if (likeType) {
+            projectRepository.updateByLike(project.getId(), Math.max(project.getLikeCount() + change, 0));
+        } else {
+            projectRepository.updateByDislike(project.getId(), Math.max(project.getDislikeCount() + change,0));
+        }
+    }
 }

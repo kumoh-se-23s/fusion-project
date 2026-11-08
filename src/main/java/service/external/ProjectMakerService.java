@@ -28,7 +28,8 @@ import java.util.*;
  * 유저(메이커)가 프로젝트를 관리하는 서비스 클래스
  * @since 2026-11-05 완성
  * @author 김민규
- * @version 1.0
+ * @version 1.1
+ * Edit에서 usre id 체크 기능 추가
 **/
 @RequiredArgsConstructor
 public class ProjectMakerService extends BaseService {
@@ -105,10 +106,18 @@ public class ProjectMakerService extends BaseService {
         });
     }
 
-    public IdResponse editProject(Long projectId, EditProjectRequest request) {
+    public IdResponse editProject(Long makerId, Long projectId, EditProjectRequest request) {
         return tx.execute(false, () -> {
+            Project project =  projectRepository.findById(projectId)
+                    .orElseThrow(NotFoundException::new);
+
+            if (!Objects.equals(project.getMaker().getId(), makerId)) {
+                throw new InvalidMakerException();
+            }
+
             Map<String, Object> dtoMap = request.getProjectDataDTO().toUpdateMap();
             dtoMap.put("category", request.getCategoryId());
+
 
             return new IdResponse(
                     projectRepository.update(projectId, dtoMap).
@@ -153,5 +162,4 @@ public class ProjectMakerService extends BaseService {
                 .amount((long)dtoList.size())
                 .build();
     }
-
 }

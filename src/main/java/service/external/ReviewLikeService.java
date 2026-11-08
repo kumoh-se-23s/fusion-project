@@ -3,6 +3,7 @@ package service.external;
 import exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import model.domain.AppUser;
+import model.domain.Project;
 import model.domain.Review;
 import model.domain.ReviewLike;
 import model.dto.request.like.LikeRequest;
@@ -21,13 +22,13 @@ import service.BaseService;
 **/
 @RequiredArgsConstructor
 public class ReviewLikeService extends BaseService {
-    private final ReviewLikeRepository ReviewLikeRepository;
-    private final ReviewRepository ReviewRepository;
+    private final ReviewLikeRepository reviewLikeRepository;
+    private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
 
     public IdResponse createReviewLike(Long ReviewId, Long userId, LikeRequest request) {
         return tx.execute(() -> {
-            Review Review = ReviewRepository.findById(ReviewId)
+            Review Review = reviewRepository.findById(ReviewId)
                 .orElseThrow(NotFoundException::new);
 
             AppUser user = userRepository.findById(userId)
@@ -36,7 +37,7 @@ public class ReviewLikeService extends BaseService {
             updateLikeValue(Review, request.getLikeType(), 1);
 
             return new IdResponse(
-                    ReviewLikeRepository.create(
+                    reviewLikeRepository.create(
                         ReviewLike.builder()
                             .likeType(request.getLikeType())
                             .review(Review)
@@ -51,12 +52,12 @@ public class ReviewLikeService extends BaseService {
 
     public IdResponse editReviewLike(Long ReviewId, Long userId, LikeRequest request) {
         return tx.execute(() -> {
-            ReviewLike ReviewLike = ReviewLikeRepository.findByReviewAndUser(ReviewId, userId).getFirst();
+            ReviewLike ReviewLike = reviewLikeRepository.findByReviewAndUser(ReviewId, userId).getFirst();
 
             updateLikeValue(ReviewLike.getReview(), request.getLikeType(), 1);
 
             return new IdResponse(
-                    ReviewLikeRepository.update(ReviewLike.getId(), request.toUpdateMap())
+                    reviewLikeRepository.update(ReviewLike.getId(), request.toUpdateMap())
                             .orElseThrow(NotFoundException::new)
                             .getId()
             );
@@ -64,17 +65,17 @@ public class ReviewLikeService extends BaseService {
     }
     public DeleteResponse deleteReviewLike(Long ReviewId, Long userId) {
         return tx.execute(() -> {
-            ReviewLike ReviewLike = ReviewLikeRepository.findByReviewAndUser(ReviewId, userId).getFirst();
+            ReviewLike ReviewLike = reviewLikeRepository.findByReviewAndUser(ReviewId, userId).getFirst();
             updateLikeValue(ReviewLike.getReview(), ReviewLike.getLikeType(), -1);
-            return new DeleteResponse(ReviewLikeRepository.delete(ReviewLike.getId()));
+            return new DeleteResponse(reviewLikeRepository.delete(ReviewLike.getId()));
         });
     }
 
-    private void updateLikeValue(Review Review, Boolean likeType, int change) {
+    private void updateLikeValue(Review review, Boolean likeType, int change) {
         if (likeType) {
-            ReviewRepository.updateByLike(Review.getId(), Review.getLikeCount() + change);
+            reviewRepository.updateByLike(review.getId(), Math.max(review.getLikeCount() + change, 0));
         } else {
-            ReviewRepository.updateByDislike(Review.getId(), Review.getDislikeCount() + change);
+            reviewRepository.updateByDislike(review.getId(), Math.max(review.getDislikeCount() + change,0));
         }
     }
 }

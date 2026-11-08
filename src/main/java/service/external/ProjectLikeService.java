@@ -72,9 +72,10 @@ public class ProjectLikeService extends BaseService {
 
     private void updateLikeValue(Project project, Boolean likeType, int change) {
         if (likeType) {
-            projectRepository.updateByLike(project.getId(), project.getLikeCount() + change);
+            projectRepository.updateByLike(project.getId(), Math.max(project.getLikeCount() + change, 0));
         } else {
-            projectRepository.updateByDislike(project.getId(), project.getDislikeCount() + change);
+            projectRepository.updateByDislike(project.getId(), Math.max(project.getDislikeCount() + change,0));
         }
     }
 }
+

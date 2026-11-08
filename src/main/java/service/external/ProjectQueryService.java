@@ -17,7 +17,7 @@ import java.util.List;
 
 /**
  * 일반유저가 프로젝트룰 조회하는 서비스 클래스
- * @since 2026-11-0? 완성
+ * @since 2026-11-08
  * @author 김민규
  * @version 1.0
 **/
@@ -57,4 +57,20 @@ public class ProjectQueryService extends BaseService {
                     .build();
         });
     }
+    public DataCollectionResponse<ProjectData> getByTitle() {
+        return null;
+    }
+    public DataCollectionResponse<ProjectData> getByMaker(int limit) {
+        return null;
+    }
+    public DataCollectionResponse<ProjectData> getByCategory(int limit) {
+        return null;
+    }
+    public DataCollectionResponse<ProjectData> getByState(int limit) {
+        return null;
+    }
+    public DataCollectionResponse<ProjectData> getByDonateProject() {
+        return null;
+    }
+
 }

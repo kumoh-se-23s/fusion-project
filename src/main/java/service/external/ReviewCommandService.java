@@ -10,7 +10,9 @@ import model.Serializer;
 import model.domain.*;
 import model.dto.ReviewData;
 import model.dto.request.review.CreateReviewRequest;
+import model.dto.request.review.EditReviewRequest;
 import model.dto.response.DataCollectionResponse;
+import model.dto.response.DeleteResponse;
 import model.dto.response.IdResponse;
 import repository.*;
 import service.BaseService;
@@ -20,7 +22,7 @@ import java.util.List;
 
 /**
  * 일반유저가 리뷰를 관리하는 서비스 클래스
- * @since 2026-11-05 완성
+ * @since 2026-11-05
  * @author 김민규
  * @version 1.0
 **/
@@ -75,6 +77,14 @@ public class ReviewCommandService extends BaseService {
 
             return new IdResponse(reviewRepository.create(review).getId());
         });
+    }
+
+    public IdResponse editReview(Long userId, EditReviewRequest request) {
+        return null;
+    }
+
+    public DeleteResponse deleteReview(Long userId, Long reviewId) {
+        return null;
     }
 
 }

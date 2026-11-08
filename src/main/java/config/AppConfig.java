@@ -5,7 +5,7 @@ import repository.*;
 import repository.manager.schema.SchemaGenerator;
 import service.external.*;
 import service.internal.AdminProjectControlService;
-import service.internal.AdminCategoryControlService;
+import service.internal.AdminCategoryService;
 
 /**
  * 앱 시작 시 리포지토리, 서비스를 한 번 생성하고 주입하는 조립 클래스
@@ -25,7 +25,7 @@ public class AppConfig {
     private final UserRoleRepository userRoleRepository = new UserRoleRepository();
     private final UserRoleRelationRepository userRoleRelationRepository = new UserRoleRelationRepository();
 
-    private final AdminCategoryControlService adminCategoryControlService = new AdminCategoryControlService(categoryRepository);
+    private final AdminCategoryService adminCategoryService = new AdminCategoryService(categoryRepository);
 
     private final ProjectMakerService projectMakerService = new ProjectMakerService(
             projectRepository, donateRepository, rewardRepository,
