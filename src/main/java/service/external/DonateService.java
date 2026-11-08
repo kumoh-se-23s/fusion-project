@@ -177,8 +177,10 @@ public class DonateService extends BaseService {
     //유저id로 조회
         public List<DonateData> findDonateByUser(Long userId){
             if(userId == null){
-                throw new LimitNumberOutException("조회할 유저id가 없습니다");
+                throw new NotFoundException("조회할 유저id가 없습니다");
             }
+            //존재하지 않는경우 리스트가 나오긴하지만 비워있는 리스트가 나옴,굳이 null체크 필요??
+            //캐스캐이드(?) 개념 공부하기...!
 
             List<Donate>donateList = donateRepository.findByUserId(userId);
             return Serializer.toDataList(
@@ -189,7 +191,7 @@ public class DonateService extends BaseService {
     //리워드id로 조회
         public List<DonateData> findDonateByReward(Long rewardId){
             if(rewardId == null){
-            throw new LimitNumberOutException("조회할 유저id가 없습니다");
+            throw new LimitNumberOutException("조회할 리워드id가 없습니다");
             }
 
          List<Donate>donateList = donateRepository.findByUserId(rewardId);
@@ -199,11 +201,11 @@ public class DonateService extends BaseService {
         );
     }
 
-    //프로젝트id로 조회
+    //펀딩id로 조회
 
     public List<DonateData> findDonateByFunding(Long fundingId){
         if(fundingId == null){
-            throw new LimitNumberOutException("조회할 유저id가 없습니다");
+            throw new LimitNumberOutException("조회할 펀딩id가 없습니다");
         }
 
         List<Donate>donateList = donateRepository.findByUserId(fundingId);
