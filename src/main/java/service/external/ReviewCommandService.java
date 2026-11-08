@@ -8,7 +8,9 @@ import exception.OutOfRangeException;
 import lombok.RequiredArgsConstructor;
 import model.Serializer;
 import model.domain.*;
+import model.dto.ReviewData;
 import model.dto.request.review.CreateReviewRequest;
+import model.dto.response.DataCollectionResponse;
 import model.dto.response.IdResponse;
 import repository.*;
 import service.BaseService;
@@ -68,4 +70,24 @@ public class ReviewCommandService extends BaseService {
             return new IdResponse(reviewRepository.create(review).getId());
         });
     }
+
+    public DataCollectionResponse<ReviewData> getUserReview(Long userId) {
+        return tx.execute(true, () -> {
+            List<ReviewData> dtoList = Serializer.toDataList(reviewRepository.findByUser(userId), ReviewData.class);
+            return DataCollectionResponse.<ReviewData>builder()
+                .datas(dtoList)
+                .amount((long) dtoList.size())
+                .build();
+        });
+    }
+    public DataCollectionResponse<ReviewData> getRewardReview(Long rewardId) {
+        return tx.execute(true, () -> {
+            List<ReviewData> dtoList = Serializer.toDataList(reviewRepository.findByReward(rewardId), ReviewData.class);
+            return DataCollectionResponse.<ReviewData>builder()
+                .datas(dtoList)
+                .amount((long) dtoList.size())
+                .build();
+        });
+    }
+
 }
