@@ -6,14 +6,14 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import model.domain.Category;
-import model.dto.request.Request;
+import model.dto.request.UpdateRequest;
 
 @Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @BindDomain(values = Category.class)
-public class CreateCategoryRequest extends Request {
+public class CategoryRequest extends UpdateRequest {
     private String name;
 
     private String description;
