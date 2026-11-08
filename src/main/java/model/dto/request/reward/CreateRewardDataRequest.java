@@ -12,6 +12,7 @@ import model.domain.Category;
 import model.domain.Project;
 import model.domain.Reward;
 import model.dto.BaseData;
+import model.dto.request.UpdateRequest;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -21,7 +22,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @BindDomain(values = {Reward.class})
-public class CreateRewardDataRequest extends BaseData {
+public class CreateRewardDataRequest extends UpdateRequest {
 
     @DataField(name = "name")
     private String rewardName;
