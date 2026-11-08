@@ -15,6 +15,12 @@ import service.BaseService;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 일반유저가 프로젝트룰 조회하는 서비스 클래스
+ * @since 2026-11-0? 완성
+ * @author 김민규
+ * @version 1.0
+**/
 @RequiredArgsConstructor
 public class ProjectQueryService extends BaseService {
     private final ProjectRepository projectRepository;
