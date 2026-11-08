@@ -191,17 +191,21 @@ public class RewardService {
     //메이커가 본인 펀딩을 수정하는 것
     //Cortroller에서 로그인하는 것과 본인펀딩인지 확인하는건 다른 것, 로그인한 사용자라는 것은 알 수 있으나 본인 프로젝트라는 것은 알 수 없기 때문에
     //근데 생각해보니 수정 삭제 기능을 넣어야 하나..??? 만들고나서는 수정 삭제 하면 안되지 않나
-    public void updateReward(Long rewardId, CreateRewardDataRequest request){
+
+    public void updateReward(Long loginUserId, Long rewardId, CreateRewardDataRequest request){
         Reward reward = rewardRepository.findById(rewardId)
                 .orElseThrow(NotFoundException::new);//null값 통과 시키지말고 없으면 에러 일으키기
+
         Project project = reward.getProject();
         AppUser maker = project.getMaker();
-        Long loginUserID;//이걸 어떻게 가져오면 좋을지?
+       // Long loginUserId;//pk이걸 어떻게 가져오면 좋을지?>>인증헤더에서 바로 땡겨오니까,파라미터로 받기
         Map <String,Object> updates = new HashMap<>();
         if(!maker.getId().equals(loginUserId)){
             throw new UnsupportedOperationException();
         }else{
             //모든 필드 하나씩 전부 검사
+            //null 다 없앰
+            request.toUpdateMap();//연관객체는 해당아님 이건 put으로 넣기, 다 null체크해서 넣어줌
             if(request.getProject()!=null){
                 updates.put("project",request.getProject());
             }
@@ -227,10 +231,6 @@ public class RewardService {
             if(request.getUpdatedAt()!=null){
                 updates.put("updatedAt", request.getUpdatedAt());
             }
-
-
-
-
         }
         if(!updates.isEmpty()){//해시가 안 비워져있으면 수정
             rewardRepository.update(rewardId,updates);
@@ -239,13 +239,13 @@ public class RewardService {
     }
 
     //리워드 삭제
-    public void deleteReward(Long rewardId){
+    public void deleteReward(Long loginUser,Long rewardId){
         //여기서도
         Reward reward = rewardRepository.findById(rewardId)
                 .orElseThrow(NotFoundException::new);//null값 통과 시키지말고 없으면 에러 일으키기
         Project project = reward.getProject();
         AppUser maker = project.getMaker();
-        AppUser loginUser;
+       // AppUser loginUser;
         if(!maker.equals(loginUser)){
             throw new InvalidException();//권한이슈
         }else{
