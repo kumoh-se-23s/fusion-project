@@ -1,10 +1,6 @@
 package model.domain;
 
-import annotation.Column;
-import annotation.JoinColumn;
-import annotation.OnDelete;
-import annotation.Id;
-import annotation.Table;
+import annotation.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import java.math.BigDecimal;
@@ -28,10 +24,12 @@ public class Project extends BaseDomain {
     private Category category;
 
     @Builder.Default
+    @Positive
     @Column(name = "like_count", nullable = false)
     private Long likeCount = 0L;
 
     @Builder.Default
+    @Positive
     @Column(name = "dislike_count", nullable = false)
     private Long dislikeCount = 0L;
 
@@ -50,10 +48,12 @@ public class Project extends BaseDomain {
     @Column(name = "end_date", nullable = false)
     private LocalDateTime endDate;
 
+    @Positive
     @Builder.Default
     @Column(name = "purpose_amount", nullable = false)
     private BigDecimal purposeAmount = BigDecimal.ZERO;
 
+    @Positive
     @Builder.Default
     @Column(name = "donate_amount", nullable = false)
     private BigDecimal donateAmount = BigDecimal.ZERO;

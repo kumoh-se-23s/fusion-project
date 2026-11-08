@@ -2,6 +2,7 @@ package repository.manager.schema;
 
 import annotation.Column;
 import annotation.JoinColumn;
+import annotation.Positive;
 import config.PooledDataSource;
 import exception.AnnotationMissingException;
 import exception.TransactionException;
@@ -79,7 +80,19 @@ public class SchemaGenerator {
                 lines.add(column.columnName() + " BIGINT NOT NULL DEFAULT 0");
                 continue;
             }
-            lines.add(column.columnName() + " " + sqlType(column) + (column.isNullable() ? "" : " NOT NULL"));
+            lines.add(column.columnName() + " " + sqlType(column)
+                    + (column.isNullable() ? "" : " NOT NULL"));
+
+            Positive positive = column.getPositive();
+
+            if (column.getPositive() != null) {
+                if (Number.class.isAssignableFrom(column.field().getType())) {
+                    lines.add("CHECK (" + column.columnName() + (positive.zero() ?" >=" : ">") +  " 0)");
+                } else {
+                    throw new AnnotationMissingException("No SQL type for " + column.getTargetClass().getSimpleName() + " (" + column.field() + "). Not Allow @Positive");
+                }
+
+            }
 
             if (isUnique(column)) {
                 constraints.add("UNIQUE KEY uk_" + table.toLowerCase() + "_" + column.columnName()

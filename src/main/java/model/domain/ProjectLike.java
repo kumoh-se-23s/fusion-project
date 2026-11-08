@@ -27,4 +27,6 @@ public class ProjectLike extends BaseDomain {
     @Builder.Default
     @Column(name = "like_type", nullable = false)
     private Boolean likeType = true;
+    //True (1) : 좋아요
+    //False (0) : 싫어요
 }
