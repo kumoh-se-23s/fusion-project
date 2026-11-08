@@ -12,4 +12,11 @@ public class ProjectLikeRepository extends BaseRepositoryImpl<ProjectLike, Long>
                 .build()
         );
     }
+
+    public List<ProjectLike> findByProject(Long projectId) {
+        return find(Filter.builder()
+                .conditions(Map.of("project", projectId))
+                .build()
+        );
+    }
 }
