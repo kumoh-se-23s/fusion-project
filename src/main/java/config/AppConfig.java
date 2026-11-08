@@ -27,7 +27,7 @@ public class AppConfig {
 
     private final AdminCategoryControlService adminCategoryControlService = new AdminCategoryControlService(categoryRepository);
 
-    private final ProjectCommandService projectCommandService = new ProjectCommandService(
+    private final ProjectMakerService projectMakerService = new ProjectMakerService(
             projectRepository, donateRepository, rewardRepository,
             userRepository, categoryRepository);
     private final ProjectQueryService projectQueryService = new ProjectQueryService(

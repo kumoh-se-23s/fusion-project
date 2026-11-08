@@ -1,12 +1,18 @@
 package service.external;
 
+import exception.InvalidMakerException;
 import exception.NotFoundException;
 import exception.NotNullException;
 import exception.OutOfRangeException;
 import lombok.RequiredArgsConstructor;
 import model.Serializer;
 import model.domain.*;
+import model.dto.DenyProjectData;
+import model.dto.ProjectData;
 import model.dto.request.project.CreateProjectRequest;
+import model.dto.request.project.EditProjectRequest;
+import model.dto.response.DataCollectionResponse;
+import model.dto.response.DeleteResponse;
 import model.dto.response.IdResponse;
 import model.dto.response.project.ProjectInfoResponse;
 import model.dto.response.reward.RewardInfoResponse;
@@ -18,13 +24,20 @@ import service.BaseService;
 
 import java.util.*;
 
+/**
+ * 유저(메이커)가 프로젝트를 관리하는 서비스 클래스
+ * @since 2026-11-05 완성
+ * @author 김민규
+ * @version 1.0
+**/
 @RequiredArgsConstructor
-public class ProjectCommandService extends BaseService {
+public class ProjectMakerService extends BaseService {
     private final ProjectRepository projectRepository;
     private final DonateRepository donateRepository;
     private final RewardRepository rewardRepository;
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
+    private final DenyProjectRepository denyProjectRepository;
 
     //1.프로젝트의 리워드 정보와 리워드별 후원자 배송지
     public ProjectRewardResponse getProjectByReward(Long projectId) {
@@ -90,6 +103,55 @@ public class ProjectCommandService extends BaseService {
             return new IdResponse(projectRepository.create(project).getId());
 
         });
+    }
+
+    public IdResponse editProject(Long projectId, EditProjectRequest request) {
+        return tx.execute(false, () -> {
+            Map<String, Object> dtoMap = request.getProjectDataDTO().toUpdateMap();
+            dtoMap.put("category", request.getCategoryId());
+
+            return new IdResponse(
+                    projectRepository.update(projectId, dtoMap).
+                        orElseThrow(NotFoundException::new).getId()
+            );
+        });
+    }
+    public DataCollectionResponse<ProjectData> getMakerProject(Long makerId) {
+        return tx.execute(true, () -> {
+            List<ProjectData> dtoList = Serializer.toDataList(projectRepository.findByUserId(makerId), ProjectData.class);
+            return DataCollectionResponse.<ProjectData>builder()
+                    .datas(dtoList)
+                    .amount((long) dtoList.size())
+                    .build();
+        });
+    }
+
+    public DeleteResponse deleteMakerSelfProject(Long makerId, Long projectId) {
+        return tx.execute(false, () -> {
+            Project project =  projectRepository.findById(projectId)
+                    .orElseThrow(NotFoundException::new);
+
+            if (!Objects.equals(project.getMaker().getId(), makerId)) {
+                throw new InvalidMakerException();
+            }
+
+            return new DeleteResponse(projectRepository.delete(projectId));
+        });
+    }
+
+    public DataCollectionResponse<DenyProjectData> getAllDenyProjects(Long makerId) {
+        List<Project> projectList = projectRepository.findByUserId(makerId);
+
+        List<DenyProjectData> dtoList =
+                Serializer.toDataList(
+                        denyProjectRepository.findByProject(projectList),
+                        DenyProjectData.class
+                );
+
+        return DataCollectionResponse.<DenyProjectData>builder()
+                .datas(dtoList)
+                .amount((long)dtoList.size())
+                .build();
     }
 
 }

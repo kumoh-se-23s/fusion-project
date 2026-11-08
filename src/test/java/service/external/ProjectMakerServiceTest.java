@@ -22,21 +22,21 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@DisplayName("ProjectCommandService")
-public class ProjectCommandServiceTest extends DatabaseTest {
-    private static final Logger LOG = LoggerFactory.getLogger(ProjectCommandServiceTest.class);
+@DisplayName("ProjectMakerService")
+public class ProjectMakerServiceTest extends DatabaseTest {
+    private static final Logger LOG = LoggerFactory.getLogger(ProjectMakerServiceTest.class);
 
-    private ProjectCommandService projectCommandService;
+    private ProjectMakerService projectMakerService;
 
     @BeforeEach
     void setUp() {
-        projectCommandService = db.config.getProjectCommandService();
+        projectMakerService = db.config.getProjectMakerService();
     }
 
     @Test
     @DisplayName("프로젝트의 리워드와 리워드별 후원자를 조회한다")
     void getProjectByReward() {
-        ProjectRewardResponse response = projectCommandService.getProjectByReward(db.maker1CompleteProject.getId());
+        ProjectRewardResponse response = projectMakerService.getProjectByReward(db.maker1CompleteProject.getId());
         LOG.info(response.toJsonString());
 
         assertEquals(db.maker1CompleteProject.getId(), response.getProjectInfo().getProjectId());
@@ -68,7 +68,7 @@ public class ProjectCommandServiceTest extends DatabaseTest {
     void createProject() {
         LocalDateTime endDate = LocalDateTime.now().plusDays(30).truncatedTo(ChronoUnit.MICROS);
 
-        IdResponse response = projectCommandService.createProject(
+        IdResponse response = projectMakerService.createProject(
                 db.maker1.getId(),
                 CreateProjectRequest.builder()
                     .title("[시연 02] 테스트용 새 프로젝트")

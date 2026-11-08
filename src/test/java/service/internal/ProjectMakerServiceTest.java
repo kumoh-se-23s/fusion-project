@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @DisplayName("ProjectCommandService")
-public class ProjectCommandServiceTest extends DatabaseTest {
+public class ProjectMakerServiceTest extends DatabaseTest {
     private AdminProjectControlService adminProjectControlService;
 
     @BeforeEach
