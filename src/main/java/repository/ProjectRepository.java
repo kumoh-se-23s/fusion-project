@@ -30,7 +30,12 @@ public class ProjectRepository extends BaseRepositoryImpl<Project, Long> {
                 "updatedAt", LocalDateTime.now()
         ));
     }
-
+    public void updateByLike(Long projectId, Long likeCount) {
+        update(projectId, Map.of("likeCount", likeCount));
+    }
+    public void updateByDislike(Long projectId, Long dislikeCount) {
+        update(projectId, Map.of("dislikeCount", dislikeCount));
+    }
     public List<Project> findByStateAndCategory(List<ProjectState> stateList, List<Category> categoryList) {
         Map<String, Object> filter = new HashMap<>();
         if (stateList != null) filter.put("state", stateList);
