@@ -43,35 +43,33 @@ public class AdminProjectControlService extends BaseService {
             return new IdResponse(approved.getId());
         });
     }
+    public IdResponse createProject(AdminCreateProjectRequest request) {
+        return tx.execute(false, () -> {
+            AppUser maker = userRepository.findById(makerId)
+                    .orElseThrow(NotFoundException::new);
+            if (request.getCategoryId() == null) {
+                throw new NotNullException("Category Id is Null");
+            }
+            Category category = categoryRepository.findById(request.getCategoryId())
+                    .orElseThrow(NotFoundException::new);
+            //요청에서 비운 startDate, purposeAmount는 도메인 기본값을 유지하고 state는 JUST_USER_INPUT으로 시작
+            Project project = Serializer.toDomain(request, Project.class)
+                    .toBuilder()
+                    .maker(maker)
+                    .category(category)
+                    .build();
 
-//    //2. 프로젝트 기본 정보 등록
-//    public IdResponse createProject(Long makerId, AdminCreateProjectRequest request) {
-//        return tx.execute(false, () -> {
-//            AppUser maker = userRepository.findById(makerId)
-//                    .orElseThrow(NotFoundException::new);
-//            if (request.getCategoryId() == null) {
-//                throw new NotNullException("Category Id is Null");
-//            }
-//            Category category = categoryRepository.findById(request.getCategoryId())
-//                    .orElseThrow(NotFoundException::new);
-//            //요청에서 비운 startDate, purposeAmount는 도메인 기본값을 유지하고 state는 JUST_USER_INPUT으로 시작
-//            Project project = Serializer.toDomain(request, Project.class)
-//                    .toBuilder()
-//                    .maker(maker)
-//                    .category(category)
-//                    .build();
-//
-//            if (project.getPurposeAmount() == null || project.getPurposeAmount().signum() <= 0) {
-//                throw new OutOfRangeException("purposeAmount must be greater than 0");
-//            }
-//            if (project.getEndDate() == null || !project.getEndDate().isAfter(project.getStartDate())) {
-//                throw new OutOfRangeException("endDate must be after startDate");
-//            }
-//
-//            return new IdResponse(projectRepository.create(project).getId());
-//
-//        });
-//    }
+            if (project.getPurposeAmount() == null || project.getPurposeAmount().signum() <= 0) {
+                throw new OutOfRangeException("purposeAmount must be greater than 0");
+            }
+            if (project.getEndDate() == null || !project.getEndDate().isAfter(project.getStartDate())) {
+                throw new OutOfRangeException("endDate must be after startDate");
+            }
+
+            return new IdResponse(projectRepository.create(project).getId());
+
+        });
+    }
 //
 //    public IdResponse editProject(Long projectId, EditProjectRequest request) {
 //        return tx.execute(false, () -> {
