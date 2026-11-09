@@ -36,10 +36,10 @@ public class RewardRepository extends BaseRepositoryImpl<Reward, Long> {
         }
         return true;
     }
-    public List<Reward> findByProject(Project project) {
+    public List<Reward> findByProjects(List<Project> projects) {
         return find(
                     Filter.builder()
-                            .conditions(Map.of("project", project))
+                            .conditions(Map.of("project", projects))
                             .build()
         );
     }

@@ -63,8 +63,8 @@ public class RewardService {
         }
 
         // 금액 검사
-        if (request.getRequiredAmount() == null
-                || request.getRequiredAmount()
+        if (request.getRewardPerAmount() == null
+                || request.getRewardPerAmount()
                 .compareTo(BigDecimal.ZERO) <= 0) {
             throw new LimitNumberOutException(
                     "리워드 필요 금액은 0원보다 커야 합니다."

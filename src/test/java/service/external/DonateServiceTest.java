@@ -88,7 +88,7 @@ public class DonateServiceTest extends DatabaseTest {
                 Reward.builder()
                         .project(project)
                         .name("테스트 리워드")
-                        .requiredAmount(BigDecimal.valueOf(10000))
+                        .rewardPerAmount(BigDecimal.valueOf(10000))
                         .maxQuantity(10L)
                         .remainQuantity(10L)
                         .provideDate(LocalDateTime.now().plusDays(7))

@@ -1,10 +1,6 @@
 package model.domain;
 
-import annotation.Column;
-import annotation.JoinColumn;
-import annotation.OnDelete;
-import annotation.Id;
-import annotation.Table;
+import annotation.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import java.math.BigDecimal;
@@ -20,6 +16,7 @@ public class DonateCancel extends BaseDomain {
     @Column(name = "cancel_donate_id")
     private Long id;
 
+    @Positive
     @Column(name = "donate_amount", nullable = false)
     private BigDecimal amount;
 

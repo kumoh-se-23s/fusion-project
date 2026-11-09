@@ -1,5 +1,6 @@
 package repository.manager;
 
+import annotation.Positive;
 import config.PooledDataSource;
 import exception.NotFoundException;
 import exception.NotNullException;
@@ -40,6 +41,7 @@ public class EntityManagerImpl implements EntityManager {
             version.setValue(entity, 0L);
         }
         checkNotNull(entity, metadata.getInsertColumns());
+        checkPositive(entity, metadata.getInsertColumns());
 
         List<Object> params = values(entity, metadata.getInsertColumns());
         Class<?> keyType = metadata.isAutoIncrement() ? metadata.getId().getTargetClass() : null;
@@ -82,6 +84,7 @@ public class EntityManagerImpl implements EntityManager {
         ColumnInfo version = metadata.getVersion();
         Object id = metadata.getId().getValue(entity);
         checkNotNull(entity, metadata.getUpdatableColumns());
+        checkPositive(entity, metadata.getUpdatableColumns());
 
         List<Object> params = values(entity, metadata.getUpdatableColumns());
         params.add(id);
@@ -191,6 +194,18 @@ public class EntityManagerImpl implements EntityManager {
         for (ColumnInfo column : columns) {
             if (!column.isNullable() && column.getValue(entity) == null) {
                 throw new NotNullException("'" + column.field().getName() + "' cannot be null");
+            }
+        }
+    }
+
+    private static void checkPositive(Object entity, List<ColumnInfo> columns) {
+        for (ColumnInfo column : columns) {
+            Positive positive = column.getPositive();
+            if (positive != null && column.getValue(entity) instanceof Number) {
+                double value = ((Number) column.getValue(entity)).doubleValue();
+                if (value < 0 || (!positive.zero() && value == 0 )) {
+                    throw new NotNullException("'" + column.field().getName() + "' cannot be Negative");
+                }
             }
         }
     }

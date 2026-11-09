@@ -85,6 +85,12 @@ public abstract class BaseRepositoryImpl<T extends BaseDomain, ID> implements Ba
                 .build()).isEmpty();
     }
 
+    @Override
+    public boolean isExistById(ID id) {
+        return findById(id).isPresent();
+
+    }
+
     private void applyField(T entity, String field, Object value) {
         ColumnInfo column = metadata.getColumnByField(field);
         if (column == metadata.getId() || column == metadata.getVersion()) {

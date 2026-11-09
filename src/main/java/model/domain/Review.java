@@ -1,10 +1,6 @@
 package model.domain;
 
-import annotation.Column;
-import annotation.JoinColumn;
-import annotation.OnDelete;
-import annotation.Id;
-import annotation.Table;
+import annotation.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import java.math.BigDecimal;
@@ -29,13 +25,16 @@ public class Review extends BaseDomain {
     @Column(name = "review_text", columnDefinition = "TEXT")
     private String text;
 
+    @Positive
     @Column(name = "review_rating", nullable = false, precision = 2, scale = 1)
     private BigDecimal rating;
 
+    @Positive
     @Builder.Default
     @Column(name = "like_count", nullable = false)
     private Long likeCount = 0L;
 
+    @Positive
     @Builder.Default
     @Column(name = "dislike_count", nullable = false)
     private Long dislikeCount = 0L;

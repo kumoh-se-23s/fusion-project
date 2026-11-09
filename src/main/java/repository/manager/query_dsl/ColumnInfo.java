@@ -2,6 +2,7 @@ package repository.manager.query_dsl;
 
 import annotation.Column;
 import annotation.JoinColumn;
+import annotation.Positive;
 
 import java.lang.reflect.Field;
 
@@ -27,6 +28,10 @@ public record ColumnInfo(Field field, String columnName, boolean isRelation) {
         return isRelation
                 ? field.getAnnotation(JoinColumn.class).nullable()
                 : field.getAnnotation(Column.class).nullable();
+    }
+
+    public Positive getPositive() {
+        return field.getAnnotation(Positive.class);
     }
 
     public Object getValue(Object entity) { // 필드 getter

@@ -7,14 +7,14 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import model.domain.DenyProject;
-import model.dto.request.Request;
+import model.dto.request.UpdateRequest;
 
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @BindDomain(values = DenyProject.class)
-public class DenyProjectRequest extends Request {
+public class DenyProjectRequest extends UpdateRequest {
     @DataField(name = "reason")
     private String denyReason;
 }

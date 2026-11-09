@@ -1,7 +1,9 @@
 package repository;
 
 import constant.ProjectState;
+import model.domain.AppUser;
 import model.domain.Category;
+import model.domain.DenyProject;
 import model.domain.Project;
 
 import java.math.BigDecimal;
@@ -30,7 +32,12 @@ public class ProjectRepository extends BaseRepositoryImpl<Project, Long> {
                 "updatedAt", LocalDateTime.now()
         ));
     }
-
+    public Optional<Project> updateByLike(Long projectId, Long likeCount) {
+        return update(projectId, Map.of("likeCount", likeCount));
+    }
+    public Optional<Project> updateByDislike(Long projectId, Long dislikeCount) {
+        return update(projectId, Map.of("dislikeCount", dislikeCount));
+    }
     public List<Project> findByStateAndCategory(List<ProjectState> stateList, List<Category> categoryList) {
         Map<String, Object> filter = new HashMap<>();
         if (stateList != null) filter.put("state", stateList);
@@ -51,6 +58,49 @@ public class ProjectRepository extends BaseRepositoryImpl<Project, Long> {
     public List<Project> findByUserId(Long userId) {
         return find(Filter.builder()
                 .conditions(Map.of("maker", userId))
+                .build()
+        );
+    }
+    public List<Project> findByFilter(
+            String title,
+            AppUser maker,
+            Category category,
+            List<ProjectState> stateList,
+            int limit,
+            Sort sort
+    ) {
+        Filter filter = Filter.builder()
+                .sort(sort)
+                .limit(limit)
+                .build();
+
+        if (title != null) {
+            filter.and("title", title);
+        }
+        if (category != null) {
+            filter.and("category", category);
+        }
+        if (!stateList.isEmpty()) {
+            filter.and("state", stateList);
+        }
+        if (maker != null) {
+            filter.and("maker", maker);
+        }
+
+        return find(filter);
+    }
+
+    public List<Project> findByLimit(int limit) {
+        return find(Filter.builder()
+                .limit(limit)
+                .build()
+        );
+    }
+
+    public List<Project> findByPending(int limit) {
+        return find(Filter.builder()
+                .conditions(Map.of("state", ProjectState.PENDING_APPROVAL))
+                .limit(limit)
                 .build()
         );
     }

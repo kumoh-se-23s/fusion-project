@@ -40,7 +40,7 @@ public class RewardData extends BaseData {
 
     private String text;
 
-    private BigDecimal requiredAmount;
+    private BigDecimal rewardPerAmount;
 
     private Long maxQuantity;
 

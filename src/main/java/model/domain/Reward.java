@@ -1,10 +1,6 @@
 package model.domain;
 
-import annotation.Column;
-import annotation.JoinColumn;
-import annotation.OnDelete;
-import annotation.Id;
-import annotation.Table;
+import annotation.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import java.math.BigDecimal;
@@ -33,14 +29,17 @@ public class Reward extends BaseDomain {
     @Column(name = "reward_img_file")
     private byte[] imgFile;
 
+    @Positive
     @Builder.Default
-    @Column(name = "required_amount", nullable = false)
-    private BigDecimal requiredAmount = BigDecimal.ZERO;
+    @Column(name = "reward_per_amount", nullable = false)
+    private BigDecimal rewardPerAmount = BigDecimal.ZERO;
 
+    @Positive
     @Builder.Default
     @Column(name = "reward_max_quantity", nullable = false)
     private Long maxQuantity = 0L;
 
+    @Positive
     @Builder.Default
     @Column(name = "reward_remain_quantity", nullable = false)
     private Long remainQuantity = 0L;

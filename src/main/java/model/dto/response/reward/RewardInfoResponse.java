@@ -19,7 +19,7 @@ public class RewardInfoResponse extends Response {
     private Long rewardId;
 
     private String name;
-    private BigDecimal requiredAmount;
+    private BigDecimal rewardPerAmount;
     private Long maxQuantity;
     private Long remainQuantity;
     private LocalDateTime provideDate;

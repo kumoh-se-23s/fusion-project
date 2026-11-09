@@ -29,4 +29,6 @@ public interface BaseRepository<T extends BaseDomain, ID> {
 
     //객체가 존재하는지 조회, 객체가 존재하지 않으면 False 반환
     boolean isExist(Filter filter);
+
+    boolean isExistById(ID id);
 }
