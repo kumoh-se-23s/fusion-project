@@ -17,8 +17,13 @@ public class AppUser extends BaseDomain {
     @Column(name = "user_id")
     private Long id;
 
+    //실명
     @Column(name = "user_name", nullable = false)
     private String name;
+
+    //이름
+    @Column(name = "user_nick_name", unique = true, nullable = false)
+    private String nickName;
 
     @Column(name = "user_email", unique = true, nullable = false)
     private String email;
@@ -29,7 +34,7 @@ public class AppUser extends BaseDomain {
     @Column(name = "user_address")
     private String address;
 
-    @Column(name = "user_phone", length = 30)
+    @Column(name = "user_phone", unique = true, length = 30)
     private String phone;
 
     @Builder.Default
