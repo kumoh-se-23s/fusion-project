@@ -1,5 +1,6 @@
 package service.internal;
 
+import exception.AlreadyExistException;
 import exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import model.Serializer;
@@ -13,6 +14,8 @@ import model.dto.response.IdResponse;
 import model.dto.response.SingleDataResponse;
 import repository.CategoryRepository;
 import service.BaseService;
+
+import java.util.List;
 
 /**
  * 관리자가 카테고리를 관리, 조회하는 서비스 클래스
@@ -28,8 +31,12 @@ public class AdminCategoryService extends BaseService {
     public IdResponse createCategory(CategoryRequest dto) {
         return tx.execute(() -> {
             Category category = Serializer.toDomain(dto, Category.class);
-            Long categoryId = this.categoryRepository.create(category).getId();
-            return new IdResponse(categoryId);
+
+            if (categoryRepository.isExistByName(dto.getName())) {
+                throw new AlreadyExistException();
+            }
+
+            return new IdResponse(categoryRepository.create(category).getId());
         });
     }
 
@@ -45,14 +52,41 @@ public class AdminCategoryService extends BaseService {
     }
 
     public DataCollectionResponse<CategoryData> getAllCategory() {
-        return null;
+        return tx.execute(true, () -> {
+            List<Category> categories = categoryRepository.findAll();
+
+            return DataCollectionResponse.<CategoryData>builder()
+                    .datas(Serializer.toDataList(categories, CategoryData.class))
+                    .amount((long) categories.size())
+                    .build();
+        });
     }
 
-    public IdResponse editCategory(CategoryRequest dto) {
-        return null;
+    public IdResponse editCategory(Long categoryId, CategoryRequest dto) {
+        return tx.execute(false, () -> {
+
+            if (categoryRepository.isExistByName(dto.getName())) {
+                throw new AlreadyExistException();
+            }
+
+            Category category = categoryRepository.update(categoryId, dto.toUpdateMap())
+                    .orElseThrow(NotFoundException::new);
+
+
+
+            return new IdResponse(category.getId());
+        });
     }
-    public DeleteResponse deleteCategory(Long CategoryId) {
-        return null;
+
+    public DeleteResponse deleteCategory(Long categoryId) {
+        return tx.execute(false, () ->{
+            Category category =  categoryRepository.findById(categoryId)
+                    .orElseThrow(NotFoundException::new);
+
+            return new DeleteResponse(
+                    categoryRepository.delete(categoryId)
+            );
+        });
     }
 
 

@@ -1,6 +1,7 @@
 package service.external;
 
-import exception.InvalidMakerException;
+import constant.ProjectState;
+import exception.InvalidUserException;
 import exception.NotFoundException;
 import exception.NotNullException;
 import exception.OutOfRangeException;
@@ -26,10 +27,12 @@ import java.util.*;
 
 /**
  * 유저(메이커)가 프로젝트를 관리하는 서비스 클래스
- * @since 2026-11-05 완성
+ * @since 2026-11-05
  * @author 김민규
- * @version 1.1
- * Edit에서 usre id 체크 기능 추가
+ * @version 1.2
+ *
+ * @version 1.1 Edit에서 user id 체크 기능 추가
+ * @version 1.2 메이커가 자신이 만든 프로젝트별 전체 리워드 정보를 조회할 수 있도록 변경
 **/
 @RequiredArgsConstructor
 public class ProjectMakerService extends BaseService {
@@ -41,39 +44,55 @@ public class ProjectMakerService extends BaseService {
     private final DenyProjectRepository denyProjectRepository;
 
     //1.프로젝트의 리워드 정보와 리워드별 후원자 배송지
-    public ProjectRewardResponse getProjectByReward(Long projectId) {
+    public DataCollectionResponse<ProjectRewardResponse> getProjectByReward(Long makerId) {
         return tx.execute(true, () -> {
-            Project project = projectRepository.findById(projectId)
-                    .orElseThrow(NotFoundException::new);
+            List<Project> projectList = projectRepository.findByUserId(makerId);
 
-            List<Reward> rewardList = rewardRepository.findByProject(project);
+            List<Reward> rewardList = rewardRepository.findByProjects(projectList);
             List<Donate> donateList = donateRepository.findByRewards(rewardList);
-            List<RewardUserResponse> rewardUserResponses = new ArrayList<>();
+
             Map<Long, List<UserAddressResponse>> rewardIdSet = new HashMap<>();
+
+            Map<Long, List<RewardUserResponse>> projectIdSet = new HashMap<>();
+
+            List<ProjectRewardResponse> projectRewardResponseList = new ArrayList<>();
 
             for (Donate donate : donateList) {
                 //탈퇴한 사용자의 후원은 배송지가 없으므로 제외
                 if (donate.getUser() == null) {
                     continue;
                 }
-                UserAddressResponse UserAddressDTO =
+                UserAddressResponse userAddressDTO =
                     Serializer.toData(donate.getUser(), UserAddressResponse.class);
 
                 rewardIdSet.computeIfAbsent(donate.getReward().getId(), k -> new ArrayList<>())
-                    .add(UserAddressDTO);
-            }
+                    .add(userAddressDTO);
+                }
+
             for (Reward reward : rewardList) {
-                rewardUserResponses.add(
-                        RewardUserResponse.builder()
-                            .rewardInfoResponse(Serializer.toData(reward, RewardInfoResponse.class))
-                            .userAddressInfo(rewardIdSet.getOrDefault(reward.getId(), List.of()))
-                            .build()
-                );
+                RewardUserResponse rewardUserResponse = RewardUserResponse.builder()
+                    .rewardInfoResponse(Serializer.toData(reward, RewardInfoResponse.class))
+                    .userAddressInfo(rewardIdSet.getOrDefault(reward.getId(), List.of()))
+                    .amount((long) rewardIdSet.size())
+                    .build();
+
+                projectIdSet.computeIfAbsent(reward.getProject().getId(), k -> new ArrayList<>())
+                    .add(rewardUserResponse);
             }
-            return ProjectRewardResponse.builder()
-                .projectInfo(Serializer.toData(project, ProjectInfoResponse.class))
-                .rewards(rewardUserResponses)
-                .build();
+
+            for (Project project : projectList) {
+                ProjectRewardResponse projectRewardResponse = ProjectRewardResponse.builder()
+                    .projectInfo(Serializer.toData(project, ProjectInfoResponse.class))
+                    .rewards(projectIdSet.getOrDefault(project.getId(), List.of()))
+                    .amount((long) projectIdSet.size())
+                    .build();
+
+                projectRewardResponseList.add(projectRewardResponse);
+            }
+            return DataCollectionResponse.<ProjectRewardResponse>builder()
+                    .datas(projectRewardResponseList)
+                    .amount((long) projectRewardResponseList.size())
+                    .build();
         });
     }
 
@@ -82,21 +101,16 @@ public class ProjectMakerService extends BaseService {
         return tx.execute(false, () -> {
             AppUser maker = userRepository.findById(makerId)
                     .orElseThrow(NotFoundException::new);
-            if (request.getCategoryId() == null) {
-                throw new NotNullException("Category Id is Null");
-            }
+
             Category category = categoryRepository.findById(request.getCategoryId())
                     .orElseThrow(NotFoundException::new);
-            //요청에서 비운 startDate, purposeAmount는 도메인 기본값을 유지하고 state는 JUST_USER_INPUT으로 시작
+
             Project project = Serializer.toDomain(request, Project.class)
                     .toBuilder()
                     .maker(maker)
                     .category(category)
                     .build();
 
-            if (project.getPurposeAmount() == null || project.getPurposeAmount().signum() <= 0) {
-                throw new OutOfRangeException("purposeAmount must be greater than 0");
-            }
             if (project.getEndDate() == null || !project.getEndDate().isAfter(project.getStartDate())) {
                 throw new OutOfRangeException("endDate must be after startDate");
             }
@@ -112,11 +126,15 @@ public class ProjectMakerService extends BaseService {
                     .orElseThrow(NotFoundException::new);
 
             if (!Objects.equals(project.getMaker().getId(), makerId)) {
-                throw new InvalidMakerException();
+                throw new InvalidUserException();
             }
 
             Map<String, Object> dtoMap = request.getProjectDataDTO().toUpdateMap();
             dtoMap.put("category", request.getCategoryId());
+
+            if (project.getState() == ProjectState.REJECTED) {
+                dtoMap.put("state", ProjectState.PENDING_APPROVAL);
+            }
 
 
             return new IdResponse(
@@ -128,6 +146,7 @@ public class ProjectMakerService extends BaseService {
     public DataCollectionResponse<ProjectData> getMakerProject(Long makerId) {
         return tx.execute(true, () -> {
             List<ProjectData> dtoList = Serializer.toDataList(projectRepository.findByUserId(makerId), ProjectData.class);
+
             return DataCollectionResponse.<ProjectData>builder()
                     .datas(dtoList)
                     .amount((long) dtoList.size())
@@ -141,7 +160,7 @@ public class ProjectMakerService extends BaseService {
                     .orElseThrow(NotFoundException::new);
 
             if (!Objects.equals(project.getMaker().getId(), makerId)) {
-                throw new InvalidMakerException();
+                throw new InvalidUserException();
             }
 
             return new DeleteResponse(projectRepository.delete(projectId));

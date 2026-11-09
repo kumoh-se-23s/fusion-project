@@ -1,17 +1,12 @@
 package service.external;
 
 import constant.ProjectState;
-import exception.AlreadyExistException;
-import exception.NotCompleteProjectException;
-import exception.NotFoundException;
-import exception.OutOfRangeException;
+import exception.*;
 import lombok.RequiredArgsConstructor;
 import model.Serializer;
 import model.domain.*;
-import model.dto.ReviewData;
 import model.dto.request.review.CreateReviewRequest;
 import model.dto.request.review.EditReviewRequest;
-import model.dto.response.DataCollectionResponse;
 import model.dto.response.DeleteResponse;
 import model.dto.response.IdResponse;
 import repository.*;
@@ -19,6 +14,8 @@ import service.BaseService;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * 일반유저가 리뷰를 관리하는 서비스 클래스
@@ -79,12 +76,41 @@ public class ReviewCommandService extends BaseService {
         });
     }
 
-    public IdResponse editReview(Long userId, EditReviewRequest request) {
-        return null;
+    public IdResponse editReview(Long userId, Long reviewId, EditReviewRequest request) {
+        return tx.execute(false, () -> {
+            Review review = reviewRepository.findById(reviewId)
+                    .orElseThrow(NotFoundException::new);
+
+            if (!Objects.equals(review.getUser().getId(), userId)) {
+                throw new InvalidUserException();
+            }
+
+            if (request.getRating().compareTo(MIN_RATING) < 0 || request.getRating().compareTo(MAX_RATING) > 0) {
+                throw new OutOfRangeException("Rating must be between " + MIN_RATING + " and " + MAX_RATING);
+            }
+
+            Map<String, Object> dtoMap = request.toUpdateMap();
+
+            return new IdResponse(
+                    reviewRepository.update(reviewId, dtoMap).
+                        orElseThrow(NotFoundException::new).getId()
+            );
+        });
     }
 
     public DeleteResponse deleteReview(Long userId, Long reviewId) {
-        return null;
+        return tx.execute(false, () -> {
+            Review review = reviewRepository.findById(reviewId)
+                        .orElseThrow(NotFoundException::new);
+
+            if (!Objects.equals(review.getUser().getId(), userId)) {
+                throw new InvalidUserException();
+            }
+
+            return new DeleteResponse(
+                    reviewRepository.delete(reviewId)
+            );
+        });
     }
 
 }

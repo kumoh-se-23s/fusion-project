@@ -1,12 +1,15 @@
 package service.internal;
 
+import exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import model.Serializer;
-import model.domain.Reward;
+import model.domain.DenyProject;
+import model.domain.Review;
+import model.dto.ReviewData;
 import model.dto.ReviewData;
 import model.dto.response.DataCollectionResponse;
+import model.dto.response.SingleDataResponse;
 import repository.ReviewRepository;
-import repository.RewardRepository;
 import service.BaseService;
 
 import java.util.List;
@@ -19,14 +22,23 @@ import java.util.List;
 **/
 @RequiredArgsConstructor
 public class AdminReviewQueryService extends BaseService {
-    private final ReviewRepository reviewRepository;
-    private final RewardRepository rewardRepository;
+    private ReviewRepository reviewRepository;
 
-    public DataCollectionResponse<ReviewData> getReview(Long reviewId) {
-        return null;
+    public SingleDataResponse<ReviewData> getReview(Long reviewId) {
+        Review review = reviewRepository.findById(reviewId)
+            .orElseThrow(NotFoundException::new);
+
+        return new SingleDataResponse<>(
+            Serializer.toData(review, ReviewData.class)
+        );
     }
 
-    public DataCollectionResponse<ReviewData> getAllReview(int limit) {
-        return null;
+    public DataCollectionResponse<ReviewData> getAllDenyProject(int limit) {
+        List<Review> reviewList = reviewRepository.findByLimit(limit);
+
+        return DataCollectionResponse.<ReviewData>builder()
+                .datas(Serializer.toDataList(reviewList, ReviewData.class))
+                .amount((long) reviewList.size())
+                .build();
     }
 }

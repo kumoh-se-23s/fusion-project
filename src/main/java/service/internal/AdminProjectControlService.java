@@ -43,11 +43,10 @@ public class AdminProjectControlService extends BaseService {
     }
     public IdResponse createProject(AdminProjectRequest request) {
         return tx.execute(false, () -> {
+
             AppUser maker = userRepository.findById(request.getMakerId())
                     .orElseThrow(NotFoundException::new);
-            if (request.getCategoryId() == null) {
-                throw new NotNullException("Category Id is Null");
-            }
+
 
             Category category = categoryRepository.findById(request.getCategoryId())
                     .orElseThrow(NotFoundException::new);
@@ -58,9 +57,6 @@ public class AdminProjectControlService extends BaseService {
                     .category(category)
                     .build();
 
-            if (project.getPurposeAmount() == null || project.getPurposeAmount().signum() <= 0) {
-                throw new OutOfRangeException("purposeAmount must be greater than 0");
-            }
 
             if (project.getEndDate() == null || !project.getEndDate().isAfter(project.getStartDate())) {
                 throw new OutOfRangeException("endDate must be after startDate");
@@ -76,7 +72,6 @@ public class AdminProjectControlService extends BaseService {
             Map<String, Object> dtoMap = request.getRequest().toUpdateMap();
             dtoMap.put("category", request.getCategoryId());
             dtoMap.put("maker", request.getMakerId());
-
             return new IdResponse(
                     projectRepository.update(projectId, dtoMap).
                         orElseThrow(NotFoundException::new).getId()

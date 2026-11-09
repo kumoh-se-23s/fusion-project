@@ -52,12 +52,13 @@ public class ReviewLikeService extends BaseService {
 
     public IdResponse editReviewLike(Long ReviewId, Long userId, LikeRequest request) {
         return tx.execute(() -> {
-            ReviewLike ReviewLike = reviewLikeRepository.findByReviewAndUser(ReviewId, userId).getFirst();
+            ReviewLike reviewLike = reviewLikeRepository.findByReviewAndUser(ReviewId, userId).getFirst();
 
-            updateLikeValue(ReviewLike.getReview(), request.getLikeType(), 1);
+            Review review = updateLikeValue(reviewLike.getReview(), reviewLike.getLikeType(), -1);
+            review = updateLikeValue(review, request.getLikeType(), 1);
 
             return new IdResponse(
-                    reviewLikeRepository.update(ReviewLike.getId(), request.toUpdateMap())
+                    reviewLikeRepository.update(review.getId(), request.toUpdateMap())
                             .orElseThrow(NotFoundException::new)
                             .getId()
             );
@@ -71,11 +72,15 @@ public class ReviewLikeService extends BaseService {
         });
     }
 
-    private void updateLikeValue(Review review, Boolean likeType, int change) {
+    private Review updateLikeValue(Review review, Boolean likeType, int change) {
+        Long current = likeType ? review.getLikeCount() : review.getDislikeCount();
+
         if (likeType) {
-            reviewRepository.updateByLike(review.getId(), Math.max(review.getLikeCount() + change, 0));
+            return reviewRepository.updateByLike(review.getId(), Math.max(current, 0))
+                    .orElseThrow(NotFoundException::new);
         } else {
-            reviewRepository.updateByDislike(review.getId(), Math.max(review.getDislikeCount() + change,0));
+            return reviewRepository.updateByDislike(review.getId(), Math.max(current, 0))
+                    .orElseThrow(NotFoundException::new);
         }
     }
 }

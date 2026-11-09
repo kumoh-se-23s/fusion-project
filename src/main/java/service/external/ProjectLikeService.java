@@ -13,6 +13,8 @@ import repository.ProjectRepository;
 import repository.UserRepository;
 import service.BaseService;
 
+import java.util.function.BiConsumer;
+
 /**
  * 프로젝트의 좋아요를 관리하는 서비스 클래스
  * @since 2026-11-05 완성
@@ -21,6 +23,7 @@ import service.BaseService;
 **/
 @RequiredArgsConstructor
 public class ProjectLikeService extends BaseService {
+
     private final ProjectLikeRepository projectLikeRepository;
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
@@ -53,28 +56,34 @@ public class ProjectLikeService extends BaseService {
         return tx.execute(() -> {
             ProjectLike projectLike = projectLikeRepository.findByProjectAndUser(projectId, userId).getFirst();
 
-            updateLikeValue(projectLike.getProject(), request.getLikeType(), 1);
+            Project project = updateLikeValue(projectLike.getProject(), projectLike.getLikeType(), -1);
+            project = updateLikeValue(project, request.getLikeType(), 1);
 
-            return new IdResponse(
-                    projectLikeRepository.update(projectLike.getId(), request.toUpdateMap())
-                            .orElseThrow(NotFoundException::new)
-                            .getId()
-            );
+            projectLike =  projectLikeRepository.update(project.getId(), request.toUpdateMap())
+                            .orElseThrow(NotFoundException::new);
+
+            return new IdResponse(projectLike.getId());
         });
     }
     public DeleteResponse deleteProjectLike(Long projectId, Long userId) {
         return tx.execute(() -> {
             ProjectLike projectLike = projectLikeRepository.findByProjectAndUser(projectId, userId).getFirst();
+
             updateLikeValue(projectLike.getProject(), projectLike.getLikeType(), -1);
+
             return new DeleteResponse(projectLikeRepository.delete(projectLike.getId()));
         });
     }
 
-    private void updateLikeValue(Project project, Boolean likeType, int change) {
+    private Project updateLikeValue(Project project, Boolean likeType, int change) {
+        Long current = likeType ? project.getLikeCount() : project.getDislikeCount();
+
         if (likeType) {
-            projectRepository.updateByLike(project.getId(), Math.max(project.getLikeCount() + change, 0));
+            return projectRepository.updateByLike(project.getId(), Math.max(current, 0))
+                    .orElseThrow(NotFoundException::new);
         } else {
-            projectRepository.updateByDislike(project.getId(), Math.max(project.getDislikeCount() + change,0));
+            return projectRepository.updateByDislike(project.getId(), Math.max(current, 0))
+                    .orElseThrow(NotFoundException::new);
         }
     }
 }

@@ -1,9 +1,16 @@
 package service.internal;
 
+import exception.NotFoundException;
+import model.Serializer;
+import model.domain.DenyProject;
 import model.dto.DenyProjectData;
 import model.dto.ProjectData;
 import model.dto.response.DataCollectionResponse;
+import model.dto.response.SingleDataResponse;
+import repository.DenyProjectRepository;
 import service.BaseService;
+
+import java.util.List;
 
 /**
  * 관리자가 거절된 펀딩을 조회하는 서비스 클래스
@@ -12,13 +19,24 @@ import service.BaseService;
  * @version 1.0
 **/
 public class AdminDenyProjectQueryService extends BaseService {
+    private DenyProjectRepository denyProjectRepository;
 
-    public DataCollectionResponse<DenyProjectData> getDenyProject(Long reviewId) {
-        return null;
+    public SingleDataResponse<DenyProjectData> getDenyProject(Long denyProjectId) {
+        DenyProject denyProject = denyProjectRepository.findById(denyProjectId)
+                .orElseThrow(NotFoundException::new);
+
+        return new SingleDataResponse<>(
+                Serializer.toData(denyProject, DenyProjectData.class)
+        );
     }
 
     public DataCollectionResponse<DenyProjectData> getAllDenyProject(int limit) {
-        return null;
+        List<DenyProject> denyProjectList = denyProjectRepository.findByLimit(limit);
+
+        return DataCollectionResponse.<DenyProjectData>builder()
+                .datas(Serializer.toDataList(denyProjectList, DenyProjectData.class))
+                .amount((long) denyProjectList.size())
+                .build();
     }
 
 }

@@ -8,8 +8,8 @@ import exception.OutOfRangeException;
 import lombok.RequiredArgsConstructor;
 import model.Serializer;
 import model.domain.*;
+import model.dto.request.review.AdminEditReviewRequest;
 import model.dto.request.review.CreateReviewRequest;
-import model.dto.request.review.EditReviewRequest;
 import model.dto.response.DeleteResponse;
 import model.dto.response.IdResponse;
 import repository.*;
@@ -17,6 +17,7 @@ import service.BaseService;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 관리자가 리뷰를 관리하는 서비스 클래스
@@ -78,22 +79,43 @@ public class AdminReviewControlService extends BaseService {
         });
     }
 
-    public IdResponse editReview(Long userId, EditReviewRequest request) {
-        return null;
+    public IdResponse editReview(Long reviewId, AdminEditReviewRequest dto) {
+        return tx.execute(false, () -> {
+
+            Reward reward = rewardRepository.findById(dto.getRewardId())
+                    .orElseThrow(NotFoundException::new);
+
+            Map<String, Object> dtoMap = dto.getRequest().toUpdateMap();
+            dtoMap.put("reward", reward);
+
+            Review review = reviewRepository.update(reviewId, dtoMap)
+                    .orElseThrow(NotFoundException::new);
+
+            return new IdResponse(review.getId());
+        });
     }
 
-    public DeleteResponse deleteReview(Long userId, Long reviewId) {
-        return null;
+    public DeleteResponse deleteReview(Long reviewId) {
+        return tx.execute(false, () ->{
+            Review review =  reviewRepository.findById(reviewId)
+                    .orElseThrow(NotFoundException::new);
+
+            return new DeleteResponse(
+                    reviewRepository.delete(reviewId)
+            );
+        });
     }
 
     public DeleteResponse deleteReviewAllLikes(Long reviewId) {
         return tx.execute(() -> {
             boolean result = true;
+
             List<ReviewLike> reviewLikeList = reviewLikeRepository.findByReview(reviewId);
             for (ReviewLike reviewLike : reviewLikeList) {
-                updateLikeValue(reviewLike.getReview(), reviewLike.getLikeType(), -1);
                 if (!reviewLikeRepository.delete(reviewLike.getId())) {
                     result = false;
+                } else {
+                    updateLikeValue(reviewLike.getReview(), reviewLike.getLikeType(), -1);
                 }
             }
             return new DeleteResponse(result);
