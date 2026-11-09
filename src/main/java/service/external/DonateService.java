@@ -23,6 +23,7 @@ import repository.UserRepository;
 import service.BaseService;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -214,36 +215,40 @@ public class DonateService extends BaseService {
 
     //후원 환불
     public void refundDonate(Long donateId, Long userId){
-        Donate donate = donateRepository.findById(donateId).get();//해당 후원id의 객체 찾기
+        Donate donate = donateRepository.findById(donateId).get();//해당 후원id의 객체 찾기,null값은 안 들어옴
         Reward reward = donate.getReward();
-        DonateData thisDonate =  Serializer.toData(
-                    donate,
-                    DonateData.class
-                );
-        List<DonateData> donateList = findDonateByUser(userId);
+        Project project = reward.getProject();
+        Long donateQuantity;
 
-        for(DonateData donateData : donateList){
-            if(donateData.equals(thisDonate)){//userId가져와서 후원한 내역중에 해당 donateId가 있는지 조회
-
-                if(!donate.getUser().getId().equals(userId)){//후원한 사람과 로그인 유저 동일인인지 확인
-                    throw new InvalidException();//아닐 경우 예외처리
-                }
-                else{//맞는경우
-                    Long donateQuantity = donate.getQuantity();
+                if (!donate.getUser().getId().equals(userId)) {//후원한 사람과 로그인 유저 동일인인지 확인
+                    throw new InvalidException("후원한 내역이 없습니다");//아닐 경우 예외처리
+                } else {//맞는경우
+                    Map<String, Object> updates = new HashMap<>();
+                    donateQuantity = donate.getQuantity();
                     Long remainQuantity = reward.getRemainQuantity();
                     Long newQuantity = donateQuantity + remainQuantity;
                     rewardRepository.update(//리워드 수량 수정
                             reward.getId(),
-                            Map.of("remainQuantity",newQuantity)
-                    );
+                            Map.of("remainQuantity", newQuantity)
+                    );//수정하고나서
+                    BigDecimal totalAmount = donateAmountSum(donateId, userId);
+                    //해당 프로젝트의 후원금액-내가 후원한 금액
+                    BigDecimal newProjectAmount = project.getDonateAmount().subtract(totalAmount);
+
+                    updates.put("donateAmount", newProjectAmount);//후원금액 수정
+                    projectRepository.update(project.getId(), updates);//수정
+                    donateRepository.delete(donate.getId());
                 }
-
-            }
-
-        }
-        throw new InvalidException("해당 펀딩에 후원한 기록이 없습니다.");
 
     }
 
     //후원 총금액
+
+    public BigDecimal donateAmountSum(Long donateId, Long userId){
+        Donate donate = donateRepository.findById(donateId).get();//해당 후원id의 객체 찾기,null값은 안 들어옴
+        Long donateQuantity = donate.getQuantity() ;
+
+        return donate.getAmount().multiply(BigDecimal//후원 개수x단일 후원 금액
+                .valueOf(donateQuantity));//환불할 후원 금액
+    }
 }

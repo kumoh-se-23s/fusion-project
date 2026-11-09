@@ -244,7 +244,7 @@ public class RewardService {
         if(!maker.equals(loginUser)){
             throw new InvalidException();//권한이슈
         }else{
-            rewardRepository.delete(rewardId);
+            rewardRepository.delete(rewardId);//같을경우 삭제
         }
     }
 }

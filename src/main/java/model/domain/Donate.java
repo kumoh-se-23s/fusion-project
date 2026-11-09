@@ -27,10 +27,10 @@ public class Donate extends BaseDomain {
     private Reward reward;
 
     @Column(name = "donate_amount", nullable = false)
-    private BigDecimal amount;
+    private BigDecimal amount;//후원 금액
 
     @Column(name = "donate_quantity", nullable = false)//후원수량
-    private Long quantity;
+    private Long quantity;//후원 양
 
     @Builder.Default
     @Column(name = "created_at", nullable = false)
