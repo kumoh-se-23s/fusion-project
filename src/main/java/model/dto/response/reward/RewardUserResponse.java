@@ -16,5 +16,6 @@ import java.util.List;
 public class RewardUserResponse extends Response {
     private RewardInfoResponse rewardInfoResponse;
     private List<UserAddressResponse> userAddressInfo;
+    private Long amount;
 
 }

@@ -37,7 +37,7 @@ public class CreateRewardDataRequest extends BaseData {
     @DataField(name = "project.id")
     private Long projectFk;
 
-    private BigDecimal requiredAmount;
+    private BigDecimal rewardPerAmount;
 
     @DataField(name = "maxQuantity")
     private Long rewardMaxQuantity;

@@ -21,7 +21,7 @@ public class CreateProjectRequest extends Request {
 
     private LocalDateTime endDate;
 
-    private BigDecimal purposeAmount;
+//    private BigDecimal purposeAmount;
 
     private String title;
 

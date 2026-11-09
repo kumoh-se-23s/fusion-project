@@ -21,4 +21,5 @@ public class ProjectRewardResponse extends Response {
     //후원 1건 = 배송 1건
     private ProjectInfoResponse projectInfo;
     private List<RewardUserResponse> rewards;
+    private Long amount;
 }
