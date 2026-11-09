@@ -7,6 +7,7 @@ import model.domain.Reward;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class ReviewRepository extends BaseRepositoryImpl<Review, Long>{
     public boolean isExistUserAndReward(AppUser user, Reward reward ){
@@ -35,10 +36,16 @@ public class ReviewRepository extends BaseRepositoryImpl<Review, Long>{
                 .build()
         );
     }
-    public void updateByLike(Long reviewId, Long likeCount) {
-        update(reviewId, Map.of("likeCount", likeCount));
+    public Optional<Review> updateByLike(Long reviewId, Long likeCount) {
+        return update(reviewId, Map.of("likeCount", likeCount));
     }
-    public void updateByDislike(Long reviewId, Long dislikeCount) {
-        update(reviewId, Map.of("dislikeCount", dislikeCount));
+    public Optional<Review> updateByDislike(Long reviewId, Long dislikeCount) {
+        return update(reviewId, Map.of("dislikeCount", dislikeCount));
+    }
+    public List<Review> findByLimit(int limit) {
+        return find(Filter.builder()
+                .limit(limit)
+                .build()
+        );
     }
 }

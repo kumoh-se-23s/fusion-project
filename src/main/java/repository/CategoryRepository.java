@@ -19,4 +19,10 @@ public class CategoryRepository extends BaseRepositoryImpl<Category, Long>{
                 .build()
         );
     }
+    public boolean isExistByName(String name) {
+        return isExist(Filter.builder()
+                .conditions(Map.of("name", name))
+                .build()
+        );
+    }
 }

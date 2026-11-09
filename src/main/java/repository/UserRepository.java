@@ -2,11 +2,7 @@ package repository;
 
 import model.Serializer;
 import model.domain.AppUser;
-import model.domain.UserRole;
 import model.dto.UserData;
-import model.dto.request.user.UpdateUserRequest;
-import repository.BaseRepositoryImpl;
-import repository.Filter;
 
 import java.util.HashMap;
 import java.util.List;
@@ -39,5 +35,12 @@ public class UserRepository extends BaseRepositoryImpl<AppUser,Long> {
         Optional<AppUser> updateResult = update(userId, updateData);
 
         return updateResult.map(AppUser::getId);
+    }
+
+    public List<AppUser> findByNickName(String nickName) {
+        return find(Filter.builder()
+                .conditions(Map.of("nickName", nickName))
+                .build()
+        );
     }
 }
