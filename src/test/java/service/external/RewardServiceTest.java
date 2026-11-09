@@ -224,7 +224,7 @@ public class RewardServiceTest extends DatabaseTest {
             assertEquals(
                     0,
                     BigDecimal.valueOf(10000)
-                            .compareTo(saved.getRequiredAmount())
+                            .compareTo(saved.getRewardPerAmount())
             );
 
             assertEquals(project.getId(), saved.getProject().getId());

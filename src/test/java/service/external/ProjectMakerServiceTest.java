@@ -4,6 +4,7 @@ import constant.ProjectState;
 import example.db.DatabaseTest;
 import model.domain.Project;
 import model.dto.request.project.CreateProjectRequest;
+import model.dto.response.DataCollectionResponse;
 import model.dto.response.IdResponse;
 import model.dto.response.project.ProjectRewardResponse;
 import model.dto.response.reward.RewardInfoResponse;
@@ -36,32 +37,37 @@ public class ProjectMakerServiceTest extends DatabaseTest {
     @Test
     @DisplayName("프로젝트의 리워드와 리워드별 후원자를 조회한다")
     void getProjectByReward() {
-        ProjectRewardResponse response = projectMakerService.getProjectByReward(db.maker1CompleteProject.getId());
-        LOG.info(response.toJsonString());
+        DataCollectionResponse<ProjectRewardResponse> responseDTO = projectMakerService.getProjectByReward(db.maker1.getId());
+        LOG.info(responseDTO.toJsonString());
+        for (ProjectRewardResponse response : responseDTO.getDatas()) {
+            if (response.getProjectInfo().getProjectId().equals(db.maker1CompleteProject.getId())) {
+                assertEquals(db.maker1CompleteProject.getId(),
+                        response.getProjectInfo().getProjectId());
+                assertEquals(2, response.getRewards().size());
 
-        assertEquals(db.maker1CompleteProject.getId(), response.getProjectInfo().getProjectId());
-        assertEquals(2, response.getRewards().size());
-        Map<String, RewardInfoResponse> list = new HashMap<>();
-        Map<String, UserAddressResponse> list2 = new HashMap<>();
-        for (RewardUserResponse reward : response.getRewards()) {
-            list.put(reward.getRewardInfoResponse().getName()
-                    , reward.getRewardInfoResponse());
-            for (UserAddressResponse user : reward.getUserAddressInfo()) {
-                list2.put(user.getAddress(),
-                        user);
+                Map<String, RewardInfoResponse> list = new HashMap<>();
+                Map<String, UserAddressResponse> list2 = new HashMap<>();
+                for (RewardUserResponse reward : response.getRewards()) {
+                    list.put(reward.getRewardInfoResponse().getName()
+                            , reward.getRewardInfoResponse());
+                    for (UserAddressResponse user : reward.getUserAddressInfo()) {
+                        list2.put(user.getAddress(),
+                                user);
+                    }
+                }
+                assertEquals(
+                        db.maker1CompleteReward1.getId(),
+                        list.get(db.maker1CompleteReward1.getName()).getRewardId());
+
+                assertEquals(
+                        db.maker1CompleteReward2.getId(),
+                        list.get(db.maker1CompleteReward2.getName()).getRewardId());
+
+                assertEquals(
+                        db.donateUser1.getId(),
+                        list2.get(db.donateUser1.getAddress()).getUserId());
             }
         }
-        assertEquals(
-                db.maker1CompleteReward1.getId(),
-                list.get(db.maker1CompleteReward1.getName()).getRewardId());
-
-        assertEquals(
-                db.maker1CompleteReward2.getId(),
-                list.get(db.maker1CompleteReward2.getName()).getRewardId());
-
-        assertEquals(
-                db.donateUser1.getId(),
-                list2.get(db.donateUser1.getAddress()).getUserId());
     }
     @Test
     @DisplayName("프로젝트를 생성한다")
