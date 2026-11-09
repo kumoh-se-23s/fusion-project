@@ -31,8 +31,8 @@ public class Reward extends BaseDomain {
 
     @Positive
     @Builder.Default
-    @Column(name = "required_amount", nullable = false)
-    private BigDecimal requiredAmount = BigDecimal.ZERO;
+    @Column(name = "reward_per_amount", nullable = false)
+    private BigDecimal rewardPerAmount = BigDecimal.ZERO;
 
     @Positive
     @Builder.Default
