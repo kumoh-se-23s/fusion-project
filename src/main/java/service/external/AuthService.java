@@ -9,11 +9,12 @@ import model.dto.TokenPair;
 import model.dto.request.account.ChangePasswordRequest;
 import model.dto.request.account.CreateLocalAccountRequest;
 import model.dto.request.account.DeleteAccountRequest;
+import model.dto.request.user.CreateSocialUserRequest;
 import model.dto.request.user.CreateUserRequest;
 import model.dto.response.IdResponse;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
-import repository.AccountRepository;
+import repository.LocalAccountRepository;
 import repository.UserRepository;
 import service.BaseService;
 import util.AccountUtil;
@@ -25,12 +26,12 @@ import java.security.spec.InvalidKeySpecException;
 public class AuthService extends BaseService {
     private final JwtTokenProvider jwtTokenProvider;
     private final AccountUtil accountUtil;
-    private final AccountRepository accountRepository;
+    private final LocalAccountRepository accountRepository;
     private final UserRepository userRepository;
 
     private final JedisPool jedisPool;
 
-    public AuthService(JwtTokenProvider jwtTokenProvider, AccountUtil accountUtil, AccountRepository accountRepository, UserRepository userRepository, JedisPool jedisPool) {
+    public AuthService(JwtTokenProvider jwtTokenProvider, AccountUtil accountUtil, LocalAccountRepository accountRepository, UserRepository userRepository, JedisPool jedisPool) {
         this.jwtTokenProvider = jwtTokenProvider;
         this.accountUtil = accountUtil;
         this.accountRepository = accountRepository;
@@ -38,24 +39,26 @@ public class AuthService extends BaseService {
         this.jedisPool = jedisPool;
     }
 
-    public TokenPair signUp(CreateLocalAccountRequest accountRequest, CreateUserRequest userRequest) {
-        if(userRepository.isExistEmail(userRequest.getUserData().getEmail())) {
-            throw new DuplicateEmailException();
-        } else {
-            if(userRequest.getUserData().getName() == null || userRequest.getUserData().getEmail() == null) {
-                throw new InvalidRequestException("필수 사항을 입력하지 않았습니다.");
+    public TokenPair localSignUp(CreateLocalAccountRequest accountRequest, CreateUserRequest userRequest) {
+        return tx.execute(() -> {
+            if (userRepository.isExistEmail(userRequest.getUserData().getEmail())) {
+                throw new DuplicateEmailException();
             }
 
-            return tx.execute(() -> {
-                accountRepository.createAccount(accountRequest.getId(), accountRequest.getPassword());
-                AppUser appuser = userRepository.createUser(userRequest.getUserData()).orElseThrow(InvalidRequestStateException::new);
+            accountRepository.createLocalAccount(accountRequest.getId(), accountRequest.getPassword());
+            AppUser appuser = userRepository.createUser(userRequest.getUserData()).orElseThrow(InvalidRequestStateException::new);
 
-                String accessToken = jwtTokenProvider.createAccessToken(String.valueOf(appuser.getId()));
-                String refreshToken = jwtTokenProvider.createRefreshToken(String.valueOf(appuser.getId()));
+            String accessToken = jwtTokenProvider.createAccessToken(String.valueOf(appuser.getId()));
+            String refreshToken = jwtTokenProvider.createRefreshToken(String.valueOf(appuser.getId()));
 
-                return new TokenPair(accessToken, refreshToken);
-            });
-        }
+            return new TokenPair(accessToken, refreshToken);
+        });
+    }
+
+    public TokenPair SocialSignUp(CreateSocialUserRequest request) {
+        return tx.execute(() -> {
+
+        });
     }
 
     public TokenPair login(AccountData accountData) {
@@ -83,10 +86,11 @@ public class AuthService extends BaseService {
         }
     }
 
-    public IdResponse changePassword(long userId, ChangePasswordRequest request) {
+    public IdResponse changePassword(long userPk, ChangePasswordRequest request) {
         try {
             // account repository에서 user Id로 pk 조회를 하면 어캄?...
-            LocalAccount result = accountRepository.findById(userId).orElseThrow(NotFoundException::new);
+            //수정
+            LocalAccount result = accountRepository.findById(userPk).orElseThrow(NotFoundException::new);
 
             String currentPassword = result.getPassword();
             String hashedInputPassword = accountUtil.hash(request.getCurrentPassword(), result.getSalt());
@@ -114,10 +118,11 @@ public class AuthService extends BaseService {
         }
     }
 
-    public void deleteAccount(long userId, DeleteAccountRequest request) {
+    public void deleteAccount(long userPk, DeleteAccountRequest request) {
         try {
             // account repository에서 user Id로 pk 조회를 하면 어캄?...
-            LocalAccount result = accountRepository.findById(userId).orElseThrow(NotFoundException::new);
+            // LocalAccount 객체가
+            LocalAccount result = accountRepository.findById(userPk).orElseThrow(NotFoundException::new);
 
             String hashedInputPassword = accountUtil.hash(request.getCheckPassword(), result.getSalt());
 
