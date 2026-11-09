@@ -76,7 +76,7 @@ public abstract class BaseRepositoryImpl<T extends BaseDomain, ID> implements Ba
         return entityManager.remove(entityClass, id);
     }
 
-    //filter가 null이면 조건 없이 행이 하나라도 있는지 확인 (find(null)과 동일한 의미)
+    //filter가 null이면 조건 없이 행이 하나라도 있는지 확인 (find(null)     과 동일한 의미)
     @Override
     public boolean isExist(Filter filter) {
         return !find(Filter.builder()

@@ -29,7 +29,7 @@ public class Donate extends BaseDomain {
     @Column(name = "donate_amount", nullable = false)
     private BigDecimal amount;
 
-    @Column(name = "donate_quantity", nullable = false)
+    @Column(name = "donate_quantity", nullable = false)//후원수량
     private Long quantity;
 
     @Builder.Default

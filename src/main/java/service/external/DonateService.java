@@ -1,10 +1,6 @@
 package service.external;
 
-import exception.AlreadyDonatedException;
-import exception.InvalidRequestException;
-import exception.LimitNumberOutException;
-import exception.NotFoundException;
-import exception.TransactionException;
+import exception.*;
 
 import lombok.RequiredArgsConstructor;
 
@@ -18,6 +14,7 @@ import model.domain.Reward;
 import model.dto.DonateData;
 import model.dto.request.donate.CreateDonateRequest;
 
+import model.dto.request.reward.CreateRewardDataRequest;
 import model.dto.response.IdResponse;
 import repository.DonateRepository;
 import repository.ProjectRepository;
@@ -28,6 +25,7 @@ import service.BaseService;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 public class DonateService extends BaseService {
@@ -180,7 +178,6 @@ public class DonateService extends BaseService {
                 throw new NotFoundException("조회할 유저id가 없습니다");
             }
             //존재하지 않는경우 리스트가 나오긴하지만 비워있는 리스트가 나옴,굳이 null체크 필요??
-            //캐스캐이드(?) 개념 공부하기...!
 
             List<Donate>donateList = donateRepository.findByUserId(userId);
             return Serializer.toDataList(
@@ -216,6 +213,37 @@ public class DonateService extends BaseService {
     }
 
     //후원 환불
+    public void refundDonate(Long donateId, Long userId){
+        Donate donate = donateRepository.findById(donateId).get();//해당 후원id의 객체 찾기
+        Reward reward = donate.getReward();
+        DonateData thisDonate =  Serializer.toData(
+                    donate,
+                    DonateData.class
+                );
+        List<DonateData> donateList = findDonateByUser(userId);
+
+        for(DonateData donateData : donateList){
+            if(donateData.equals(thisDonate)){//userId가져와서 후원한 내역중에 해당 donateId가 있는지 조회
+
+                if(!donate.getUser().getId().equals(userId)){//후원한 사람과 로그인 유저 동일인인지 확인
+                    throw new InvalidException();//아닐 경우 예외처리
+                }
+                else{//맞는경우
+                    Long donateQuantity = donate.getQuantity();
+                    Long remainQuantity = reward.getRemainQuantity();
+                    Long newQuantity = donateQuantity + remainQuantity;
+                    rewardRepository.update(//리워드 수량 수정
+                            reward.getId(),
+                            Map.of("remainQuantity",newQuantity)
+                    );
+                }
+
+            }
+
+        }
+        throw new InvalidException("해당 펀딩에 후원한 기록이 없습니다.");
+
+    }
 
     //후원 총금액
 }
