@@ -6,12 +6,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class AccountRepository extends BaseRepositoryImpl<LocalAccount, Long> {
+public class LocalAccountRepository extends BaseRepositoryImpl<LocalAccount, Long> {
 
 //    CRUD에 맞는 네이밍
 //    loginId는 UNIQUE
 
-    public void createAccount(String loginId, String password) {
+    public void createLocalAccount(String loginId, String password) {
         LocalAccount localAccount = LocalAccount.builder()
                 .loginId(loginId)
                 .password(password)
