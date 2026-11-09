@@ -77,12 +77,13 @@ public class ProjectLikeService extends BaseService {
 
     private Project updateLikeValue(Project project, Boolean likeType, int change) {
         Long current = likeType ? project.getLikeCount() : project.getDislikeCount();
+        current += change;
 
         if (likeType) {
-            return projectRepository.updateByLike(project.getId(), Math.max(current, 0))
+            return projectRepository.updateByLike(project.getId(), Math.max(current, 0L))
                     .orElseThrow(NotFoundException::new);
         } else {
-            return projectRepository.updateByDislike(project.getId(), Math.max(current, 0))
+            return projectRepository.updateByDislike(project.getId(), Math.max(current, 0L))
                     .orElseThrow(NotFoundException::new);
         }
     }

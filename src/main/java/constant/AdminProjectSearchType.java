@@ -6,6 +6,7 @@ import repository.Order;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -36,7 +37,7 @@ public enum AdminProjectSearchType {
     DESC_SUPPORTER_COUNT("DESC_SUPPORTER_COUNT"),;
 
     private final String stringValue;
-    private final Order order;
+    private final Optional<Order> order;
 
     private static final Map<String, AdminProjectSearchType> BY_STRING_VALUE =
         Arrays.stream(values())
@@ -45,11 +46,11 @@ public enum AdminProjectSearchType {
 
     AdminProjectSearchType(String stringValue, Order order) {
         this.stringValue = stringValue;
-        this.order = order;
+        this.order = Optional.ofNullable(order);
     }
     AdminProjectSearchType(String stringValue) {
         this.stringValue = stringValue;
-        this.order = null;
+        this.order = Optional.empty();
     }
 
     public static AdminProjectSearchType fromString(String stringValue) {

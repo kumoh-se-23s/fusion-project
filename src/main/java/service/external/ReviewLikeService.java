@@ -74,12 +74,13 @@ public class ReviewLikeService extends BaseService {
 
     private Review updateLikeValue(Review review, Boolean likeType, int change) {
         Long current = likeType ? review.getLikeCount() : review.getDislikeCount();
+        current += change;
 
         if (likeType) {
-            return reviewRepository.updateByLike(review.getId(), Math.max(current, 0))
+            return reviewRepository.updateByLike(review.getId(), Math.max(current, 0L))
                     .orElseThrow(NotFoundException::new);
         } else {
-            return reviewRepository.updateByDislike(review.getId(), Math.max(current, 0))
+            return reviewRepository.updateByDislike(review.getId(), Math.max(current, 0L))
                     .orElseThrow(NotFoundException::new);
         }
     }

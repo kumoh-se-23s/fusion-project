@@ -18,6 +18,7 @@ import java.math.RoundingMode;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -48,7 +49,7 @@ public class AdminProjectQueryService extends BaseService {
         return tx.execute(true, () -> {
             AdminProjectSearchType projectSearchType = AdminProjectSearchType.fromString(searchType);
             List<ProjectState> projectStateList = ProjectState.fromStringList(stateList);
-            Order order = projectSearchType.getOrder();
+            Optional<Order> order = projectSearchType.getOrder();
 
             AppUser maker = userRepository.findByNickName(makerNickName).getFirst();
             Category category = categoryRepository.findByName(List.of(categoryName)).getFirst();
@@ -59,9 +60,8 @@ public class AdminProjectQueryService extends BaseService {
                     category,
                     projectStateList,
                     limit,
-                    order == null ? null : Sort.by(order));
+                    order.map(Sort::by).orElse(null));
 
-            //optional
             boolean isAchievementRate =
                     projectSearchType == AdminProjectSearchType.ASC_ACHIEVEMENT_RATE
                     || projectSearchType == AdminProjectSearchType.DESC_ACHIEVEMENT_RATE;
@@ -69,7 +69,7 @@ public class AdminProjectQueryService extends BaseService {
             boolean isSupporterCount = projectSearchType == AdminProjectSearchType.DESC_SUPPORTER_COUNT
                         || projectSearchType == AdminProjectSearchType.ASC_SUPPORTER_COUNT;
 
-            if (order == null) {
+            if (order.isEmpty()) {
                 if (isAchievementRate) {
                     projectList = sortByAchievementRate(projectList, projectSearchType);
                 } else if (isSupporterCount) {
@@ -85,12 +85,12 @@ public class AdminProjectQueryService extends BaseService {
                     .build();
         });
     }
-    private BigDecimal achievementRate(Project p) {
-        BigDecimal purpose = p.getPurposeAmount();
+    private BigDecimal achievementRate(Project project) {
+        BigDecimal purpose = project.getPurposeAmount();
         if (purpose == null || purpose.signum() == 0) {
             return BigDecimal.ZERO;
         }
-        return p.getDonateAmount().divide(purpose, 4, RoundingMode.HALF_UP);
+        return project.getDonateAmount().divide(purpose, 4, RoundingMode.HALF_UP);
     }
 
     private List<Project> sortByAchievementRate(List<Project> projectList, AdminProjectSearchType projectSearchType) {
