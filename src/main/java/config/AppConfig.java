@@ -29,9 +29,9 @@ public class AppConfig {
 
     private final ProjectMakerService projectMakerService = new ProjectMakerService(
             projectRepository, donateRepository, rewardRepository,
-            userRepository, categoryRepository);
+            userRepository, categoryRepository, denyProjectRepository);
     private final ProjectQueryService projectQueryService = new ProjectQueryService(
-            projectRepository, categoryRepository);
+            projectRepository, categoryRepository,  userRepository);
     private final service.external.RewardService rewardService = new RewardService(
             projectRepository, donateRepository, rewardRepository, categoryRepository);
     private final service.external.DonateService donateService = new DonateService(
@@ -39,7 +39,7 @@ public class AppConfig {
     );
     //이름이 같은 external.ProjectService와 구분하기 위해 전체 경로 사용
     private final AdminProjectControlService adminProjectControlService =
-            new AdminProjectControlService(projectRepository);
+            new AdminProjectControlService(projectRepository, userRepository, categoryRepository, projectLikeRepository);
     private final ReviewCommandService reviewCommandService = new ReviewCommandService(
             reviewRepository, userRepository, donateRepository, rewardRepository);
 
