@@ -113,7 +113,7 @@ public class RewardService {
 
 
     //  프로젝트 ID로 리워드 조회
-    public List<RewardData> getRewardByProject(Long projectId) {
+    public List<RewardData> findRewardByProject(Long projectId) {
 
         if (projectId == null) {
             throw new LimitNumberOutException(
@@ -161,7 +161,7 @@ public class RewardService {
     }
 
 
-    //  메이커의 프로젝트별 리워드 조회
+    //리워드조회[메이커]  메이커의 프로젝트별 리워드 조회
     public List<List<RewardData>> getRewardFindByMaker(
             Long makerId
     ) {
@@ -180,17 +180,12 @@ public class RewardService {
         for (Project project : projectList) {
 
             dtoList.add(
-                    getRewardByProject(project.getId())
+                    findRewardByProject(project.getId())
             );
         }
 
         return dtoList;
     }
-    //리워드수정
-    //소속 펀딩pk도 수정이 가능하게 만들기
-    //메이커가 본인 펀딩을 수정하는 것
-    //Cortroller에서 로그인하는 것과 본인펀딩인지 확인하는건 다른 것, 로그인한 사용자라는 것은 알 수 있으나 본인 프로젝트라는 것은 알 수 없기 때문에
-    //근데 생각해보니 수정 삭제 기능을 넣어야 하나..??? 만들고나서는 수정 삭제 하면 안되지 않나
 
     public void updateReward(Long loginUserId, Long rewardId, CreateRewardDataRequest request){
         Reward reward = rewardRepository.findById(rewardId)

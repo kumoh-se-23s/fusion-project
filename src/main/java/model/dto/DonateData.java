@@ -21,7 +21,7 @@ public class DonateData extends BaseData {
 
     private Reward reward;
 
-    private BigDecimal amount;
+    private BigDecimal amount;//후원하는 양
 
     private Long quantity;
 
