@@ -4,10 +4,10 @@ import exception.NotFoundException;
 import model.Serializer;
 import model.domain.DenyProject;
 import model.dto.DenyProjectData;
-import model.dto.ProjectData;
 import model.dto.response.DataCollectionResponse;
 import model.dto.response.SingleDataResponse;
 import repository.DenyProjectRepository;
+import repository.ProjectRepository;
 import service.BaseService;
 
 import java.util.List;
@@ -20,6 +20,7 @@ import java.util.List;
 **/
 public class AdminDenyProjectQueryService extends BaseService {
     private DenyProjectRepository denyProjectRepository;
+    private ProjectRepository projectRepository;
 
     public SingleDataResponse<DenyProjectData> getDenyProject(Long denyProjectId) {
         DenyProject denyProject = denyProjectRepository.findById(denyProjectId)
@@ -31,7 +32,15 @@ public class AdminDenyProjectQueryService extends BaseService {
     }
 
     public DataCollectionResponse<DenyProjectData> getAllDenyProject(int limit) {
-        List<DenyProject> denyProjectList = denyProjectRepository.findByLimit(limit);
+        List<DenyProject> denyProjectList = denyProjectRepository.findAll(limit);
+
+        return DataCollectionResponse.<DenyProjectData>builder()
+                .datas(Serializer.toDataList(denyProjectList, DenyProjectData.class))
+                .amount((long) denyProjectList.size())
+                .build();
+    }
+    public DataCollectionResponse<DenyProjectData> getDenyProjectByProject(Long projectId) {
+        List<DenyProject> denyProjectList = denyProjectRepository.findByProject(projectId);
 
         return DataCollectionResponse.<DenyProjectData>builder()
                 .datas(Serializer.toDataList(denyProjectList, DenyProjectData.class))
