@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import model.Serializer;
 import model.domain.Category;
 import model.dto.CategoryData;
-import model.dto.request.IdQueryRequest;
 import model.dto.request.category.CategoryRequest;
 import model.dto.response.DataCollectionResponse;
 import model.dto.response.DeleteResponse;
@@ -40,10 +39,10 @@ public class AdminCategoryService extends BaseService {
         });
     }
 
-    public SingleDataResponse<CategoryData> getCategory(IdQueryRequest request) {
+    public SingleDataResponse<CategoryData> getCategory(long categoryId) {
         return tx.execute(true, () -> {
 
-            Category category = categoryRepository.findById(request.getId())
+            Category category = categoryRepository.findById(categoryId)
                     .orElseThrow(NotFoundException::new);
 
             return new SingleDataResponse<>(Serializer.toData(category, CategoryData.class));
@@ -51,9 +50,9 @@ public class AdminCategoryService extends BaseService {
         });
     }
 
-    public DataCollectionResponse<CategoryData> getAllCategory() {
+    public DataCollectionResponse<CategoryData> getAllCategory(int limit) {
         return tx.execute(true, () -> {
-            List<Category> categories = categoryRepository.findAll();
+            List<Category> categories = categoryRepository.findAll(limit);
 
             return DataCollectionResponse.<CategoryData>builder()
                     .datas(Serializer.toDataList(categories, CategoryData.class))
