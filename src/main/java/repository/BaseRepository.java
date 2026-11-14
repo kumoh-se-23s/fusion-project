@@ -21,6 +21,8 @@ public interface BaseRepository<T extends BaseDomain, ID> {
 
     List<T> findAll();
 
+    List<T> findAll(int limit);
+
     //사용 조회하고 수정 후 수정한 객체를 그대로 파라미터
     Optional<T> update(ID id, Map<String, Object> updateData);
 

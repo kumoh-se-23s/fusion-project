@@ -19,10 +19,4 @@ public class DenyProjectRepository extends BaseRepositoryImpl<DenyProject, Long>
                 .build()
         );
     }
-    public List<DenyProject> findByLimit(int limit) {
-        return find(Filter.builder()
-                .limit(limit)
-                .build()
-        );
-    }
 }

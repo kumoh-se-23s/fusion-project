@@ -90,13 +90,6 @@ public class ProjectRepository extends BaseRepositoryImpl<Project, Long> {
         return find(filter);
     }
 
-    public List<Project> findByLimit(int limit) {
-        return find(Filter.builder()
-                .limit(limit)
-                .build()
-        );
-    }
-
     public List<Project> findByPending(int limit) {
         return find(Filter.builder()
                 .conditions(Map.of("state", ProjectState.PENDING_APPROVAL))

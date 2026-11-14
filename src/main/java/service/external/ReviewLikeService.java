@@ -3,7 +3,6 @@ package service.external;
 import exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import model.domain.AppUser;
-import model.domain.Project;
 import model.domain.Review;
 import model.domain.ReviewLike;
 import model.dto.request.like.LikeRequest;

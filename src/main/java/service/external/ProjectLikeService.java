@@ -13,7 +13,6 @@ import repository.ProjectRepository;
 import repository.UserRepository;
 import service.BaseService;
 
-import java.util.function.BiConsumer;
 
 /**
  * 프로젝트의 좋아요를 관리하는 서비스 클래스

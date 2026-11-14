@@ -3,7 +3,6 @@ package service.external;
 import constant.ProjectState;
 import exception.InvalidUserException;
 import exception.NotFoundException;
-import exception.NotNullException;
 import exception.OutOfRangeException;
 import lombok.RequiredArgsConstructor;
 import model.Serializer;

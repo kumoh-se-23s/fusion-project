@@ -51,6 +51,15 @@ public abstract class BaseRepositoryImpl<T extends BaseDomain, ID> implements Ba
     public List<T> findAll() {
         return entityManager.findBy(toCriteria(null));
     }
+
+    @Override
+    public List<T> findAll(int limit) {
+        return entityManager.findBy(toCriteria(
+                Filter.builder()
+                        .limit(limit)
+                        .build()
+        ));
+    }
     @Override
     public Optional<T> findById(ID id) {
         return Optional.ofNullable(entityManager.find(entityClass, id));
