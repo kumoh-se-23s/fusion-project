@@ -2,6 +2,7 @@ package service.internal;
 
 import constant.ProjectState;
 import exception.NotFoundException;
+import lombok.RequiredArgsConstructor;
 import model.domain.DenyProject;
 import model.domain.Project;
 import model.dto.request.deny_project.DenyProjectRequest;
@@ -19,9 +20,10 @@ import java.util.Map;
  * @author 김민규
  * @version 1.0
 **/
+@RequiredArgsConstructor
 public class AdminDenyProjectControlService extends BaseService {
-    private ProjectRepository projectRepository;
-    private DenyProjectRepository denyProjectRepository;
+    private final ProjectRepository projectRepository;
+    private final DenyProjectRepository denyProjectRepository;
 
     public IdResponse createDenyProject(Long projectId, DenyProjectRequest dto) {
         return tx.execute(false, () -> {

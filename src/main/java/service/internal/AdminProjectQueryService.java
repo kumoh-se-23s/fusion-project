@@ -136,7 +136,7 @@ public class AdminProjectQueryService extends BaseService {
     }
 
     public DataCollectionResponse<ProjectData> getAllProject(int limit) {
-        List<Project> projectList = projectRepository.findByLimit(limit);
+        List<Project> projectList = projectRepository.findAll(limit);
 
         return DataCollectionResponse.<ProjectData>builder()
                 .datas(Serializer.toDataList(projectList, ProjectData.class))
