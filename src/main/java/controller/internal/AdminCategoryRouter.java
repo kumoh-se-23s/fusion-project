@@ -1,16 +1,16 @@
 package controller.internal;
 
+import com.minihttp.core.route.BaseRouter;
+import com.minihttp.core.route.annotation.*;
 import model.dto.CategoryData;
-import model.dto.request.IdQueryRequest;
 import model.dto.request.category.CategoryRequest;
 import model.dto.response.DataCollectionResponse;
 import model.dto.response.DeleteResponse;
 import model.dto.response.IdResponse;
 import model.dto.response.SingleDataResponse;
 import service.internal.AdminCategoryService;
-
 /**
- * 카테고리 어드민 사용 시스템
+ * 관리자 전용 카테고리 라우터
  * @author 김민규
  * @since 2026-11-14
  * @version 1.0
