@@ -29,19 +29,19 @@ public class AdminReviewProjectRouter extends BaseRouter {
     }
 
     @Post()
-    public IdResponse createReview( CreateReviewRequest dto) {
+    public IdResponse createReview( CreateReviewRequest dto, long makerId) {
         return adminReviewControlService.createReview(dto, makerId);
     }
 
     @Get("/review_id}")
     public SingleDataResponse<ReviewData> getReview(@Path("review_id") long reviewId) {
-        return adminReviewQueryService.
+        return adminReviewQueryService.getReview(reviewId);
 
     }
 
     @Get()
     public DataCollectionResponse<ReviewData> getAllReview(int limit) {
-        return adminReviewQueryService.getAllDenyProject()
+        return adminReviewQueryService.getAll(limit);
     }
 
     @Get("/{project_id}")
