@@ -38,20 +38,4 @@ public class ProfileService extends BaseService {
 
         return new IdResponse(updateResult);
     }
-
-//    //키값 검증하는 로직 필요
-//    public DeleteResponse deleteUser(long userId) {
-//        return new DeleteResponse(userRepository.delete(userId));
-//
-//    }
-
-//    //List로 만들어야 함
-//    public List<UserRoleRelation> getRoles(long userId) {
-//        AppUser appUser = userRepository.findById(userId).orElseThrow(NotFoundException::new);
-//
-//        return userRoleRelationRepository.find(Filter.builder()
-//                .conditions(Map.of("user", appUser))
-//                .build()
-//        );
-//    }
 }
