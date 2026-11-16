@@ -42,10 +42,4 @@ public class ReviewRepository extends BaseRepositoryImpl<Review, Long>{
     public Optional<Review> updateByDislike(Long reviewId, Long dislikeCount) {
         return update(reviewId, Map.of("dislikeCount", dislikeCount));
     }
-    public List<Review> findByLimit(int limit) {
-        return find(Filter.builder()
-                .limit(limit)
-                .build()
-        );
-    }
 }
