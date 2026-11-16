@@ -1,5 +1,7 @@
 package controller.internal;
 
+import com.minihttp.core.route.BaseRouter;
+import com.minihttp.core.route.annotation.*;
 import model.dto.DenyProjectData;
 import model.dto.request.deny_project.DenyProjectRequest;
 import model.dto.response.DataCollectionResponse;
@@ -8,6 +10,13 @@ import model.dto.response.IdResponse;
 import model.dto.response.SingleDataResponse;
 import service.internal.AdminDenyProjectControlService;
 import service.internal.AdminDenyProjectQueryService;
+
+/**
+ * 관리자 전용 프로젝트 거절 사유 라우터
+ * @author 김민규
+ * @since 2026-11-14
+ * @version 1.0
+ */
 
 public class AdminDenyProjectRouter extends BaseRouter {
     private final AdminDenyProjectControlService adminDenyProjectControlService;
@@ -18,7 +27,7 @@ public class AdminDenyProjectRouter extends BaseRouter {
             AdminDenyProjectQueryService adminDenyProjectQueryService) {
         this.adminDenyProjectControlService = adminDenyProjectControlService;
         this.adminDenyProjectQueryService = adminDenyProjectQueryService;
-        super("internal/project/deny");
+        super("/internal/project/deny");
     }
 
     @Post("/{project_id}")

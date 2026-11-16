@@ -1,12 +1,20 @@
 plugins {
     id 'java'
 }
-
+java {
+    sourceCompatibility = '26'
+}
 group = 'org.example'
 version = '1.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
+    exclusiveContent {
+        forRepository {
+            maven { url = uri("https://maven.apsode.co.kr/snapshots") }
+        }
+        filter { includeGroup("com.minihttp") }
+    }
 }
 
 dependencies {
@@ -29,6 +37,8 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.18.2'
 
     implementation 'redis.clients:jedis:5.2.0'
+
+    implementation 'com.minihttp:minimal-http-framework:0.1.0-SNAPSHOT'
 
 }
 

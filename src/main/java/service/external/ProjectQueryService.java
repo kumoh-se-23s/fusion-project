@@ -2,6 +2,7 @@ package service.external;
 
 import constant.ProjectSearchType;
 import constant.ProjectState;
+import exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import model.Serializer;
 import model.domain.AppUser;
@@ -98,10 +99,13 @@ public class ProjectQueryService extends BaseService {
             Order order = projectSearchType.getOrder();
 
             AppUser maker = userRepository.findByNickName(makerNickName)
-                    .getFirst();
-
+                    .stream()
+                    .findFirst()
+                    .orElseThrow(NotFoundException::new);
             Category category = categoryRepository.findByName(List.of(categoryName))
-                    .getFirst();
+                    .stream()
+                    .findFirst()
+                    .orElseThrow(NotFoundException::new);
 
             List<Project> projectList = projectRepository.findByFilter(
                 title,

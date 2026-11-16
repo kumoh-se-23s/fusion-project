@@ -51,8 +51,14 @@ public class AdminProjectQueryService extends BaseService {
             List<ProjectState> projectStateList = ProjectState.fromStringList(stateList);
             Optional<Order> order = projectSearchType.getOrder();
 
-            AppUser maker = userRepository.findByNickName(makerNickName).getFirst();
-            Category category = categoryRepository.findByName(List.of(categoryName)).getFirst();
+            AppUser maker = userRepository.findByNickName(makerNickName)
+                    .stream()
+                    .findFirst()
+                    .orElseThrow(NotFoundException::new);
+            Category category = categoryRepository.findByName(List.of(categoryName))
+                    .stream()
+                    .findFirst()
+                    .orElseThrow(NotFoundException::new);
 
             List<Project> projectList = projectRepository.findByFilter(
                     title,
@@ -61,6 +67,10 @@ public class AdminProjectQueryService extends BaseService {
                     projectStateList,
                     limit,
                     order.map(Sort::by).orElse(null));
+
+            if (projectList.isEmpty()) {
+                throw new NotFoundException();
+            }
 
             boolean isAchievementRate =
                     projectSearchType == AdminProjectSearchType.ASC_ACHIEVEMENT_RATE
@@ -105,7 +115,7 @@ public class AdminProjectQueryService extends BaseService {
                 .toList();
     }
 
-    public List<Project> sortBySupporterCount(List<Project> projectList, AdminProjectSearchType projectSearchType) {
+    private List<Project> sortBySupporterCount(List<Project> projectList, AdminProjectSearchType projectSearchType) {
         List<Reward> rewardList = rewardRepository.findByProjects(projectList);
         List<Donate> donateList = donateRepository.findByRewards(rewardList);
 
