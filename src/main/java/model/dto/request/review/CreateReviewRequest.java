@@ -17,9 +17,5 @@ public class CreateReviewRequest extends Request {
     @DataField(name = "reward.id")
     private Long rewardId;
 
-    private String text;
-
-    private BigDecimal rating;
-
-    private byte[] imgFile;
+    private ReviewDataRequest request;
 }
