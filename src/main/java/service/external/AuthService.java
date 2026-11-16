@@ -19,6 +19,7 @@ import repository.UserRepository;
 import service.BaseService;
 import util.AccountUtil;
 import util.JwtTokenProvider;
+import util.RedisUtil;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
@@ -29,14 +30,14 @@ public class AuthService extends BaseService {
     private final LocalAccountRepository localAccountRepository;
     private final UserRepository userRepository;
 
-    private final JedisPool jedisPool;
+    private final RedisUtil redisUtil;
 
-    public AuthService(JwtTokenProvider jwtTokenProvider, AccountUtil accountUtil, LocalAccountRepository localAccountRepository, UserRepository userRepository, JedisPool jedisPool) {
+    public AuthService(JwtTokenProvider jwtTokenProvider, AccountUtil accountUtil, LocalAccountRepository localAccountRepository, UserRepository userRepository, RedisUtil redisUtil) {
         this.jwtTokenProvider = jwtTokenProvider;
         this.accountUtil = accountUtil;
         this.localAccountRepository = localAccountRepository;
         this.userRepository = userRepository;
-        this.jedisPool = jedisPool;
+        this.redisUtil = redisUtil;
     }
 
     public TokenPair localSignUp(CreateLocalAccountRequest accountRequest, CreateUserRequest userRequest) {
@@ -45,7 +46,7 @@ public class AuthService extends BaseService {
                 throw new DuplicateEmailException();
             }
 
-            if(localAccountRepository.isExistLoginId(accountRequest.getId())) {
+            if (localAccountRepository.isExistLoginId(accountRequest.getId())) {
                 throw new DuplicateIdException();
             }
 
@@ -83,9 +84,7 @@ public class AuthService extends BaseService {
                 String accessToken = jwtTokenProvider.createAccessToken(String.valueOf(localAccount.getId()));
                 String refreshToken = jwtTokenProvider.createRefreshToken(String.valueOf(localAccount.getId()));
 
-                try (Jedis jedis = jedisPool.getResource()) {
-                    jedis.setex("refreshToken" + localAccount.getId(), 3600, refreshToken);
-                }
+                redisUtil.save("refreshToken" + localAccount.getId(), refreshToken, 3600);
 
                 return new TokenPair(accessToken, refreshToken);
             } else {
@@ -97,29 +96,30 @@ public class AuthService extends BaseService {
     }
 
     public IdResponse changePassword(long userPk, ChangePasswordRequest request) {
-        try {
-            // account repository에서 user Id로 pk 조회를 하면 어캄?...
-            //수정
-            LocalAccount result = localAccountRepository.findById(userPk).orElseThrow(NotFoundException::new);
+        return tx.execute(() -> {
+            try {
+                AppUser appUser = userRepository.findById(userPk).orElseThrow(NotFoundException::new);
+                LocalAccount localAccount = localAccountRepository.findByFk(appUser).orElseThrow(NotFoundException::new);
 
-            String currentPassword = result.getPassword();
-            String hashedInputPassword = accountUtil.hash(request.getCurrentPassword(), result.getSalt());
+                String currentPassword = localAccount.getPassword();
+                String hashedInputPassword = accountUtil.hash(request.getCurrentPassword(), localAccount.getSalt());
 
-            if (currentPassword.equals(hashedInputPassword)) {
-                String newSalt = accountUtil.generateSalt();
-                String hashedPassword = accountUtil.hash(request.getNewPassword(), newSalt);
+                if (currentPassword.equals(hashedInputPassword)) {
+                    String newSalt = accountUtil.generateSalt();
+                    String hashedPassword = accountUtil.hash(request.getNewPassword(), newSalt);
 
-                localAccountRepository.updatePassword(result.getId(), hashedPassword, newSalt);
+                    localAccountRepository.updatePassword(localAccount.getId(), hashedPassword, newSalt);
 
-                return new IdResponse(result.getId());
-            } else {
-                throw new PasswordMisMatchException();
+                    return new IdResponse(localAccount.getId());
+                } else {
+                    throw new PasswordMisMatchException();
+                }
+
+            } catch (NoSuchAlgorithmException |
+                     InvalidKeySpecException e) {
+                throw new InvalidException(e.getMessage());
             }
-
-        } catch (NoSuchAlgorithmException |
-                 InvalidKeySpecException e) {
-            throw new InvalidException(e.getMessage());
-        }
+        });
     }
 
     public void logout(long userId) {
@@ -128,22 +128,27 @@ public class AuthService extends BaseService {
         }
     }
 
-    public void deleteAccount(long userPk, DeleteAccountRequest request) {
-        try {
-            // account repository에서 user Id로 pk 조회를 하면 어캄?...
-            // LocalAccount 객체가
-            LocalAccount result = localAccountRepository.findById(userPk).orElseThrow(NotFoundException::new);
+    public void deleteAccount(long userId, DeleteAccountRequest request) {
+        tx.run(() -> {
+            try {
+                AppUser appUser = userRepository.findById(userId).orElseThrow(NotFoundException::new);
+                LocalAccount localAccount = localAccountRepository.findByFk(appUser).orElseThrow(NotFoundException::new);
 
-            String hashedInputPassword = accountUtil.hash(request.getCheckPassword(), result.getSalt());
+                String hashedInputPassword = accountUtil.hash(request.getCheckPassword(), localAccount.getSalt());
 
-            if (hashedInputPassword.equals(result.getPassword())) {
-                localAccountRepository.delete(result.getId());
-            } else {
-                throw new PasswordMisMatchException();
+                if (hashedInputPassword.equals(localAccount.getPassword())) {
+                    localAccountRepository.delete(localAccount.getId());
+                    userRepository.delete(userId);
+
+                } else {
+                    throw new PasswordMisMatchException();
+                }
+
+            } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+                throw new InvalidException(e.getMessage());
             }
+        });
 
-        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-            throw new InvalidException(e.getMessage());
-        }
+        redisUtil.delete("refreshToken" + userId);
     }
 }
