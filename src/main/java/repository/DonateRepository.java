@@ -48,4 +48,12 @@ public class DonateRepository extends BaseRepositoryImpl<Donate, Long> {
         );
 
     }
+
+    public List<Donate> findAllDonates(){
+        return find(
+                Filter.builder()
+                        .sort(Sort.by(Order.asc("donatedAt")))
+                        .build()
+        );
+    }
 }
