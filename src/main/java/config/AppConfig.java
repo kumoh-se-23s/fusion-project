@@ -8,6 +8,8 @@ import service.external.ProjectService;
 import service.external.ReviewService;
 import service.external.RewardService;
 import service.internal.CategoryService;
+import service.internal.UserRoleService;
+import util.RedisUtil;
 
 /**
  * 앱 시작 시 리포지토리, 서비스를 한 번 생성하고 주입하는 조립 클래스
@@ -41,6 +43,9 @@ public class AppConfig {
             new service.internal.ProjectService(projectRepository);
     private final ReviewService reviewService = new ReviewService(
             reviewRepository, userRepository, donateRepository, rewardRepository);
+    private final RedisUtil redisUtil = new RedisUtil();
+    private final UserRoleService userRoleService = new UserRoleService(
+            userRepository, userRoleRepository, userRoleRelationRepository, redisUtil);
 
     public AppConfig() {
         //db.ddl-auto 설정에 따라 도메인 기준으로 테이블 생성
