@@ -19,12 +19,13 @@ public class JwtTokenProvider {
     final private String secretKey = "YEm5Guw205YIM4QuSKDrQqv/nmvssJwbQQc8OPCJ4lM=";
     final private SecretKey key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
 
-    public String createAccessToken(String userId) {
+
+    public String createAccessToken(long userId) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + 1000 * 60 * 15);
 
         return Jwts.builder()
-                .subject(userId)
+                .subject(String.valueOf(userId))
                 .id(UUID.randomUUID().toString())
                 .claim("type", "access")
                 .issuedAt(now)
@@ -33,21 +34,21 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    public String createRefreshToken(String userId) {
+    public String createRefreshToken(long userId) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + 1000 * 60 * 60);
 
         return Jwts.builder()
-                .subject(userId)
+                .subject(String.valueOf(userId))
                 .id(UUID.randomUUID().toString())
-                .claim("type" , "refresh")
+                .claim("type", "refresh")
                 .issuedAt(now)
                 .expiration(expiry)
                 .signWith(key)
                 .compact();
     }
 
-    //서명, 만료시간, 형식을 한번에 확인해주고 맞으면 Claims를 넘김
+
     private Claims getClaims(String token) {
         return Jwts.parser()
                 .verifyWith(key)
@@ -58,6 +59,12 @@ public class JwtTokenProvider {
 
     public boolean validateToken(String token) throws JwtException, IllegalArgumentException {
         return getClaims(token).getSubject() != null;
+    }
+
+    public long getUserId(String token) {
+        String subject = getClaims(token).getSubject();
+
+        return Long.parseLong(subject);
     }
 
     public boolean isAccessToken(Claims claims) throws JwtException, IllegalArgumentException {
