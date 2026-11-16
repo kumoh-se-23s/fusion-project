@@ -35,9 +35,9 @@ public class RedisUtil {
         }
     }
 
-    public boolean checkWhiteList(String userId , String token) {
+    public boolean checkBlackList(String jti, String token) {
         try (Jedis jedis = getPool().getResource()) {
-            String value = jedis.get(userId);
+            String value = jedis.get("black_list:" + jti);
 
             if(value == null) {
                 return false;
