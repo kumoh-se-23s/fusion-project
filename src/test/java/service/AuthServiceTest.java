@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
-import repository.AccountRepository;
+import repository.LocalAccountRepository;
 import repository.UserRepository;
 import service.external.AuthService;
 import util.AccountUtil;
@@ -48,7 +48,7 @@ class AuthServiceTest {
     // ===================================================================== 가짜 객체
     // DB와 Redis 없이 테스트하기 위해 진짜 클래스를 상속해서 필요한 메서드만 바꿔 끼운다.
 
-    static class FakeAccountRepository extends AccountRepository {
+    static class FakeAccountRepository extends LocalAccountRepository {
         private final Map<Long, LocalAccount> accounts = new HashMap<>();
         private final List<Long> deletedIds = new ArrayList<>();
         private Long updatedId;
