@@ -4,7 +4,7 @@ plugins {
 java {
     sourceCompatibility = '26'
 }
-group = 'org.example'
+group = 'com.fusion'
 version = '1.0-SNAPSHOT'
 
 repositories {
@@ -15,6 +15,10 @@ repositories {
         }
         filter { includeGroup("com.minihttp") }
     }
+}
+
+configurations.configureEach {
+    resolutionStrategy.cacheChangingModulesFor(0, "seconds")
 }
 
 dependencies {
