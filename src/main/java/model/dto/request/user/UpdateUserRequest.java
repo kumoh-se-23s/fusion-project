@@ -12,8 +12,6 @@ import model.dto.request.UpdateRequest;
 public class UpdateUserRequest extends UpdateRequest {
     private String name;
 
-    private String email;
-
     private String address;
 
     private String postal;
