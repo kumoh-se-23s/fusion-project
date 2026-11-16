@@ -63,7 +63,7 @@ public class EntityManagerImpl implements EntityManager {
         }
         String sql = withLock(EntityMetadata.of(entityClass).getSelectByIdSql(), lockMode);
         List<T> result = withConnection(c -> load(c, sql, List.of(primaryKey), entityClass, new HashMap<>()));
-        return result.isEmpty() ? null : result.get(0);
+        return result.isEmpty() ? null : result.getFirst();
     }
 
     @Override
@@ -192,7 +192,8 @@ public class EntityManagerImpl implements EntityManager {
     //NOT NULL 컬럼에 null을 넣으면 DB 오류 대신 400으로 응답
     private static void checkNotNull(Object entity, List<ColumnInfo> columns) {
         for (ColumnInfo column : columns) {
-            if (!column.isNullable() && column.getValue(entity) == null) {
+            if (!column.isNullable() &&
+                    (column.getValue(entity) == null || column.getValue(entity).toString().isBlank())) {
                 throw new NotNullException("'" + column.field().getName() + "' cannot be null");
             }
         }
