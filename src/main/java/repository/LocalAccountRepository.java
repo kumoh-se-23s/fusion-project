@@ -39,6 +39,19 @@ public class LocalAccountRepository extends BaseRepositoryImpl<LocalAccount, Lon
         }
     }
 
+    public Optional<LocalAccount> findByFk(AppUser appUser) {
+        List<LocalAccount> result = find(Filter.builder()
+                .conditions(Map.of("user", appUser))
+                .limit(1)
+                .build());
+
+        if(result.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(result.get(0));
+    }
+
     //파라미터로 다 받을지 VS 안 받을지(DTO)
     //회원가입 시 사용 예정, salt,user => NonNull이므로 salt 생성 user 받아야함
 
