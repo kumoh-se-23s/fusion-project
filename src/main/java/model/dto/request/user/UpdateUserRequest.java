@@ -1,16 +1,22 @@
 package model.dto.request.user;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import model.dto.BaseData;
 import model.dto.UserData;
+import model.dto.request.UpdateRequest;
 
 @Getter
-@Setter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class UpdateUserRequest extends BaseData {
-    private UserData userData;
+public class UpdateUserRequest extends UpdateRequest {
+    private String name;
+
+    private String email;
+
+    private String address;
+
+    private String postal;
+
+    private String phone;
 }

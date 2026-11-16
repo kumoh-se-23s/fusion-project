@@ -1,5 +1,6 @@
 package repository;
 
+import model.domain.AppUser;
 import model.domain.LocalAccount;
 
 import java.util.List;
@@ -11,10 +12,12 @@ public class LocalAccountRepository extends BaseRepositoryImpl<LocalAccount, Lon
 //    CRUD에 맞는 네이밍
 //    loginId는 UNIQUE
 
-    public void createLocalAccount(String loginId, String password) {
+    public void createLocalAccount(AppUser appUser, String loginId, String password, String salt) {
         LocalAccount localAccount = LocalAccount.builder()
+                .user(appUser)
                 .loginId(loginId)
                 .password(password)
+                .salt(salt)
                 .build();
 
         create(localAccount);
@@ -45,5 +48,11 @@ public class LocalAccountRepository extends BaseRepositoryImpl<LocalAccount, Lon
                 "password", hashedPassword,
                 "salt", salt
         )).isPresent();
+    }
+
+    public boolean isExistLoginId(String id) {
+        return isExist(Filter.builder()
+                .conditions(Map.of("loginId", id))
+                .build());
     }
 }
