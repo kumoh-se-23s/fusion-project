@@ -234,17 +234,18 @@ public class RewardService {
     }
 
     //리워드 삭제
-    public void deleteReward(Long loginUser,Long rewardId){
+    public void deleteReward(Long loginUserId,Long rewardId){
         //여기서도
         Reward reward = rewardRepository.findById(rewardId)
                 .orElseThrow(NotFoundException::new);//null값 통과 시키지말고 없으면 에러 일으키기
         Project project = reward.getProject();
         AppUser maker = project.getMaker();
        // AppUser loginUser;
-        if(!maker.equals(loginUser)){
+        if(!maker.equals(loginUserId)){
             throw new InvalidException();//권한이슈
         }else{
             rewardRepository.delete(rewardId);//같을경우 삭제
         }
     }
+    //DELETE RESPLONSE로리턴하기 DTO로
 }
