@@ -26,15 +26,15 @@ import java.security.spec.InvalidKeySpecException;
 public class AuthService extends BaseService {
     private final JwtTokenProvider jwtTokenProvider;
     private final AccountUtil accountUtil;
-    private final LocalAccountRepository accountRepository;
+    private final LocalAccountRepository localAccountRepository;
     private final UserRepository userRepository;
 
     private final JedisPool jedisPool;
 
-    public AuthService(JwtTokenProvider jwtTokenProvider, AccountUtil accountUtil, LocalAccountRepository accountRepository, UserRepository userRepository, JedisPool jedisPool) {
+    public AuthService(JwtTokenProvider jwtTokenProvider, AccountUtil accountUtil, LocalAccountRepository localAccountRepository, UserRepository userRepository, JedisPool jedisPool) {
         this.jwtTokenProvider = jwtTokenProvider;
         this.accountUtil = accountUtil;
-        this.accountRepository = accountRepository;
+        this.localAccountRepository = localAccountRepository;
         this.userRepository = userRepository;
         this.jedisPool = jedisPool;
     }
@@ -45,8 +45,18 @@ public class AuthService extends BaseService {
                 throw new DuplicateEmailException();
             }
 
-            accountRepository.createLocalAccount(accountRequest.getId(), accountRequest.getPassword());
-            AppUser appuser = userRepository.createUser(userRequest.getUserData()).orElseThrow(InvalidRequestStateException::new);
+            if(localAccountRepository.isExistLoginId(accountRequest.getId())) {
+                throw new DuplicateIdException();
+            }
+
+            String salt = accountUtil.generateSalt();
+
+            AppUser appuser = userRepository.createUser(userRequest.getUserData()).orElseThrow(InvalidRequestException::new);
+            try {
+                localAccountRepository.createLocalAccount(appuser, accountRequest.getId(), accountUtil.hash(accountRequest.getPassword(), salt), salt);
+            } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+                throw new InvalidException();
+            }
 
             String accessToken = jwtTokenProvider.createAccessToken(String.valueOf(appuser.getId()));
             String refreshToken = jwtTokenProvider.createRefreshToken(String.valueOf(appuser.getId()));
@@ -63,7 +73,7 @@ public class AuthService extends BaseService {
 
     public TokenPair login(AccountData accountData) {
         try {
-            LocalAccount localAccount = accountRepository.findByLoginId(accountData.getLoginId())
+            LocalAccount localAccount = localAccountRepository.findByLoginId(accountData.getLoginId())
                     .orElseThrow(AccountException::new);
 
             String salt = localAccount.getSalt();
@@ -90,7 +100,7 @@ public class AuthService extends BaseService {
         try {
             // account repository에서 user Id로 pk 조회를 하면 어캄?...
             //수정
-            LocalAccount result = accountRepository.findById(userPk).orElseThrow(NotFoundException::new);
+            LocalAccount result = localAccountRepository.findById(userPk).orElseThrow(NotFoundException::new);
 
             String currentPassword = result.getPassword();
             String hashedInputPassword = accountUtil.hash(request.getCurrentPassword(), result.getSalt());
@@ -99,7 +109,7 @@ public class AuthService extends BaseService {
                 String newSalt = accountUtil.generateSalt();
                 String hashedPassword = accountUtil.hash(request.getNewPassword(), newSalt);
 
-                accountRepository.updatePassword(result.getId(), hashedPassword, newSalt);
+                localAccountRepository.updatePassword(result.getId(), hashedPassword, newSalt);
 
                 return new IdResponse(result.getId());
             } else {
@@ -122,12 +132,12 @@ public class AuthService extends BaseService {
         try {
             // account repository에서 user Id로 pk 조회를 하면 어캄?...
             // LocalAccount 객체가
-            LocalAccount result = accountRepository.findById(userPk).orElseThrow(NotFoundException::new);
+            LocalAccount result = localAccountRepository.findById(userPk).orElseThrow(NotFoundException::new);
 
             String hashedInputPassword = accountUtil.hash(request.getCheckPassword(), result.getSalt());
 
             if (hashedInputPassword.equals(result.getPassword())) {
-                accountRepository.delete(result.getId());
+                localAccountRepository.delete(result.getId());
             } else {
                 throw new PasswordMisMatchException();
             }

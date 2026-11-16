@@ -21,13 +21,9 @@ import java.util.Map;
 
 public class ProfileService extends BaseService {
     private final UserRepository userRepository;
-    private final UserRoleRepository userRoleRepository;
-    private final UserRoleRelationRepository userRoleRelationRepository;
 
     public ProfileService(UserRepository userRepository, UserRoleRepository userRoleRepository, UserRoleRelationRepository userRoleRelationRepository) {
         this.userRepository = userRepository;
-        this.userRoleRepository = userRoleRepository;
-        this.userRoleRelationRepository = userRoleRelationRepository;
     }
 
     public UserResponse getMyInfo(long userId) {
@@ -40,9 +36,7 @@ public class ProfileService extends BaseService {
     }
 
     public IdResponse updateUser(long userId, UpdateUserRequest request) {
-        UserData userData = request.getUserData();
-
-        Long updateResult = userRepository.updateUser(userId, userData).orElseThrow(NotFoundException::new);
+        Long updateResult = userRepository.updateUser(userId, request.toUpdateMap()).orElseThrow(NotFoundException::new);
 
         return new IdResponse(updateResult);
     }
@@ -53,13 +47,13 @@ public class ProfileService extends BaseService {
 
     }
 
-    //List로 만들어야 함
-    public List<UserRoleRelation> getRoles(long userId) {
-        AppUser appUser = userRepository.findById(userId).orElseThrow(NotFoundException::new);
-
-        return userRoleRelationRepository.find(Filter.builder()
-                .conditions(Map.of("user", appUser))
-                .build()
-        );
-    }
+//    //List로 만들어야 함
+//    public List<UserRoleRelation> getRoles(long userId) {
+//        AppUser appUser = userRepository.findById(userId).orElseThrow(NotFoundException::new);
+//
+//        return userRoleRelationRepository.find(Filter.builder()
+//                .conditions(Map.of("user", appUser))
+//                .build()
+//        );
+//    }
 }

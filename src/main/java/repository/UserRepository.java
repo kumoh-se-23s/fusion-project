@@ -2,11 +2,7 @@ package repository;
 
 import model.Serializer;
 import model.domain.AppUser;
-import model.domain.UserRole;
 import model.dto.UserData;
-import model.dto.request.user.UpdateUserRequest;
-import repository.BaseRepositoryImpl;
-import repository.Filter;
 
 import java.util.HashMap;
 import java.util.List;
@@ -15,30 +11,30 @@ import java.util.Optional;
 
 public class UserRepository extends BaseRepositoryImpl<AppUser,Long> {
 
-    private void putIfNotNull(Map<String, Object> resultMap, String key, Object value) {
-        if(value != null) {
-            resultMap.put(key, value);
-        }
-    }
-
+    //도메인 넘길것
     public Optional<AppUser> createUser(UserData userData) {
         AppUser appUser = Serializer.toDomain(userData, AppUser.class);
 
         return Optional.of(create(appUser));
     }
 
-    public Optional<Long> updateUser(long userId, UserData userData) {
-        Map<String, Object> updateData = new HashMap<>();
-
-        putIfNotNull(updateData, "name" , userData.getName());
-        putIfNotNull(updateData, "email" , userData.getEmail());
-        putIfNotNull(updateData, "address" , userData.getAddress());
-        putIfNotNull(updateData, "postal" , userData.getPostal());
-        putIfNotNull(updateData, "phone" , userData.getPhone());
-
-        Optional<AppUser> updateResult = update(userId, updateData);
+    public Optional<Long> updateUser(long userId, Map<String, Object> update) {
+        Optional<AppUser> updateResult = update(userId, update);
 
         return updateResult.map(AppUser::getId);
+    }
+
+    public Optional<AppUser> findByEmail(String email) {
+         List<AppUser> result = find(Filter.builder()
+                .conditions(Map.of("email", email))
+                .limit(1)
+                .build());
+
+         if(result.isEmpty()) {
+             return Optional.empty();
+         }
+
+         return Optional.of(result.get(0));
     }
 
     public boolean isExistEmail(String email) {
