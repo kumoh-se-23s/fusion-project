@@ -1,9 +1,7 @@
 package service.external;
 
-import constant.ProjectState;
 import example.db.DatabaseTest;
 import model.dto.ProjectData;
-import model.dto.request.project.GetProjectByCategoryAndStateRequest;
 import model.dto.response.DataCollectionResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -12,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -43,11 +42,14 @@ public class ProjectQueryServiceTest extends DatabaseTest {
     @Test
     @DisplayName("카테고리와 상태로 필터링한다")
     void getByCategoryAndState() {
-        DataCollectionResponse<ProjectData> response = projectQueryService.getByCategoryAndState(
-                GetProjectByCategoryAndStateRequest.builder()
-                        .categoryList(List.of(db.tech.getName()))
-                        .projectStateList(List.of(ProjectState.APPROVED))
-                        .build());
+        DataCollectionResponse<ProjectData> response = projectQueryService.getAllProject(
+                Optional.empty(),
+                Optional.empty(),
+                Optional.of(db.tech.getName()),
+                Optional.of(List.of("APPROVED")),
+                Optional.empty(),
+                Optional.empty()
+        );
         LOG.info(response.toJsonString());
         List<Long> idList = response.getDatas().stream()
                 .map(ProjectData::getId).toList();

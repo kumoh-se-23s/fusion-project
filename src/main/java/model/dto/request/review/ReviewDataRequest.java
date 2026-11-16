@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import model.dto.request.Request;
 import model.dto.request.UpdateRequest;
 
 import java.math.BigDecimal;
@@ -13,7 +12,7 @@ import java.math.BigDecimal;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class EditReviewRequest extends UpdateRequest {
+public class ReviewDataRequest extends UpdateRequest {
     private String text;
 
     private BigDecimal rating;

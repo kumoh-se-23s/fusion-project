@@ -48,6 +48,9 @@ public enum ProjectState {
     }
 
     public static ProjectState fromString(String stringValue) {
+        if (stringValue == null || stringValue.isEmpty()) {
+            return null;
+        }
         ProjectState state = BY_STRING_VALUE.get(stringValue);
         if (state == null) {
             throw new InvalidSearchTypeException();
@@ -57,6 +60,9 @@ public enum ProjectState {
 
 
     public static List<ProjectState> fromStringList(List<String> stringList) {
+        if (stringList == null) {
+            return List.of();
+        }
         return stringList.stream()
                 .map(BY_STRING_VALUE::get)
                 .filter(Objects::nonNull)

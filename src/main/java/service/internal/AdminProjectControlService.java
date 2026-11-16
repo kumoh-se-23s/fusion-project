@@ -27,6 +27,7 @@ public class AdminProjectControlService extends BaseService {
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
     private final ProjectLikeRepository projectLikeRepository;
+    private final UserRoleRelationRepository userRoleRelationRepository;
 
     //4. 관리자가 메이커의 프로젝트 승인
     public IdResponse updateProjectApprove(Long projectId) {
@@ -38,6 +39,7 @@ public class AdminProjectControlService extends BaseService {
             }
             Project approved = projectRepository.updateByApprove(project.getId())
                     .orElseThrow(NotFoundException::new);
+//            UserRoleRelation userRoleRelation = UserRoleRelation.builder()
             return new IdResponse(approved.getId());
         });
     }

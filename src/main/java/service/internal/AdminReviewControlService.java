@@ -1,15 +1,11 @@
 package service.internal;
 
-import constant.ProjectState;
-import exception.AlreadyExistException;
-import exception.NotCompleteProjectException;
 import exception.NotFoundException;
 import exception.OutOfRangeException;
 import lombok.RequiredArgsConstructor;
 import model.Serializer;
 import model.domain.*;
-import model.dto.request.review.AdminEditReviewRequest;
-import model.dto.request.review.CreateReviewRequest;
+import model.dto.request.review.AdminReviewRequest;
 import model.dto.response.DeleteResponse;
 import model.dto.response.IdResponse;
 import repository.*;
@@ -36,9 +32,9 @@ public class AdminReviewControlService extends BaseService {
     private final DonateRepository donateRepository;
     private final RewardRepository rewardRepository;
 
-    public IdResponse createReview(CreateReviewRequest dto, Long userId) {
+    public IdResponse createReview(AdminReviewRequest dto) {
         return tx.execute(false, () -> {
-            AppUser user = userRepository.findById(userId)
+            AppUser user = userRepository.findById(dto.getUserId())
                     .orElseThrow(NotFoundException::new);
 
             Reward reward= rewardRepository.findById(dto.getRewardId())
@@ -64,7 +60,7 @@ public class AdminReviewControlService extends BaseService {
 //            }
 
 
-            Review review = Serializer.toDomain(dto, Review.class)
+            Review review = Serializer.toDomain(dto.getRequest(), Review.class)
                     .toBuilder()
                     .reward(reward)
                     .user(user)
@@ -79,7 +75,7 @@ public class AdminReviewControlService extends BaseService {
         });
     }
 
-    public IdResponse editReview(Long reviewId, AdminEditReviewRequest dto) {
+    public IdResponse editReview(Long reviewId, AdminReviewRequest dto) {
         return tx.execute(false, () -> {
 
             Reward reward = rewardRepository.findById(dto.getRewardId())

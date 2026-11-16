@@ -53,7 +53,7 @@ public abstract class BaseRepositoryImpl<T extends BaseDomain, ID> implements Ba
     }
 
     @Override
-    public List<T> findAll(int limit) {
+    public List<T> findAll(Integer limit) {
         return entityManager.findBy(toCriteria(
                 Filter.builder()
                         .limit(limit)

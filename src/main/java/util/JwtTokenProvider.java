@@ -92,7 +92,7 @@ public class JwtTokenProvider {
         return result;
     }
 
-    private String decoding(String token) {
+    public String decoding(String token) {
         return new String(Base64.getUrlDecoder().decode(token));
     }
 

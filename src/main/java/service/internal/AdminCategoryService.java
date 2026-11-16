@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import model.Serializer;
 import model.domain.Category;
 import model.dto.CategoryData;
-import model.dto.request.IdQueryRequest;
 import model.dto.request.category.CategoryRequest;
 import model.dto.response.DataCollectionResponse;
 import model.dto.response.DeleteResponse;
@@ -16,6 +15,7 @@ import repository.CategoryRepository;
 import service.BaseService;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * 관리자가 카테고리를 관리, 조회하는 서비스 클래스
@@ -40,20 +40,20 @@ public class AdminCategoryService extends BaseService {
         });
     }
 
-    public SingleDataResponse<CategoryData> getCategory(IdQueryRequest request) {
+    public SingleDataResponse<CategoryData> getCategory(long categoryId) {
         return tx.execute(true, () -> {
 
-            Category category = categoryRepository.findById(request.getId())
+            Category category = categoryRepository.findById(categoryId)
                     .orElseThrow(NotFoundException::new);
 
             return new SingleDataResponse<>(Serializer.toData(category, CategoryData.class));
 
         });
     }
-
-    public DataCollectionResponse<CategoryData> getAllCategory() {
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+    public DataCollectionResponse<CategoryData> getAllCategory(Optional<Integer> limit) {
         return tx.execute(true, () -> {
-            List<Category> categories = categoryRepository.findAll();
+            List<Category> categories = categoryRepository.findAll(limit.orElse(null));
 
             return DataCollectionResponse.<CategoryData>builder()
                     .datas(Serializer.toDataList(categories, CategoryData.class))

@@ -38,17 +38,6 @@ public class ProjectRepository extends BaseRepositoryImpl<Project, Long> {
     public Optional<Project> updateByDislike(Long projectId, Long dislikeCount) {
         return update(projectId, Map.of("dislikeCount", dislikeCount));
     }
-    public List<Project> findByStateAndCategory(List<ProjectState> stateList, List<Category> categoryList) {
-        Map<String, Object> filter = new HashMap<>();
-        if (stateList != null) filter.put("state", stateList);
-
-        if (categoryList != null) filter.put("category", categoryList);
-
-        return find(Filter.builder()
-                .conditions(filter)
-                .build()
-        );
-    }
     public List<Project> findAllOrderByCreatedAt() {
         return find(Filter.builder()
                 .sort(Sort.by(Order.desc("createdAt")))
@@ -66,7 +55,7 @@ public class ProjectRepository extends BaseRepositoryImpl<Project, Long> {
             AppUser maker,
             Category category,
             List<ProjectState> stateList,
-            int limit,
+            Integer limit,
             Sort sort
     ) {
         Filter filter = Filter.builder()
@@ -74,7 +63,7 @@ public class ProjectRepository extends BaseRepositoryImpl<Project, Long> {
                 .limit(limit)
                 .build();
 
-        if (title != null) {
+        if (title != null && !title.isBlank()) {
             filter.and("title", title);
         }
         if (category != null) {
@@ -90,7 +79,7 @@ public class ProjectRepository extends BaseRepositoryImpl<Project, Long> {
         return find(filter);
     }
 
-    public List<Project> findByPending(int limit) {
+    public List<Project> findByPending(Integer limit) {
         return find(Filter.builder()
                 .conditions(Map.of("state", ProjectState.PENDING_APPROVAL))
                 .limit(limit)

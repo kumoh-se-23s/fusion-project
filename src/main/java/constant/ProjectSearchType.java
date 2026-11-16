@@ -4,10 +4,7 @@ import exception.InvalidSearchTypeException;
 import lombok.Getter;
 import repository.Order;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -27,7 +24,7 @@ public enum ProjectSearchType {
     ASC_END_DATE(
             "ASC_END_DATE",
             Order.asc("endDate"),
-            List.of(ProjectState.IN_PROGRESS)),
+            EnumSet.of(ProjectState.IN_PROGRESS)),
 
 
     //모집금액순
@@ -42,14 +39,14 @@ public enum ProjectSearchType {
 
     private final String stringValue;
     private final Order order;
-    private final List<ProjectState> projectStateList;
+    private final EnumSet<ProjectState> projectStateList;
 
 
     private static final Map<String, ProjectSearchType> BY_STRING_VALUE =
         Arrays.stream(values())
                 .collect(Collectors.toUnmodifiableMap(ProjectSearchType::getStringValue, Function.identity()));
 
-    ProjectSearchType(String stringValue, Order order, List<ProjectState> projectStateList) {
+    ProjectSearchType(String stringValue, Order order, EnumSet<ProjectState> projectStateList) {
         this.stringValue = stringValue;
         this.order = order;
         this.projectStateList = projectStateList;
@@ -57,11 +54,16 @@ public enum ProjectSearchType {
     ProjectSearchType(String stringValue, Order order) {
         this.stringValue = stringValue;
         this.order = order;
-        this.projectStateList = List.of();
+        this.projectStateList = EnumSet.noneOf(ProjectState.class);
     }
 
     public static ProjectSearchType fromString(String stringValue) {
+        if (stringValue == null || stringValue.isEmpty()) {
+            return DESC_CREATE_AT;
+        }
+
         ProjectSearchType searchType = BY_STRING_VALUE.get(stringValue);
+
         if (searchType == null) {
             throw new InvalidSearchTypeException();
         }

@@ -54,6 +54,10 @@ public enum AdminProjectSearchType {
     }
 
     public static AdminProjectSearchType fromString(String stringValue) {
+        if (stringValue == null || stringValue.isEmpty()) {
+            return DESC_CREATE_AT;
+        }
+
         AdminProjectSearchType adminProjectSearchType = BY_STRING_VALUE.get(stringValue);
         if (adminProjectSearchType == null) {
             throw new InvalidSearchTypeException(stringValue);

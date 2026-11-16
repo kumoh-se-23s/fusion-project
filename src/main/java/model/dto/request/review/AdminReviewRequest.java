@@ -9,16 +9,17 @@ import lombok.NoArgsConstructor;
 import model.domain.Review;
 import model.dto.request.Request;
 
-import java.math.BigDecimal;
-
 @Builder
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
 @BindDomain(values = Review.class)
-public class AdminEditReviewRequest extends Request {
+public class AdminReviewRequest extends Request {
     @DataField(name = "reward.id")
     private Long rewardId;
 
-    private EditReviewRequest request;
+    @DataField(name = "user.id")
+    private Long userId;
+
+    private ReviewDataRequest request;
 }

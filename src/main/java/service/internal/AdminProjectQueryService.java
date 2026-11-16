@@ -1,8 +1,10 @@
 package service.internal;
 
 import constant.AdminProjectSearchType;
+import constant.ProjectSearchType;
 import constant.ProjectState;
 import exception.InvalidSearchTypeException;
+import exception.InvalidStateException;
 import exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import model.Serializer;
@@ -40,27 +42,45 @@ public class AdminProjectQueryService extends BaseService {
     private final DonateRepository donateRepository;
 
     public DataCollectionResponse<ProjectData> getAllProject(
-            String title,
-            String makerNickName,
-            String categoryName,
-            List<String> stateList,
-            int limit,
-            String searchType) {
+            Optional<String> title,
+            Optional<String> makerNickName,
+            Optional<String> categoryName,
+            Optional<List<String>> stateList,
+            Optional<Integer> limit,
+            Optional<String> searchType) {
         return tx.execute(true, () -> {
-            AdminProjectSearchType projectSearchType = AdminProjectSearchType.fromString(searchType);
-            List<ProjectState> projectStateList = ProjectState.fromStringList(stateList);
+            AdminProjectSearchType projectSearchType = AdminProjectSearchType.fromString(searchType.orElse(null));
+            List<ProjectState> projectStateList = stateList
+                    .map(ProjectState::fromStringList)
+                    .orElse(List.of());
+
             Optional<Order> order = projectSearchType.getOrder();
 
-            AppUser maker = userRepository.findByNickName(makerNickName).getFirst();
-            Category category = categoryRepository.findByName(List.of(categoryName)).getFirst();
+            AppUser maker = makerNickName
+                    .map(name -> userRepository.findByNickName(name)
+                        .stream()
+                        .findFirst()
+                        .orElseThrow(NotFoundException::new))
+                    .orElse(null);
+
+            Category category = categoryName
+                    .map(name -> categoryRepository.findByName(name)
+                        .stream()
+                        .findFirst()
+                        .orElseThrow(NotFoundException::new))
+                    .orElse(null);
 
             List<Project> projectList = projectRepository.findByFilter(
-                    title,
+                    title.orElse(null),
                     maker,
                     category,
                     projectStateList,
-                    limit,
+                    limit.orElse(null),
                     order.map(Sort::by).orElse(null));
+
+            if (projectList.isEmpty()) {
+                throw new NotFoundException();
+            }
 
             boolean isAchievementRate =
                     projectSearchType == AdminProjectSearchType.ASC_ACHIEVEMENT_RATE
@@ -105,7 +125,7 @@ public class AdminProjectQueryService extends BaseService {
                 .toList();
     }
 
-    public List<Project> sortBySupporterCount(List<Project> projectList, AdminProjectSearchType projectSearchType) {
+    private List<Project> sortBySupporterCount(List<Project> projectList, AdminProjectSearchType projectSearchType) {
         List<Reward> rewardList = rewardRepository.findByProjects(projectList);
         List<Donate> donateList = donateRepository.findByRewards(rewardList);
 
@@ -135,8 +155,9 @@ public class AdminProjectQueryService extends BaseService {
         );
     }
 
-    public DataCollectionResponse<ProjectData> getAllProject(int limit) {
-        List<Project> projectList = projectRepository.findByLimit(limit);
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+    public DataCollectionResponse<ProjectData> getAllProject(Optional<Integer> limit) {
+        List<Project> projectList = projectRepository.findAll(limit.orElse(null));
 
         return DataCollectionResponse.<ProjectData>builder()
                 .datas(Serializer.toDataList(projectList, ProjectData.class))
@@ -144,8 +165,9 @@ public class AdminProjectQueryService extends BaseService {
                 .build();
     }
 
-    public DataCollectionResponse<ProjectData> getPendingProject(int limit) {
-        List<Project> projectList = projectRepository.findByPending(limit);
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+    public DataCollectionResponse<ProjectData> getPendingProject(Optional<Integer> limit) {
+        List<Project> projectList = projectRepository.findByPending(limit.orElse(null));
 
         return DataCollectionResponse.<ProjectData>builder()
                 .datas(Serializer.toDataList(projectList, ProjectData.class))

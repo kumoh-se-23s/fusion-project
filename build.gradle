@@ -1,7 +1,9 @@
 plugins {
     id 'java'
 }
-
+java {
+    sourceCompatibility = '26'
+}
 group = 'com.fusion'
 version = '1.0-SNAPSHOT'
 
