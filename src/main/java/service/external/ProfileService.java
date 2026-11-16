@@ -9,10 +9,7 @@ import model.dto.request.user.UpdateUserRequest;
 import model.dto.response.DeleteResponse;
 import model.dto.response.IdResponse;
 import model.dto.response.user.UserResponse;
-import repository.Filter;
-import repository.UserRepository;
-import repository.UserRoleRelationRepository;
-import repository.UserRoleRepository;
+import repository.*;
 import service.BaseService;
 
 
@@ -22,7 +19,8 @@ import java.util.Map;
 public class ProfileService extends BaseService {
     private final UserRepository userRepository;
 
-    public ProfileService(UserRepository userRepository, UserRoleRepository userRoleRepository, UserRoleRelationRepository userRoleRelationRepository) {
+
+    public ProfileService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
