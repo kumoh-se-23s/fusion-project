@@ -2,6 +2,7 @@ package controller.internal;
 
 import com.minihttp.core.route.BaseRouter;
 import com.minihttp.core.route.annotation.*;
+import com.minihttp.packet.HttpRequest;
 import model.dto.CategoryData;
 import model.dto.request.category.CategoryRequest;
 import model.dto.response.DataCollectionResponse;
@@ -9,6 +10,8 @@ import model.dto.response.DeleteResponse;
 import model.dto.response.IdResponse;
 import model.dto.response.SingleDataResponse;
 import service.internal.AdminCategoryService;
+
+import java.util.Optional;
 
 
 /**
@@ -36,16 +39,17 @@ public class AdminCategoryRouter extends BaseRouter {
     }
 
     @Get()
-    public DataCollectionResponse<CategoryData> getAllCategory(@Query("limit") int limit) {
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+    public DataCollectionResponse<CategoryData> getAllCategory(@Query("limit") Optional<Integer> limit) {
         return adminCategoryService.getAllCategory(limit);
     }
 
-    @Patch("{category_id}")
+    @Patch("/{category_id}")
     public IdResponse updateCategory(@Path("category_id") long categoryId, CategoryRequest dto) {
         return adminCategoryService.editCategory(categoryId, dto);
     }
 
-    @Delete("{categoryId")
+    @Delete("{categoryId}")
     public DeleteResponse deleteCategory(@Path("category_id") long categoryId) {
         return adminCategoryService.deleteCategory(categoryId);
     }
