@@ -215,7 +215,7 @@ public class DonateService extends BaseService {
 
     //후원 환불
     public void refundDonate(Long donateId, Long userId){
-        Donate donate = donateRepository.findById(donateId).get();//해당 후원id의 객체 찾기,null값은 안 들어옴
+        Donate donate = donateRepository.findById(donateId).get();//수정:해당 후원id의 객체 찾기,null값체크도 넣기 orElse
         Reward reward = donate.getReward();
         Project project = reward.getProject();
         Long donateQuantity;
@@ -239,10 +239,9 @@ public class DonateService extends BaseService {
                     projectRepository.update(project.getId(), updates);//수정
                     donateRepository.delete(donate.getId());
                 }
-
     }
 
-    //후원 총금액
+    //유저 후원 총금액
 
     public BigDecimal donateAmountSum(Long donateId, Long userId){
         Donate donate = donateRepository.findById(donateId).get();//해당 후원id의 객체 찾기,null값은 안 들어옴
@@ -250,5 +249,12 @@ public class DonateService extends BaseService {
 
         return donate.getAmount().multiply(BigDecimal//후원 개수x단일 후원 금액
                 .valueOf(donateQuantity));//환불할 후원 금액
+    }
+
+    //해당 프로젝트 모금 된 총 금액
+    private BigDecimal donateAmountProject(Long projectId){
+        Project project = projectRepository.findById(projectId).get();//수정:null값 검사
+
+        return project.getDonateAmount();
     }
 }
