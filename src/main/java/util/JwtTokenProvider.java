@@ -67,6 +67,10 @@ public class JwtTokenProvider {
         return Long.parseLong(subject);
     }
 
+    public String getJti(String token) {
+        return getClaims(token).getId();
+    }
+
     public boolean isAccessToken(Claims claims) throws JwtException, IllegalArgumentException {
         String value = claims.get("type", String.class);
         return "access".equals(value);
