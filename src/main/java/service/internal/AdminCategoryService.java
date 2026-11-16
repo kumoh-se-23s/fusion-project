@@ -15,6 +15,7 @@ import repository.CategoryRepository;
 import service.BaseService;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * 관리자가 카테고리를 관리, 조회하는 서비스 클래스
@@ -49,10 +50,10 @@ public class AdminCategoryService extends BaseService {
 
         });
     }
-
-    public DataCollectionResponse<CategoryData> getAllCategory(int limit) {
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+    public DataCollectionResponse<CategoryData> getAllCategory(Optional<Integer> limit) {
         return tx.execute(true, () -> {
-            List<Category> categories = categoryRepository.findAll(limit);
+            List<Category> categories = categoryRepository.findAll(limit.orElse(null));
 
             return DataCollectionResponse.<CategoryData>builder()
                     .datas(Serializer.toDataList(categories, CategoryData.class))

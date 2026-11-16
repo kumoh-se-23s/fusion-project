@@ -20,7 +20,7 @@ import java.util.List;
 **/
 @RequiredArgsConstructor
 public class AdminReviewQueryService extends BaseService {
-    private ReviewRepository reviewRepository;
+    private final ReviewRepository reviewRepository;
 
     public SingleDataResponse<ReviewData> getReview(Long reviewId) {
         Review review = reviewRepository.findById(reviewId)
@@ -31,8 +31,8 @@ public class AdminReviewQueryService extends BaseService {
         );
     }
 
-    public DataCollectionResponse<ReviewData> getAllDenyProject(int limit) {
-        List<Review> reviewList = reviewRepository.findByLimit(limit);
+    public DataCollectionResponse<ReviewData> getAllReviews(Integer limit) {
+        List<Review> reviewList = reviewRepository.findAll(limit);
 
         return DataCollectionResponse.<ReviewData>builder()
                 .datas(Serializer.toDataList(reviewList, ReviewData.class))

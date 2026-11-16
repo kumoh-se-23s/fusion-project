@@ -2,6 +2,7 @@ package service.external;
 
 import constant.ProjectSearchType;
 import constant.ProjectState;
+import exception.InvalidStateException;
 import exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import model.Serializer;
@@ -9,15 +10,12 @@ import model.domain.AppUser;
 import model.domain.Category;
 import model.domain.Project;
 import model.dto.ProjectData;
-import model.dto.request.project.GetProjectByCategoryAndStateRequest;
 import model.dto.response.DataCollectionResponse;
+import model.dto.response.SingleDataResponse;
 import repository.*;
 import service.BaseService;
 
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * 일반유저가 프로젝트룰 조회하는 서비스 클래스
@@ -60,59 +58,51 @@ public class ProjectQueryService extends BaseService {
     }
 
     //7. 프로젝트 필터링. 목록이 null이거나 비어 있으면 그 조건은 적용하지 않는다
-    public DataCollectionResponse<ProjectData> getByCategoryAndState(GetProjectByCategoryAndStateRequest dto)  {
-        return tx.execute(true, () -> {
-
-            List<ProjectState> stateList = dto.getProjectStateList();
-            List<String> categoryNames = dto.getCategoryList();
-            List<Category> categoryIdList = categoryRepository.findByName(categoryNames);
-
-            List<Project> projectList = projectRepository.findByStateAndCategory(stateList, categoryIdList);
-            return DataCollectionResponse.<ProjectData>builder()
-                    .datas(Serializer.toDataList(projectList, ProjectData.class))
-                    .amount((long) projectList.size())
-                    .build();
-        });
-    }
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     public DataCollectionResponse<ProjectData> getAllProject(
-            String title,
-            String makerNickName,
-            String categoryName,
-            List<String> stateList,
-            int limit,
-            String searchType) {
+            Optional<String> title,
+            Optional<String> makerNickName,
+            Optional<String> categoryName,
+            Optional<List<String>> stateList,
+            Optional<Integer> limit,
+            Optional<String> searchType) {
         return tx.execute(true, () -> {
-            ProjectSearchType projectSearchType = ProjectSearchType.fromString(searchType);
+            ProjectSearchType projectSearchType = ProjectSearchType.fromString(searchType.orElse(null));
+            List<ProjectState> projectStateList = stateList
+                    .map(ProjectState::fromStringList)
+                    .orElse(List.of());
 
-            List<ProjectState> projectStateList;
-
+            if (!ALLOWED_QUERY_STATE.containsAll(projectStateList)) {
+                throw new InvalidStateException();
+            }
             if (!projectSearchType.getProjectStateList().isEmpty()) {
-                projectStateList = projectSearchType.getProjectStateList();
-
-            } else {
-                projectStateList = ProjectState.fromStringList(stateList).stream()
-                        .filter(ALLOWED_QUERY_STATE::contains)
-                        .toList();
-
+                if (!projectSearchType.getProjectStateList().containsAll(projectStateList)) {
+                    throw new InvalidStateException();
+                }
             }
 
             Order order = projectSearchType.getOrder();
 
-            AppUser maker = userRepository.findByNickName(makerNickName)
-                    .stream()
-                    .findFirst()
-                    .orElseThrow(NotFoundException::new);
-            Category category = categoryRepository.findByName(List.of(categoryName))
-                    .stream()
-                    .findFirst()
-                    .orElseThrow(NotFoundException::new);
+            AppUser maker = makerNickName
+                    .map(name -> userRepository.findByNickName(name)
+                        .stream()
+                        .findFirst()
+                        .orElseThrow(NotFoundException::new))
+                    .orElse(null);
+
+            Category category = categoryName
+                    .map(name -> categoryRepository.findByName(name)
+                        .stream()
+                        .findFirst()
+                        .orElseThrow(NotFoundException::new))
+                    .orElse(null);
 
             List<Project> projectList = projectRepository.findByFilter(
-                title,
+                title.orElse(null),
                 maker,
                 category,
                 projectStateList,
-                limit,
+                limit.orElse(null),
                 Sort.by(order)
             );
 
@@ -122,6 +112,23 @@ public class ProjectQueryService extends BaseService {
                     .build();
         });
     }
+    public SingleDataResponse<ProjectData> getProject(Long projectId) {
+        Project project = projectRepository.findById(projectId)
+            .orElseThrow(NotFoundException::new);
 
+        return new SingleDataResponse<>(
+            Serializer.toData(project, ProjectData.class)
+        );
+    }
+
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+    public DataCollectionResponse<ProjectData> getAllProject(Integer limit) {
+        List<Project> projectList = projectRepository.findAll(limit);
+
+        return DataCollectionResponse.<ProjectData>builder()
+                .datas(Serializer.toDataList(projectList, ProjectData.class))
+                .amount((long) projectList.size())
+                .build();
+    }
 
 }

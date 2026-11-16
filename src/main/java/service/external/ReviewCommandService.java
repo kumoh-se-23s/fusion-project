@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import model.Serializer;
 import model.domain.*;
 import model.dto.request.review.CreateReviewRequest;
-import model.dto.request.review.EditReviewRequest;
+import model.dto.request.review.ReviewDataRequest;
 import model.dto.response.DeleteResponse;
 import model.dto.response.IdResponse;
 import repository.*;
@@ -61,7 +61,7 @@ public class ReviewCommandService extends BaseService {
             }
 
 
-            Review review = Serializer.toDomain(dto, Review.class)
+            Review review = Serializer.toDomain(dto.getRequest(), Review.class)
                     .toBuilder()
                     .reward(reward)
                     .user(user)
@@ -76,7 +76,7 @@ public class ReviewCommandService extends BaseService {
         });
     }
 
-    public IdResponse editReview(Long userId, Long reviewId, EditReviewRequest request) {
+    public IdResponse editReview(Long userId, Long reviewId, ReviewDataRequest request) {
         return tx.execute(false, () -> {
             Review review = reviewRepository.findById(reviewId)
                     .orElseThrow(NotFoundException::new);
