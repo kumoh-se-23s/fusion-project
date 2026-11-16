@@ -61,10 +61,13 @@ public class JwtTokenProvider {
         return getClaims(token).getSubject() != null;
     }
 
-    public long getUserId(String token) {
-        String subject = getClaims(token).getSubject();
+    public long getUserId(String authorizationHeader) {
+        String[] parts = authorizationHeader.split(" ");
+        String jwt = parts[1];
 
-        return Long.parseLong(subject);
+        String stringTypeUserId = getClaims(jwt).getSubject();
+
+        return Long.parseLong(stringTypeUserId);
     }
 
     public String getJti(String token) {
