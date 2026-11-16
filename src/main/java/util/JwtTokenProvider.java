@@ -25,6 +25,7 @@ public class JwtTokenProvider {
 
         return Jwts.builder()
                 .subject(userId)
+                .id(UUID.randomUUID().toString())
                 .claim("type", "access")
                 .issuedAt(now)
                 .expiration(expiry)
@@ -34,10 +35,11 @@ public class JwtTokenProvider {
 
     public String createRefreshToken(String userId) {
         Date now = new Date();
-        Date expiry = new Date(now.getTime() + 1000 * 60 * 15);
+        Date expiry = new Date(now.getTime() + 1000 * 60 * 60);
 
         return Jwts.builder()
                 .subject(userId)
+                .id(UUID.randomUUID().toString())
                 .claim("type" , "refresh")
                 .issuedAt(now)
                 .expiration(expiry)
