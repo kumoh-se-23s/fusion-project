@@ -1,6 +1,7 @@
 package service.external;
 
 import constant.SocialProvider;
+import exception.InvalidException;
 import exception.NotFoundException;
 import model.domain.AppUser;
 import model.dto.SocialUserInfo;
@@ -11,6 +12,8 @@ import service.BaseService;
 import service.OAuthClient;
 import util.JwtTokenProvider;
 import util.RedisUtil;
+
+import java.util.List;
 
 public class SocialAuthService extends BaseService {
     private final RedisUtil redisUtil;
@@ -43,7 +46,7 @@ public class SocialAuthService extends BaseService {
 
         //리다이렉트 주소 나눌 예정
         if (userRepository.isExistEmail(email)) {
-            AppUser appUser = userRepository.findByEmail(email).orElseThrow(NotFoundException::new);
+            AppUser appUser = userRepository.findByEmail(email).orElseThrow(InvalidException::new);
             return socialLogin(appUser.getId().toString());
         } else {
             redisUtil.save( userInfoMap.get("iss") + userInfoMap.get("sub") + " : email : ", userInfoMap.get("email"), 600);

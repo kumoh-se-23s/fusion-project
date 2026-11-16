@@ -29,6 +29,12 @@ public class RedisUtil {
         }
     }
 
+    public void delete(String key) {
+        try (Jedis jedis = getPool().getResource()) {
+            jedis.del(key);
+        }
+    }
+
     public boolean checkWhiteList(String userId , String token) {
         try (Jedis jedis = getPool().getResource()) {
             String value = jedis.get(userId);
