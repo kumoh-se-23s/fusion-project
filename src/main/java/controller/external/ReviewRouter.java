@@ -12,7 +12,6 @@ import model.dto.response.SingleDataResponse;
 import service.internal.AdminReviewControlService;
 import service.internal.AdminReviewQueryService;
 
-import java.util.Optional;
 
 /**
  * 관리자 전용 프로젝트 거절 사유 라우터
@@ -43,8 +42,7 @@ public class ReviewRouter extends BaseRouter {
     }
 
     @Get()
-    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-    public DataCollectionResponse<ReviewData> getAllReview(@Query("limit") Optional<Integer> limit) {
+    public DataCollectionResponse<ReviewData> getAllReview(@Query(value = "limit", required = false) Integer limit) {
         return adminReviewQueryService.getAllReviews(limit);
     }
 

@@ -14,7 +14,6 @@ import service.external.ProjectMakerService;
 import service.external.ProjectQueryService;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * 관리자 전용 프로젝트 라우터
@@ -60,12 +59,12 @@ public class ProjectRouter extends BaseRouter {
 
     @Get("/search")
     public DataCollectionResponse<ProjectData> getFilterProjects(
-            @Query("title") String title,
-            @Query("maker_name") String makerName,
-            @Query("category_name") String> categoryName,
-            @Query("state_names") Optional<List<String>> stateList,
-            @Query("limit") Optional<Integer> limit,
-            @Query("search_type") Optional<String> searchType) {
+            @Query(value = "title", required = false) String title,
+            @Query(value = "maker_name", required = false) String makerName,
+            @Query(value = "category_name", required = false) String categoryName,
+            @Query(value = "state_names", required = false) List<String> stateList,
+            @Query(value = "limit", required = false) Integer limit,
+            @Query(value = "search_type", required = false) String searchType) {
 
         return projectQueryService.getAllProject(
                 title,

@@ -1,11 +1,9 @@
 package controller.internal;
 
-import auth.CurrentUser;
 import com.minihttp.core.route.BaseRouter;
 import com.minihttp.core.route.annotation.*;
 import model.dto.ReviewData;
 import model.dto.request.review.AdminReviewRequest;
-import model.dto.request.review.CreateReviewRequest;
 import model.dto.response.DataCollectionResponse;
 import model.dto.response.DeleteResponse;
 import model.dto.response.IdResponse;
@@ -13,7 +11,6 @@ import model.dto.response.SingleDataResponse;
 import service.internal.AdminReviewControlService;
 import service.internal.AdminReviewQueryService;
 
-import java.util.Optional;
 
 /**
  * 관리자 전용 프로젝트 거절 사유 라우터
@@ -44,8 +41,7 @@ public class AdminReviewRouter extends BaseRouter {
     }
 
     @Get()
-    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-    public DataCollectionResponse<ReviewData> getAllReview(@Query("limit") Optional<Integer> limit) {
+    public DataCollectionResponse<ReviewData> getAllReview(@Query(value = "limit", required = false) Integer limit) {
         return adminReviewQueryService.getAllReviews(limit);
     }
 

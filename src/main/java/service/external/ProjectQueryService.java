@@ -58,19 +58,16 @@ public class ProjectQueryService extends BaseService {
     }
 
     //7. 프로젝트 필터링. 목록이 null이거나 비어 있으면 그 조건은 적용하지 않는다
-    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     public DataCollectionResponse<ProjectData> getAllProject(
-            Optional<String> title,
-            Optional<String> makerNickName,
-            Optional<String> categoryName,
-            Optional<List<String>> stateList,
-            Optional<Integer> limit,
-            Optional<String> searchType) {
+            String title,
+            String makerNickName,
+            String categoryName,
+            List<String> stateList,
+            Integer limit,
+            String searchType) {
         return tx.execute(true, () -> {
-            ProjectSearchType projectSearchType = ProjectSearchType.fromString(searchType.orElse(null));
-            List<ProjectState> projectStateList = stateList
-                    .map(ProjectState::fromStringList)
-                    .orElse(List.of());
+            ProjectSearchType projectSearchType = ProjectSearchType.fromString(searchType);
+            List<ProjectState> projectStateList = ProjectState.fromStringList(stateList);
 
             if (!ALLOWED_QUERY_STATE.containsAll(projectStateList)) {
                 throw new InvalidStateException();
@@ -82,27 +79,28 @@ public class ProjectQueryService extends BaseService {
             }
 
             Order order = projectSearchType.getOrder();
+            AppUser maker = null;
+            if (makerNickName != null && !makerNickName.isBlank()) {
+                maker = userRepository.findByNickName(makerNickName)
+                            .stream()
+                            .findFirst()
+                            .orElseThrow(NotFoundException::new);
+            }
 
-            AppUser maker = makerNickName
-                    .map(name -> userRepository.findByNickName(name)
-                        .stream()
-                        .findFirst()
-                        .orElseThrow(NotFoundException::new))
-                    .orElse(null);
-
-            Category category = categoryName
-                    .map(name -> categoryRepository.findByName(name)
-                        .stream()
-                        .findFirst()
-                        .orElseThrow(NotFoundException::new))
-                    .orElse(null);
+            Category category = null;
+            if (categoryName != null && !categoryName.isBlank()) {
+                category = categoryRepository.findByName(categoryName)
+                    .stream()
+                    .findFirst()
+                    .orElseThrow(NotFoundException::new);
+            }
 
             List<Project> projectList = projectRepository.findByFilter(
-                title.orElse(null),
+                title,
                 maker,
                 category,
                 projectStateList,
-                limit.orElse(null),
+                limit,
                 Sort.by(order)
             );
 
@@ -121,7 +119,6 @@ public class ProjectQueryService extends BaseService {
         );
     }
 
-    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     public DataCollectionResponse<ProjectData> getAllProject(Integer limit) {
         List<Project> projectList = projectRepository.findAll(limit);
 
