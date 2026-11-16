@@ -213,9 +213,9 @@ public class RewardService {
             if(request.getRewardText()!=null){
                 updates.put("text",request.getRewardText());
             }
-            if(request.getRequiredAmount()!=null){
+           /* if(request.getRequiredAmount()!=null){
                 updates.put("maxQuantity",request.getRewardMaxQuantity());
-            }
+            }*/
             if(request.getRewardRemainQuantity()!=null){
                 updates.put("remainQuantaity",request.getRewardRemainQuantity());
             }
