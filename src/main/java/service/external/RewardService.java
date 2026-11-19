@@ -5,7 +5,7 @@ import exception.InvalidException;
 import exception.NotFoundException;
 import exception.LimitNumberOutException;
 import exception.TransactionException;
-
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 import model.Serializer;
@@ -14,7 +14,7 @@ import model.domain.*;
 
 import model.dto.RewardData;
 import model.dto.request.reward.CreateRewardDataRequest;
-
+import model.dto.response.DataCollectionResponse;
 import model.dto.response.IdResponse;
 import repository.CategoryRepository;
 import repository.DonateRepository;
@@ -113,7 +113,7 @@ public class RewardService {
 
 
     //  프로젝트 ID로 리워드 조회
-    public List<RewardData> findRewardByProject(Long projectId) {
+    public DataCollectionResponse<RewardData> findRewardByProject(Long projectId) {
 
         if (projectId == null) {
             throw new LimitNumberOutException(
@@ -132,7 +132,7 @@ public class RewardService {
 
 
     //  본인이 후원한 리워드 조회
-    public List<RewardData> getRewardByDonate(Long userId) {
+    public DataCollectionResponse<RewardData> getRewardByDonate(Long userId) {
 
         if (userId == null) {
             throw new LimitNumberOutException(
@@ -162,9 +162,7 @@ public class RewardService {
 
 
     //리워드조회[메이커]  메이커의 프로젝트별 리워드 조회
-    public List<List<RewardData>> getRewardFindByMaker(
-            Long makerId
-    ) {
+    public DataCollectionResponse<DataCollectionResponse<RewardData>> getRewardFindByMaker(Long makerId) {
 
         if (makerId == null) {
             throw new LimitNumberOutException(
@@ -184,7 +182,7 @@ public class RewardService {
             );
         }
 
-        return dtoList;
+        return dtoList;//빌더로 리턴 수정
     }
 
     public void updateReward(Long loginUserId, Long rewardId, CreateRewardDataRequest request){
@@ -230,6 +228,11 @@ public class RewardService {
         if(!updates.isEmpty()){//해시가 안 비워져있으면 수정
             rewardRepository.update(rewardId,updates);
         }
+
+    }
+
+    //리워드 아이디로 리워드 조회
+    public DataCollectionResponse<RewardData> getRewardById(Long rewardId){
 
     }
 

@@ -62,7 +62,7 @@ public class ProjectRouter extends BaseRouter {
     public DataCollectionResponse<ProjectData> getFilterProjects(
             @Query("title") String title,
             @Query("maker_name") String makerName,
-            @Query("category_name") String> categoryName,
+            @Query("category_name") String categoryName,
             @Query("state_names") Optional<List<String>> stateList,
             @Query("limit") Optional<Integer> limit,
             @Query("search_type") Optional<String> searchType) {
