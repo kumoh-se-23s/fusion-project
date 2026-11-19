@@ -1,6 +1,10 @@
 package model.domain;
 
-import annotation.*;
+import annotation.Column;
+import annotation.JoinColumn;
+import annotation.OnDelete;
+import annotation.Id;
+import annotation.Table;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import java.math.BigDecimal;
@@ -22,13 +26,11 @@ public class Donate extends BaseDomain {
     @JoinColumn(name = "reward_fk", nullable = false)
     private Reward reward;
 
-    @Positive
     @Column(name = "donate_amount", nullable = false)
-    private BigDecimal amount;
+    private BigDecimal amount;//후원 금액
 
-    @Positive
-    @Column(name = "donate_quantity", nullable = false)
-    private Long quantity;
+    @Column(name = "donate_quantity", nullable = false)//후원수량
+    private Long quantity;//후원 양
 
     @Builder.Default
     @Column(name = "created_at", nullable = false)
@@ -36,6 +38,6 @@ public class Donate extends BaseDomain {
 
     //배송 완료 여부 (true: 배송 완료)
     @Builder.Default
-    @Column(name = "delivery_state", nullable = false)
+    @Column(name = "donate_state", nullable = false)
     private Boolean state = false;
 }
