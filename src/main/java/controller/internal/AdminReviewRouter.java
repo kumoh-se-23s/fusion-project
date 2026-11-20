@@ -34,7 +34,7 @@ public class AdminReviewRouter extends BaseRouter {
         return adminReviewControlService.createReview(dto);
     }
 
-    @Get("/review_id}")
+    @Get("/{review_id}")
     public SingleDataResponse<ReviewData> getReview(@Path("review_id") long reviewId) {
         return adminReviewQueryService.getReview(reviewId);
 
@@ -45,12 +45,12 @@ public class AdminReviewRouter extends BaseRouter {
         return adminReviewQueryService.getAllReviews(limit);
     }
 
-    @Patch("/review_id}")
+    @Patch("/{review_id}")
     public IdResponse updateReview(@Path("review_id") long reviewId, AdminReviewRequest dto) {
         return adminReviewControlService.editReview(reviewId, dto);
     }
 
-    @Delete("review_id}")
+    @Delete("/{review_id}")
     public DeleteResponse deleteReview(@Path("review_id") long reviewId) {
         return adminReviewControlService.deleteReview(reviewId);
     }
