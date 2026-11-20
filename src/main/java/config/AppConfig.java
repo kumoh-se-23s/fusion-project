@@ -7,11 +7,8 @@ import service.external.*;
 import service.internal.AdminProjectControlService;
 import service.internal.AdminCategoryService;
 import service.external.DonateService;
-import service.external.ProjectService;
-import service.external.ReviewService;
 import service.external.RewardService;
-import service.internal.CategoryService;
-import service.internal.UserRoleService;
+import service.internal.AdminUserRoleService;
 import util.RedisUtil;
 
 /**
@@ -50,7 +47,7 @@ public class AppConfig {
     private final ReviewCommandService reviewCommandService = new ReviewCommandService(
             reviewRepository, userRepository, donateRepository, rewardRepository);
     private final RedisUtil redisUtil = new RedisUtil();
-    private final UserRoleService userRoleService = new UserRoleService(
+    private final AdminUserRoleService adminUserRoleService = new AdminUserRoleService(
             userRepository, userRoleRepository, userRoleRelationRepository, redisUtil);
 
     public AppConfig() {

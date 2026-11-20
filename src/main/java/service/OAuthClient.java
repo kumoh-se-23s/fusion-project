@@ -78,7 +78,7 @@ public class OAuthClient {
     private String buildAuthUrl(SocialProvider socialProvider, String state) {
         String responseType = "code";
         String scope = "openid%20email%20profile";
-
+        String redirectAddress = "h";
         return socialProvider.getAuthorizationEndpoint() + "?client_id=" + clientId + "&redirect_uri=" + redirectAddress + "&response_type=" + responseType + "&scope=" + scope + "&state=" + state;
     }
 

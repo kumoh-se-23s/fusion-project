@@ -69,12 +69,12 @@ public class SocialAuthService extends BaseService {
 
         return new TokenPair(accessToken, refreshToken);
     }
-
-    public TokenPair socialSignUp(CreateSocialUserRequest request, String email, String name) {
-        return tx.execute(() -> {
-
-        });
-    }
+//
+//    public TokenPair socialSignUp(CreateSocialUserRequest request, String email, String name) {
+//        return tx.execute(() -> {
+//
+//        });
+//    }
 
     public TokenPair exchangeLoginCode(String code) {
         String redisKey = "social login url:" + code;

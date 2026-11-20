@@ -16,7 +16,7 @@ public class SocialAccount extends BaseDomain {
 
     @Id
     @Column(name = "social_account_id")
-    private String id;
+    private Long id;
 
     @JoinColumn(name = "user_fk", nullable = false, unique = true, onDelete = OnDelete.CASCADE)
     private AppUser appUser;

@@ -63,11 +63,11 @@ public class AuthService extends BaseService {
         });
     }
 
-    public TokenPair SocialSignUp(CreateSocialUserRequest request) {
-        return tx.execute(() -> {
-
-        });
-    }
+//    public TokenPair SocialSignUp(CreateSocialUserRequest request) {
+//        return tx.execute(() -> {
+//
+//        });
+//    }
 
     public TokenPair login(AccountData accountData) {
         try {

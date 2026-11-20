@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RequiredArgsConstructor
-public class UserRoleService extends BaseService {
+public class AdminUserRoleService extends BaseService {
     //Redis에 저장하는 사용자별 역할 명단의 키 접두사 (예: roles:7)
     private static final String ROLE_KEY_PREFIX = "roles:";
 
