@@ -1,6 +1,7 @@
 package service.internal;
 
 import exception.NotFoundException;
+import lombok.RequiredArgsConstructor;
 import model.Serializer;
 import model.domain.DenyProject;
 import model.dto.DenyProjectData;
@@ -18,9 +19,10 @@ import java.util.List;
  * @author 김민규
  * @version 1.0
 **/
+@RequiredArgsConstructor
 public class AdminDenyProjectQueryService extends BaseService {
-    private DenyProjectRepository denyProjectRepository;
-    private ProjectRepository projectRepository;
+    private final DenyProjectRepository denyProjectRepository;
+    private final ProjectRepository projectRepository;
 
     public SingleDataResponse<DenyProjectData> getDenyProject(Long denyProjectId) {
         DenyProject denyProject = denyProjectRepository.findById(denyProjectId)
