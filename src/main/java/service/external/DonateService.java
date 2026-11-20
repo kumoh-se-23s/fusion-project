@@ -38,9 +38,9 @@ public class DonateService extends BaseService {
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
 
-    /**
-     * 중복 후원 검사
-     */
+
+     // 중복 후원 검사
+
     public void checkDuplicateDonate(
             Long projectId,
             Long userId) {
@@ -62,9 +62,9 @@ public class DonateService extends BaseService {
         }
     }
 
-    /**
-     * 로그인 사용자 정보로 후원 생성
-     */
+
+     // 로그인 사용자 정보로 후원 생성
+
     public IdResponse createDonate(
             Long loginUserId,
             CreateDonateRequest request) {
@@ -90,10 +90,10 @@ public class DonateService extends BaseService {
         return createDonateInternal(safeRequest);
     }
 
-    /**
-     * 후원 생성
-     * amount는 후원 총금액
-     */
+
+     //후원 생성
+     // amount는 후원 총금액
+
     private IdResponse createDonateInternal(
             CreateDonateRequest request) {
 
@@ -178,9 +178,9 @@ public class DonateService extends BaseService {
         return new IdResponse(result.getId());
     }
 
-    /**
-     * 사용자별 후원 조회
-     */
+
+     // 사용자별 후원 조회
+
     public DataCollectionResponse<DonateData> findDonateByUser(
             Long userId) {
 
@@ -314,9 +314,9 @@ public class DonateService extends BaseService {
         return findDonateByFunding(projectId.get());
     }
 
-    /**
-     * 관리자 후원 ID 조회
-     */
+
+     // 관리자 후원 ID 조회
+
     public SingleDataResponse<DonateData> getDonateById(
             Long donateId) {
 
@@ -336,16 +336,16 @@ public class DonateService extends BaseService {
         return new SingleDataResponse<>(dto);
     }
 
-    /**
-     * 관리자 전체 후원 조회
-     */
+
+     // 관리자 전체 후원 조회
+
     public DataCollectionResponse<DonateData> getAllDonates() {
         return toCollection(donateRepository.findAll());
     }
 
-    /**
-     * 관리자 단건 또는 전체 조회
-     */
+
+     // 관리자 단건 또는 전체 조회
+
     public DataCollectionResponse<DonateData> getAdminDonates(
             Optional<Long> donateId) {
 
@@ -361,9 +361,9 @@ public class DonateService extends BaseService {
         return toCollection(List.of(donate));
     }
 
-    /**
-     * 해당 후원이 속한 프로젝트의 누적 후원 금액
-     */
+
+     // 해당 후원이 속한 프로젝트의 누적 후원 금액
+
     public BigDecimal getProjectDonationTotalByDonateId(
             Long donateId) {
 
@@ -392,9 +392,9 @@ public class DonateService extends BaseService {
                 ? BigDecimal.ZERO : amount;
     }
 
-    /**
-     * 후원 환불
-     */
+
+     // 후원 환불
+
     public void refundDonate(
             Long donateId,
             Long userId) {
@@ -458,9 +458,9 @@ public class DonateService extends BaseService {
         donateRepository.delete(donateId);
     }
 
-    /**
-     * 사용자의 해당 후원 총금액 조회
-     */
+
+     // 사용자의 해당 후원 총금액 조회
+
     public BigDecimal donateAmountSum(
             Long donateId,
             Long userId) {
@@ -481,9 +481,9 @@ public class DonateService extends BaseService {
         return donate.getAmount();
     }
 
-    /**
-     * 프로젝트 전체 누적 후원 금액
-     */
+
+     // 프로젝트 전체 누적 후원 금액
+
     private BigDecimal donateAmountProject(
             Long projectId) {
 
@@ -495,9 +495,9 @@ public class DonateService extends BaseService {
         return project.getDonateAmount();
     }
 
-    /**
-     * Donate 목록을 DataCollectionResponse로 변환
-     */
+
+     //Donate 목록을 DataCollectionResponse로 변환
+
     private DataCollectionResponse<DonateData> toCollection(
             List<Donate> donates) {
 

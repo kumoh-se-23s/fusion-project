@@ -37,21 +37,20 @@ public class DonateRouter extends BaseRouter {
 
 
      // 사용자, 리워드, 프로젝트별 후원 조회
-    @Get()
-    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-    public DataCollectionResponse<DonateData> getDonates(
-            @Depends(CurrentUser.class) Long loginUserId,//null값사용 예시 바뀜<<main참고 nullable다 수정
-            @Query("user_id") Optional<Long> userId,
-            @Query("reward_id") Optional<Long> rewardId,
-            @Query("project_id") Optional<Long> projectId) {
+     @Get()
+     public DataCollectionResponse<DonateData> getDonates(
+             @Depends(CurrentUser.class) Long loginUserId,
+             @Query(value = "user_id", required = false) Long userId,
+             @Query(value = "reward_id", required = false) Long rewardId,
+             @Query(value = "project_id", required = false) Long projectId) {
 
-        return donateService.getDonates(
-                loginUserId,
-                userId,
-                rewardId,
-                projectId
-        );
-    }
+         return donateService.getDonates(
+                 loginUserId,
+                 Optional.ofNullable(userId),
+                 Optional.ofNullable(rewardId),
+                 Optional.ofNullable(projectId)
+         );
+     }
 
 
      // 후원 환불
