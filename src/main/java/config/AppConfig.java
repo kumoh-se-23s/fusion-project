@@ -39,7 +39,7 @@ public class AppConfig {
     );
     //이름이 같은 external.ProjectService와 구분하기 위해 전체 경로 사용
     private final AdminProjectControlService adminProjectControlService =
-            new AdminProjectControlService(projectRepository, userRepository, categoryRepository, projectLikeRepository);
+            new AdminProjectControlService(projectRepository, userRepository, categoryRepository, projectLikeRepository, userRoleRelationRepository);
     private final ReviewCommandService reviewCommandService = new ReviewCommandService(
             reviewRepository, userRepository, donateRepository, rewardRepository);
 
