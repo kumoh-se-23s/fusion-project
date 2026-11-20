@@ -1,8 +1,12 @@
 package service.external;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import config.AuthProperties;
 import constant.SocialProvider;
 import exception.InvalidException;
 import exception.NotFoundException;
+import exception.UnauthorizedException;
 import model.domain.AppUser;
 import model.dto.SocialUserInfo;
 import model.dto.TokenPair;
@@ -14,13 +18,15 @@ import util.JwtTokenProvider;
 import util.RedisUtil;
 
 import java.util.List;
+import java.util.UUID;
 
 public class SocialAuthService extends BaseService {
     private final RedisUtil redisUtil;
     private final OAuthClient oAuthClient;
     private final JwtTokenProvider jwtTokenProvider;
-
     private final UserRepository userRepository;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public SocialAuthService(RedisUtil redisUtil, OAuthClient oAuthClient, JwtTokenProvider jwtTokenProvider, UserRepository userRepository) {
         this.redisUtil = redisUtil;
@@ -33,24 +39,27 @@ public class SocialAuthService extends BaseService {
         return oAuthClient.getAuthorizationUrl(socialProvider);
     }
 
-    public TokenPair handleCallback(SocialProvider socialProvider, String code, String state) {
+    public String handleCallback(SocialProvider socialProvider, String code, String state) throws JsonProcessingException {
         if (!oAuthClient.verifyState(state)) {
             throw new NotFoundException();
         }
 
-        String exchangedCdoe = oAuthClient.exchangeCode(socialProvider, code);
-
-        SocialUserInfo socialUserInfo = oAuthClient.fetchUserInfo(socialProvider,exchangedCdoe);
+        String socialAccessToken = oAuthClient.exchangeCode(socialProvider, code);
+        SocialUserInfo socialUserInfo = oAuthClient.fetchUserInfo(socialProvider, socialAccessToken);
 
         String email = socialUserInfo.getEmail();
 
-        //리다이렉트 주소 나눌 예정
+        String key = UUID.randomUUID().toString();
+
         if (userRepository.isExistEmail(email)) {
             AppUser appUser = userRepository.findByEmail(email).orElseThrow(InvalidException::new);
-            return socialLogin(appUser.getId());
-        } else {
-            socialSignUp();
+            redisUtil.save("social-login:" + key, appUser.getId(), 600);
+
+            return AuthProperties.get("front url") + "?code=" + key;
         }
+
+        redisUtil.save("social-signup:"+ key, objectMapper.writeValueAsString(socialUserInfo), 600);
+        return AuthProperties.get("front signup url") + "?key=" + key;
     }
 
 
@@ -63,9 +72,21 @@ public class SocialAuthService extends BaseService {
 
     public TokenPair socialSignUp(CreateSocialUserRequest request, String email, String name) {
         return tx.execute(() -> {
-            redisUtil.getValue()
-            AppUser appUser = userRepository.createUser()
 
         });
+    }
+
+    public TokenPair exchangeLoginCode(String code) {
+        String redisKey = "social login url:" + code;
+        String userId = redisUtil.getValue(redisKey).orElseThrow(UnauthorizedException::new);
+        redisUtil.delete(redisKey);
+        return socialLogin(Long.parseLong(userId));
+    }
+
+    public SocialUserInfo takeSignupInfo(String key) throws JsonProcessingException {
+        String redisKey = "social-signup url:" + key;
+        String json = redisUtil.getValue(redisKey).orElseThrow(UnauthorizedException::new);
+        redisUtil.delete(redisKey);
+        return objectMapper.readValue(json, SocialUserInfo.class);
     }
 }
