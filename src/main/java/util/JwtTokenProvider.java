@@ -69,11 +69,11 @@ public class JwtTokenProvider {
 
         Claims claims = getClaims(token);
 
-        if (claims.getSubject().isEmpty()) {
+        if (claims.getSubject() == null || claims.getSubject().isEmpty()) {
             return false;
         }
 
-        if (claims.getId().isEmpty()) {
+        if (claims.getId() == null || claims.getId().isEmpty()) {
             return false;
         }
 

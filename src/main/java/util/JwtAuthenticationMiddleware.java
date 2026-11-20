@@ -4,12 +4,10 @@ import com.minihttp.core.handler.Handler;
 import com.minihttp.core.middleware.Middleware;
 import com.minihttp.packet.HttpRequest;
 import com.minihttp.packet.HttpResponse;
-import exception.NotFoundException;
 import exception.UnauthorizedException;
 
-import java.util.Optional;
-
 public class JwtAuthenticationMiddleware implements Middleware {
+    private static final String BEARER_PREFIX = "Bearer ";
 
     private final JwtTokenProvider jwtTokenProvider;
 
@@ -19,15 +17,29 @@ public class JwtAuthenticationMiddleware implements Middleware {
 
     @Override
     public HttpResponse handle(HttpRequest request, Handler next) throws Exception {
-        Optional<String> authHeader = request.header().get("Authorization");
-        String[] parts = authHeader.orElseThrow(NotFoundException::new).split(" ");
-
-        String jwtToken = parts[1];
+        String jwtToken = extractToken(request);
 
         if (jwtTokenProvider.validateToken(jwtToken)) {
             return next.handle(request);
         }
 
         throw new UnauthorizedException();
+    }
+
+    private String extractToken(HttpRequest request) {
+        String value = request.header().get("Authorization")
+                .orElseThrow(UnauthorizedException::new);
+
+        if (!value.startsWith(BEARER_PREFIX)) {
+            throw new UnauthorizedException();
+        }
+
+        String token = value.substring(BEARER_PREFIX.length()).trim();
+
+        if (token.isEmpty()) {
+            throw new UnauthorizedException();
+        }
+
+        return token;
     }
 }

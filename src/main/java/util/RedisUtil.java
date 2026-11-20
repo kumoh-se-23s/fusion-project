@@ -55,7 +55,7 @@ public class RedisUtil {
                 value = jedis.get("refresh" + userId + " : ");
             }
 
-            return Objects.equals(value, String.valueOf(userId));
+            return Objects.equals(value, jti);
         }
     }
 }
