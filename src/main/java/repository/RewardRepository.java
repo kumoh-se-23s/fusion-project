@@ -17,8 +17,6 @@ public class RewardRepository extends BaseRepositoryImpl<Reward, Long> {
                         .sort(Sort.by(Order.asc("createdAt")))//생성일 기준 정렬
                         .build()//필터 객체 완성
         );
-
-
     }
 
     public boolean decreaseRemainQuantity(Long rewardId, Long quantity){//재고를 안전하게 차감을 했는가?
@@ -35,6 +33,14 @@ public class RewardRepository extends BaseRepositoryImpl<Reward, Long> {
                 Filter.builder()
                         .sort(Sort.by(Order.asc("createdAt")))
                         .build()
+        );
+    }
+
+    public List<Reward> findByProjects(List<Project> projects) {
+        return find(
+                Filter.builder()
+                        .conditions(Map.of("project", projects))
+                        .build()//필터 객체 완성
         );
     }
 }
