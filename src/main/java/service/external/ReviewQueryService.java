@@ -1,10 +1,13 @@
 package service.external;
 
+import exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import model.Serializer;
+import model.domain.Review;
 import model.domain.Reward;
 import model.dto.ReviewData;
 import model.dto.response.DataCollectionResponse;
+import model.dto.response.SingleDataResponse;
 import repository.ReviewRepository;
 import repository.RewardRepository;
 import service.BaseService;
@@ -23,6 +26,15 @@ public class ReviewQueryService extends BaseService {
     private final ReviewRepository reviewRepository;
     private final RewardRepository rewardRepository;
 
+    public SingleDataResponse<ReviewData> getReview(Long reviewId) {
+        return tx.execute(true, () -> {
+            Review review = reviewRepository.findById(reviewId)
+                    .orElseThrow(NotFoundException::new);
+            return SingleDataResponse.<ReviewData>builder()
+                    .data(Serializer.toData(review, ReviewData.class))
+                    .build();
+        });
+    }
     public DataCollectionResponse<ReviewData> getUserReview(Long userId) {
         return tx.execute(true, () -> {
             List<ReviewData> dtoList = Serializer.toDataList(reviewRepository.findByUser(userId), ReviewData.class);

@@ -6,9 +6,7 @@ import exception.InvalidStateException;
 import exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import model.Serializer;
-import model.domain.AppUser;
-import model.domain.Category;
-import model.domain.Project;
+import model.domain.*;
 import model.dto.ProjectData;
 import model.dto.response.DataCollectionResponse;
 import model.dto.response.SingleDataResponse;
@@ -31,6 +29,7 @@ public class ProjectQueryService extends BaseService {
     private final ProjectRepository projectRepository;
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
+    private final DonateRepository donateRepository;
 
     private final static Set<ProjectState> ALLOWED_QUERY_STATE =
             EnumSet.of(
@@ -127,5 +126,18 @@ public class ProjectQueryService extends BaseService {
                 .amount((long) projectList.size())
                 .build();
     }
+    public DataCollectionResponse<ProjectData> getUserDonateProject(Long userId) {
+        List<Donate> userDonateList = donateRepository.findByUserId(userId);
+
+        List<Project> projectList = userDonateList.stream()
+                .map(donate -> donate.getReward().getProject())
+                .toList();
+
+        return DataCollectionResponse.<ProjectData>builder()
+                .datas(Serializer.toDataList(projectList, ProjectData.class))
+                .amount((long) projectList.size())
+                .build();
+    }
+
 
 }
