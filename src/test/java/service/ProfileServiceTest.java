@@ -17,6 +17,7 @@ import repository.Filter;
 import repository.UserRepository;
 import repository.UserRoleRelationRepository;
 import repository.UserRoleRepository;
+import service.external.ProfileService;
 
 import java.util.HashMap;
 import java.util.List;
@@ -25,11 +26,11 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class UserServiceTest {
+class ProfileServiceTest {
 
     private static final long USER_ID = 1L;
 
-    private UserService userService;
+    private ProfileService profileService;
     private FakeUserRepository userRepository;
     private FakeUserRoleRelationRepository userRoleRelationRepository;
     private AppUser user;
@@ -106,7 +107,7 @@ class UserServiceTest {
         userRepository.users.put(USER_ID, user);
         userRoleRelationRepository = new FakeUserRoleRelationRepository();
 
-        userService = new UserService(userRepository, new UserRoleRepository(), userRoleRelationRepository);
+        profileService = new ProfileService(userRepository, new UserRoleRepository(), userRoleRelationRepository);
     }
 
     // ===================================================================== 테스트
@@ -118,7 +119,7 @@ class UserServiceTest {
         @Test
         @DisplayName("사용자 정보를 UserData에 담아 돌려준다")
         void success() {
-            UserResponse response = userService.getMyInfo(USER_ID);
+            UserResponse response = profileService.getMyInfo(USER_ID);
             UserData data = response.getUserData();
 
             assertEquals("홍길동", data.getName());
@@ -131,7 +132,7 @@ class UserServiceTest {
         @Test
         @DisplayName("없는 사용자면 NotFoundException이 발생한다")
         void unknownUser() {
-            assertThrows(NotFoundException.class, () -> userService.getMyInfo(999L));
+            assertThrows(NotFoundException.class, () -> profileService.getMyInfo(999L));
         }
     }
 
@@ -144,7 +145,7 @@ class UserServiceTest {
         void success() {
             UserData newData = UserData.builder().name("김철수").build();
 
-            IdResponse response = userService.updateUser(USER_ID, new UpdateUserRequest(newData));
+            IdResponse response = profileService.updateUser(USER_ID, new UpdateUserRequest(newData));
 
             assertEquals(USER_ID, response.getId());
             assertEquals(USER_ID, userRepository.updatedId);
@@ -156,7 +157,7 @@ class UserServiceTest {
         void unknownUser() {
             UpdateUserRequest request = new UpdateUserRequest(UserData.builder().name("김철수").build());
 
-            assertThrows(NotFoundException.class, () -> userService.updateUser(999L, request));
+            assertThrows(NotFoundException.class, () -> profileService.updateUser(999L, request));
         }
 
         @Test
@@ -165,7 +166,7 @@ class UserServiceTest {
             userRepository.updateResult = Optional.empty();
             UpdateUserRequest request = new UpdateUserRequest(UserData.builder().name("김철수").build());
 
-            assertThrows(NotFoundException.class, () -> userService.updateUser(USER_ID, request));
+            assertThrows(NotFoundException.class, () -> profileService.updateUser(USER_ID, request));
         }
     }
 
@@ -176,7 +177,7 @@ class UserServiceTest {
         @Test
         @DisplayName("삭제에 성공하면 result가 true다")
         void success() {
-            DeleteResponse response = userService.deleteUser(USER_ID);
+            DeleteResponse response = profileService.deleteUser(USER_ID);
 
             assertTrue(response.getResult());
             assertEquals(USER_ID, userRepository.deletedId);
@@ -185,7 +186,7 @@ class UserServiceTest {
         @Test
         @DisplayName("없는 사용자면 result가 false다")
         void unknownUser() {
-            DeleteResponse response = userService.deleteUser(999L);
+            DeleteResponse response = profileService.deleteUser(999L);
 
             assertFalse(response.getResult());
         }
@@ -209,7 +210,7 @@ class UserServiceTest {
             UserRoleRelation relation = relation(100L);
             userRoleRelationRepository.relations = List.of(relation);
 
-            assertEquals(List.of(relation), userService.getRoles(USER_ID));
+            assertEquals(List.of(relation), profileService.getRoles(USER_ID));
         }
 
         @Test
@@ -218,14 +219,14 @@ class UserServiceTest {
             List<UserRoleRelation> relations = List.of(relation(100L), relation(101L));
             userRoleRelationRepository.relations = relations;
 
-            assertEquals(relations, userService.getRoles(USER_ID));
+            assertEquals(relations, profileService.getRoles(USER_ID));
         }
 
         // 관계 테이블 자신의 id가 아니라, 사용자(user_fk)를 기준으로 찾아야 한다.
         @Test
         @DisplayName("찾은 사용자를 user_fk 조건으로, 개수 제한 없이 조회한다")
         void filterUsesUserWithoutLimit() {
-            userService.getRoles(USER_ID);
+            profileService.getRoles(USER_ID);
 
             Filter filter = userRoleRelationRepository.receivedFilter;
             assertEquals(Map.of("user_fk", user), filter.getConditions());
@@ -235,7 +236,7 @@ class UserServiceTest {
         @Test
         @DisplayName("없는 사용자면 NotFoundException이 발생하고 역할을 조회하지 않는다")
         void unknownUser() {
-            assertThrows(NotFoundException.class, () -> userService.getRoles(999L));
+            assertThrows(NotFoundException.class, () -> profileService.getRoles(999L));
             assertNull(userRoleRelationRepository.receivedFilter);
         }
     }

@@ -1,14 +1,16 @@
 package util;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import exception.TokenExpiredException;
+import exception.UnauthorizedException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+
+
 
 public class JwtTokenProvider {
     final private ObjectMapper objectMapper = new ObjectMapper();
@@ -19,12 +21,14 @@ public class JwtTokenProvider {
     final private String secretKey = "YEm5Guw205YIM4QuSKDrQqv/nmvssJwbQQc8OPCJ4lM=";
     final private SecretKey key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
 
-    public String createAccessToken(String userId) {
+
+    public String createAccessToken(long userId) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + 1000 * 60 * 15);
 
         return Jwts.builder()
-                .subject(userId)
+                .subject(String.valueOf(userId))
+                .id(UUID.randomUUID().toString())
                 .claim("type", "access")
                 .issuedAt(now)
                 .expiration(expiry)
@@ -32,72 +36,66 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    public String createRefreshToken(String userId) {
+    public String createRefreshToken(long userId) {
         Date now = new Date();
-        Date expiry = new Date(now.getTime() + 1000 * 60 * 15);
+        Date expiry = new Date(now.getTime() + 1000 * 60 * 60);
 
         return Jwts.builder()
-                .subject(userId)
-                .claim("type" , "refresh")
+                .subject(String.valueOf(userId))
+                .id(UUID.randomUUID().toString())
+                .claim("type", "refresh")
                 .issuedAt(now)
                 .expiration(expiry)
                 .signWith(key)
                 .compact();
     }
 
-    //public
 
-    public boolean validateToken(String token) throws JsonProcessingException {
-        Map<String, String> parseToken = parse(token);
+    private Claims getClaims(String token) {
+        try {
+            return Jwts.parser()
+                    .verifyWith(key)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+        } catch (ExpiredJwtException e) {
+            throw new TokenExpiredException();
+        } catch (JwtException | IllegalArgumentException e) {
+            throw new UnauthorizedException();
+        }
+    }
 
-        String header = parseToken.get("header");
-        Map<String, Object> decodedHeader = jsonToMap(decoding(header));
+    public boolean validateToken(String token) throws JwtException, IllegalArgumentException {
 
-        if (!decodedHeader.get("alg").equals(alg)) {
+        Claims claims = getClaims(token);
+
+        if (claims.getSubject() == null || claims.getSubject().isEmpty()) {
             return false;
         }
 
-        String payload = parseToken.get("payload");
-        Map<String, Object> decodedPayload = jsonToMap(decoding(payload));
-
-        long now = System.currentTimeMillis() / 1000;
-        if (((Number) decodedPayload.get("exp")).longValue() < now || decodedPayload.get("sub") == null) {
+        if (claims.getId() == null || claims.getId().isEmpty()) {
             return false;
         }
 
-        String expectedToken = Jwts.builder()
-                .header()
-                .add("alg", alg)
-                .and()
-                .content(decoding(payload))
-                .signWith(key)
-                .compact();
-
-        if (!expectedToken.equals(token)) {
+        if (!"access".equals(claims.get("type", String.class))) {
             return false;
         }
 
         return true;
     }
 
-    private Map<String, String> parse(String token) {
-        String[] splitTokens = token.split("\\.");
+    public long getUserId(String token) {
+        String stringTypeUserId = getClaims(token).getSubject();
 
-        Map<String, String> result = new HashMap<String, String>();
-
-        result.put("header", splitTokens[0]);
-        result.put("payload", splitTokens[1]);
-        result.put("signature", splitTokens[2]);
-
-        return result;
+        return Long.parseLong(stringTypeUserId);
     }
 
-    public String decoding(String token) {
-        return new String(Base64.getUrlDecoder().decode(token));
+    public String getJti(String token) {
+        return getClaims(token).getId();
     }
 
-    private Map<String, Object> jsonToMap(String json) throws JsonProcessingException {
-        return objectMapper.readValue(json, new TypeReference<Map<String, Object>>() {
-        });
+    public String getTokenType(String token) throws JwtException, IllegalArgumentException {
+        Claims claims = getClaims(token);
+        return claims.get("type", String.class);
     }
 }

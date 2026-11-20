@@ -19,7 +19,7 @@ class AccountRepositoryTest {
 
     // BaseRepositoryImpl은 아직 DB와 연결되어 있지 않다.
     // 그래서 부모의 create/find/update를 바꿔 끼워, AccountRepository가 "무엇을 부탁하는지"를 기록한다.
-    static class SpyAccountRepository extends AccountRepository {
+    static class SpyAccountRepository extends LocalAccountRepository {
         private List<LocalAccount> findResult = List.of();
         private Optional<LocalAccount> updateResult = Optional.empty();
         private Filter receivedFilter;
@@ -120,14 +120,14 @@ class AccountRepositoryTest {
     }
 
     @Nested
-    @DisplayName("createAccount")
+    @DisplayName("createLocalAccount")
     class CreateAccount {
 
         // LocalAccount의 user, salt 에는 @NonNull이 붙어 있으므로 createAccount가 이 값들도 채워야 한다.
         @Test
         @DisplayName("예외 없이 loginId와 password를 담은 계정을 create에 넘긴다")
         void createsAccount() {
-            assertDoesNotThrow(() -> accountRepository.createAccount("hong", "password"));
+            assertDoesNotThrow(() -> accountRepository.createLocalAccount("hong", "password"));
 
             assertEquals("hong", accountRepository.createdEntity.getLoginId());
             assertEquals("password", accountRepository.createdEntity.getPassword());
