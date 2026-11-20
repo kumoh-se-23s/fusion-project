@@ -46,6 +46,8 @@ public class ReviewQueryService extends BaseService {
     }
     public DataCollectionResponse<ReviewData> getRewardReview(Long rewardId) {
         return tx.execute(true, () -> {
+            Reward reward = rewardRepository.findById(rewardId)
+                    .orElseThrow(NotFoundException::new);
             List<ReviewData> dtoList = Serializer.toDataList(reviewRepository.findByReward(rewardId), ReviewData.class);
             return DataCollectionResponse.<ReviewData>builder()
                 .datas(dtoList)

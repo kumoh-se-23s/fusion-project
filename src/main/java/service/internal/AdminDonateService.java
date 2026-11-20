@@ -11,7 +11,7 @@ import service.BaseService;
 import java.util.List;
 
 @RequiredArgsConstructor
-public class DonateService extends BaseService {
+public class AdminDonateService extends BaseService {
     private final DonateRepository donateRepository;
 
     public List<DonateData> getAllDonate(){

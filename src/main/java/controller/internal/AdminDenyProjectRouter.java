@@ -42,11 +42,11 @@ public class AdminDenyProjectRouter extends BaseRouter {
     }
 
     @Get()
-    public DataCollectionResponse<DenyProjectData> getAllDenyProject(int limit) {
+    public DataCollectionResponse<DenyProjectData> getAllDenyProject(@Query("limit") Integer limit) {
         return adminDenyProjectQueryService.getAllDenyProject(limit);
     }
 
-    @Get("/{project_id}")
+    @Get("/reason/{project_id}")
     public DataCollectionResponse<DenyProjectData> getAllDenyProjectByProject(@Path("project_id") long projectId) {
         return adminDenyProjectQueryService.getDenyProjectByProject(projectId);
     }
@@ -56,7 +56,7 @@ public class AdminDenyProjectRouter extends BaseRouter {
         return adminDenyProjectControlService.editDenyProject(denyProjectId, dto);
     }
 
-    @Delete("/deny_project_id}")
+    @Delete("/{deny_project_id}")
     public DeleteResponse deleteDenyProject(@Path("deny_project_id") long denyProjectId) {
         return adminDenyProjectControlService.deleteDenyProject(denyProjectId);
     }

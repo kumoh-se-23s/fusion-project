@@ -76,7 +76,7 @@ public class ProjectRouter extends BaseRouter {
                 searchType
         );
     }
-    @Get("/my/donate")
+    @Get("/my-donate")
     public DataCollectionResponse<ProjectData> getMyDonateProject(@Depends(CurrentUser.class) Long userId) {
         return projectQueryService.getUserDonateProject(userId);
     }
@@ -84,19 +84,19 @@ public class ProjectRouter extends BaseRouter {
     public DataCollectionResponse<ProjectData> getMyCreatedProject(@Depends(CurrentUser.class) Long userId) {
         return projectMakerService.getMakerProject(userId);
     }
-    @Get("/my/deny")
+    @Get("/my-deny")
     public DataCollectionResponse<DenyProjectData> getMyDenyProject(@Depends(CurrentUser.class) Long userId) {
         return projectMakerService.getAllDenyProjects(userId);
     }
 
     @Patch("/{project_id}")
-    public IdResponse updateProject(@Depends(CurrentUser.class) Long userId, @Path("{project_id}") long projectId, EditProjectRequest dto) {
+    public IdResponse updateProject(@Depends(CurrentUser.class) Long userId, @Path("project_id") long projectId, EditProjectRequest dto) {
         return projectMakerService.editProject(userId, projectId, dto);
     }
 
     @Delete("/my/{project_id}")
-    public DeleteResponse deleteProject(@Depends(CurrentUser.class) Long userId, @Path("{project_id}") long projectId) {
+    public DeleteResponse deleteProject(@Depends(CurrentUser.class) Long userId, @Path("project_id") long projectId) {
         return projectMakerService.deleteMakerSelfProject(userId, projectId);
     }
-    
+
 }

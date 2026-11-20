@@ -7,7 +7,6 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-@Getter
 public enum ProjectState {
     //프로젝트 생성만 됨
     JUST_USER_INPUT("JUST_USER_INPUT"),
@@ -42,6 +41,9 @@ public enum ProjectState {
         Arrays.stream(values())
                 .collect(Collectors.toUnmodifiableMap(ProjectState::getStringValue, Function.identity()));
 
+    public String getStringValue() {
+        return stringValue;
+    }
 
     ProjectState(String stringValue) {
         this.stringValue = stringValue;

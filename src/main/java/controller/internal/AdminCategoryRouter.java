@@ -45,7 +45,7 @@ public class AdminCategoryRouter extends BaseRouter {
         return adminCategoryService.editCategory(categoryId, dto);
     }
 
-    @Delete("{categoryId}")
+    @Delete("/{category_id}")
     public DeleteResponse deleteCategory(@Path("category_id") long categoryId) {
         return adminCategoryService.deleteCategory(categoryId);
     }

@@ -23,7 +23,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @BindDomain(values = {Reward.class})
 public class CreateRewardDataRequest extends UpdateRequest {
-
     @DataField(name = "name")
     private String rewardName;
 

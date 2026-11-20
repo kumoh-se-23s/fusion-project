@@ -12,11 +12,11 @@ import service.external.RewardService;
 
 //  관리자 전용 리워드 라우터
 
-public class RewardRouter extends BaseRouter {
+public class AdminRewardRouter extends BaseRouter {
 
     private final RewardService rewardService;
 
-    public RewardRouter(RewardService rewardService) {
+    public AdminRewardRouter(RewardService rewardService) {
         super("/internal/reward");
         this.rewardService = rewardService;
     }

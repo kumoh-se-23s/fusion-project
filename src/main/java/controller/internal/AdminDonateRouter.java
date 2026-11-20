@@ -14,11 +14,11 @@ import java.util.Optional;
 /*
  관리자 전용 후원 라우터
  */
-public class DonateRouter extends BaseRouter {
+public class AdminDonateRouter extends BaseRouter {
 
     private final DonateService donateService;
 
-    public DonateRouter(DonateService donateService) {
+    public AdminDonateRouter(DonateService donateService) {
         super("/internal/donate");
         this.donateService = donateService;
     }

@@ -72,23 +72,23 @@ public class AdminProjectRouter extends BaseRouter {
     }
 
     @Patch("/{project_id}")
-    public IdResponse updateProject(@Path("{project_id}") long projectId, AdminProjectRequest dto) {
+    public IdResponse updateProject(@Path("project_id") long projectId, AdminProjectRequest dto) {
         return adminProjectControlService.editProject(projectId, dto);
     }
 
     @Patch("/approve/{project_id}")
-    public IdResponse approveProject(@Path("{project_id") long projectId) {
+    public IdResponse approveProject(@Path("project_id") long projectId) {
         return adminProjectControlService.updateProjectApprove(projectId);
     }
 
 
     @Delete("/{project_id}")
-    public DeleteResponse deleteProject(@Path("{project_id}") long projectId) {
+    public DeleteResponse deleteProject(@Path("project_id") long projectId) {
         return adminProjectControlService.deleteProject(projectId);
     }
 
     @Delete("/like/{project_id}")
-    public DeleteResponse deleteProjectLikes(@Path("{project_id}") long projectId) {
+    public DeleteResponse deleteProjectLikes(@Path("project_id") long projectId) {
         return adminProjectControlService.deleteProjectAllLikes(projectId);
     }
 }

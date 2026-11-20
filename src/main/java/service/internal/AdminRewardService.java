@@ -7,11 +7,12 @@ import model.domain.Reward;
 import model.dto.RewardData;
 
 import repository.RewardRepository;
+import service.BaseService;
 
 import java.util.List;
 
 @RequiredArgsConstructor
-public class RewardService {
+public class AdminRewardService extends BaseService {
 
     private final RewardRepository rewardRepository;
 
