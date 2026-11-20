@@ -3,6 +3,7 @@ package controller.external;
 import auth.CurrentUser;
 import com.minihttp.core.route.BaseRouter;
 import com.minihttp.core.route.annotation.*;
+import model.dto.DenyProjectData;
 import model.dto.ProjectData;
 import model.dto.request.project.CreateProjectRequest;
 import model.dto.request.project.EditProjectRequest;
@@ -52,7 +53,7 @@ public class ProjectRouter extends BaseRouter {
     }
 
     @Get()
-    public DataCollectionResponse<ProjectData> getAllProjects(@Query("limit") Integer limit) {
+    public DataCollectionResponse<ProjectData> getAllProjects(@Query(value = "limit", required = false) Integer limit) {
         return projectQueryService.getAllProject(limit);
     }
 
@@ -75,6 +76,18 @@ public class ProjectRouter extends BaseRouter {
                 searchType
         );
     }
+    @Get("/my/donate")
+    public DataCollectionResponse<ProjectData> getMyDonateProject(@Depends(CurrentUser.class) Long userId) {
+        return projectQueryService.getUserDonateProject(userId);
+    }
+    @Get("/my")
+    public DataCollectionResponse<ProjectData> getMyCreatedProject(@Depends(CurrentUser.class) Long userId) {
+        return projectMakerService.getMakerProject(userId);
+    }
+    @Get("/my/deny")
+    public DataCollectionResponse<DenyProjectData> getMyDenyProject(@Depends(CurrentUser.class) Long userId) {
+        return projectMakerService.getAllDenyProjects(userId);
+    }
 
     @Patch("/{project_id}")
     public IdResponse updateProject(@Depends(CurrentUser.class) Long userId, @Path("{project_id}") long projectId, EditProjectRequest dto) {
@@ -85,5 +98,5 @@ public class ProjectRouter extends BaseRouter {
     public DeleteResponse deleteProject(@Depends(CurrentUser.class) Long userId, @Path("{project_id}") long projectId) {
         return projectMakerService.deleteMakerSelfProject(userId, projectId);
     }
-
+    
 }
