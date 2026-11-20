@@ -1,4 +1,4 @@
-package util;
+package middleware;
 
 import com.minihttp.core.handler.Handler;
 import com.minihttp.core.middleware.Middleware;
@@ -6,6 +6,8 @@ import com.minihttp.packet.HttpRequest;
 import com.minihttp.packet.HttpResponse;
 import exception.InvalidException;
 import exception.UnauthorizedException;
+import util.JwtTokenProvider;
+import util.RedisUtil;
 
 import java.util.Objects;
 
