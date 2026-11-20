@@ -31,7 +31,7 @@ public class AppConfig {
             projectRepository, donateRepository, rewardRepository,
             userRepository, categoryRepository, denyProjectRepository);
     private final ProjectQueryService projectQueryService = new ProjectQueryService(
-            projectRepository, categoryRepository,  userRepository);
+            projectRepository, categoryRepository,  userRepository, donateRepository);
     private final service.external.RewardService rewardService = new RewardService(
             projectRepository, donateRepository, rewardRepository, categoryRepository);
     private final service.external.DonateService donateService = new DonateService(
