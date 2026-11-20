@@ -59,10 +59,7 @@ public class AuthService extends BaseService {
                 throw new InvalidException();
             }
 
-            String accessToken = jwtTokenProvider.createAccessToken(String.valueOf(appuser.getId()));
-            String refreshToken = jwtTokenProvider.createRefreshToken(String.valueOf(appuser.getId()));
-
-            return new TokenPair(accessToken, refreshToken);
+            return issueTokenPair(appuser.getId());
         });
     }
 
@@ -81,8 +78,8 @@ public class AuthService extends BaseService {
             String savedPassword = localAccount.getPassword();
 
             if (accountUtil.matches(accountData.getPassword(), salt, savedPassword)) {
-                String accessToken = jwtTokenProvider.createAccessToken(String.valueOf(localAccount.getId()));
-                String refreshToken = jwtTokenProvider.createRefreshToken(String.valueOf(localAccount.getId()));
+                String accessToken = jwtTokenProvider.createAccessToken(localAccount.getId());
+                String refreshToken = jwtTokenProvider.createRefreshToken(localAccount.getId());
 
                 redisUtil.save("refreshToken" + localAccount.getId(), refreshToken, 3600);
 
@@ -123,9 +120,7 @@ public class AuthService extends BaseService {
     }
 
     public void logout(long userId) {
-        try (Jedis jedis = jedisPool.getResource()) {
-            jedis.del("refreshToken" + userId);
-        }
+        redisUtil.delete(String.valueOf(userId));
     }
 
     public void deleteAccount(long userId, DeleteAccountRequest request) {
@@ -149,6 +144,16 @@ public class AuthService extends BaseService {
             }
         });
 
-        redisUtil.delete("refreshToken" + userId);
+        redisUtil.delete("refresh" + userId + " : ");
+    }
+
+    private TokenPair issueTokenPair(long userId) {
+        String accessToken = jwtTokenProvider.createAccessToken(userId);
+        String refreshToken = jwtTokenProvider.createRefreshToken(userId);
+
+        redisUtil.save("access" + userId +  " : ", jwtTokenProvider.getJti(accessToken) ,  15);
+        redisUtil.save("refresh" + userId  +  " : ", jwtTokenProvider.getJti(refreshToken), 60);
+
+        return new TokenPair(accessToken, refreshToken);
     }
 }

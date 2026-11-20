@@ -5,7 +5,17 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
+import java.util.Objects;
 import java.util.Optional;
+
+/**
+ * Redis에 토큰 저장 형식 <br>
+ * 키 : access or refresh + userId + " : " <br>
+ * 밸류 : jti <br>
+ * access + userId + " : "  , jti <br>
+ * refresh + userId + " : " , jti
+ */
+
 
 public class RedisUtil {
     @Getter
@@ -35,15 +45,17 @@ public class RedisUtil {
         }
     }
 
-    public boolean checkWhiteList(String jti, long userId) {
+    public boolean checkWhiteList(String tokenType, String jti, long userId) {
         try (Jedis jedis = getPool().getResource()) {
-            String value = jedis.get("white_list:" + jti);
+            String value;
 
-            if(value == null) {
-                return false;
+            if(Objects.equals(tokenType, "access")) {
+                value = jedis.get("access" + userId + " : ");
             } else {
-                return value.equals(String.valueOf(userId));
+                value = jedis.get("refresh" + userId + " : ");
             }
+
+            return Objects.equals(value, String.valueOf(userId));
         }
     }
 }

@@ -47,16 +47,14 @@ public class SocialAuthService extends BaseService {
         //리다이렉트 주소 나눌 예정
         if (userRepository.isExistEmail(email)) {
             AppUser appUser = userRepository.findByEmail(email).orElseThrow(InvalidException::new);
-            return socialLogin(appUser.getId().toString());
+            return socialLogin(appUser.getId());
         } else {
-            redisUtil.save( userInfoMap.get("iss") + userInfoMap.get("sub") + " : email : ", userInfoMap.get("email"), 600);
-            redisUtil.save( userInfoMap.get("iss") + userInfoMap.get("sub") + " : name : ", userInfoMap.get("name"), 600);
             socialSignUp();
         }
     }
 
 
-    public TokenPair socialLogin(String userId) {
+    public TokenPair socialLogin(long userId) {
         String accessToken = jwtTokenProvider.createAccessToken(userId);
         String refreshToken = jwtTokenProvider.createRefreshToken(userId);
 

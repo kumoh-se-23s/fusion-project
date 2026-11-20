@@ -1,7 +1,5 @@
 package util;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import exception.TokenExpiredException;
 import exception.UnauthorizedException;
@@ -11,6 +9,8 @@ import io.jsonwebtoken.security.Keys;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+
+
 
 public class JwtTokenProvider {
     final private ObjectMapper objectMapper = new ObjectMapper();
@@ -84,11 +84,8 @@ public class JwtTokenProvider {
         return true;
     }
 
-    public long getUserId(String authorizationHeader) {
-        String[] parts = authorizationHeader.split(" ");
-        String jwt = parts[1];
-
-        String stringTypeUserId = getClaims(jwt).getSubject();
+    public long getUserId(String token) {
+        String stringTypeUserId = getClaims(token).getSubject();
 
         return Long.parseLong(stringTypeUserId);
     }
@@ -97,8 +94,8 @@ public class JwtTokenProvider {
         return getClaims(token).getId();
     }
 
-    public boolean isAccessToken(Claims claims) throws JwtException, IllegalArgumentException {
-        String value = claims.get("type", String.class);
-        return "access".equals(value);
+    public String getTokenType(String token) throws JwtException, IllegalArgumentException {
+        Claims claims = getClaims(token);
+        return claims.get("type", String.class);
     }
 }

@@ -28,8 +28,9 @@ public class TokenWhitelistMiddleware implements Middleware {
 
         String jti = jwtTokenProvider.getJti(jwt);
         long userId = jwtTokenProvider.getUserId(jwt);
+        String tokenType = jwtTokenProvider.getTokenType(jwt);
 
-        if (redisUtil.checkWhiteList(jti, userId)) {
+        if (redisUtil.checkWhiteList(tokenType, jti, userId)) {
             return next.handle(request);
         }
 
