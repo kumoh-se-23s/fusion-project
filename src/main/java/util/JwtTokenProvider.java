@@ -3,6 +3,8 @@ package util;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import exception.TokenExpiredException;
+import exception.UnauthorizedException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 
@@ -50,15 +52,36 @@ public class JwtTokenProvider {
 
 
     private Claims getClaims(String token) {
-        return Jwts.parser()
-                .verifyWith(key)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+        try {
+            return Jwts.parser()
+                    .verifyWith(key)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+        } catch (ExpiredJwtException e) {
+            throw new TokenExpiredException();
+        } catch (JwtException | IllegalArgumentException e) {
+            throw new UnauthorizedException();
+        }
     }
 
     public boolean validateToken(String token) throws JwtException, IllegalArgumentException {
-        return getClaims(token).getSubject() != null;
+
+        Claims claims = getClaims(token);
+
+        if (claims.getSubject().isEmpty()) {
+            return false;
+        }
+
+        if (claims.getId().isEmpty()) {
+            return false;
+        }
+
+        if (!"access".equals(claims.get("type", String.class))) {
+            return false;
+        }
+
+        return true;
     }
 
     public long getUserId(String authorizationHeader) {
