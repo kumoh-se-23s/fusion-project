@@ -38,6 +38,11 @@ public class OAuthClient {
         this.redirectUri = redirectUri;
     }
 
+    /**
+     *
+     * @param socialProvider
+     * @return
+     */
     public String getAuthorizationUrl(SocialProvider socialProvider) {
         String state = UUID.randomUUID().toString();
         redisUtil.save("oauth_state : " + state, state, 300);
@@ -79,7 +84,7 @@ public class OAuthClient {
         String responseType = "code";
         String scope = "openid%20email%20profile";
 
-        return socialProvider.getAuthorizationEndpoint() + "?client_id=" + clientId + "&redirect_uri=" + redirectAddress + "&response_type=" + responseType + "&scope=" + scope + "&state=" + state;
+        return socialProvider.getAuthorizationEndpoint() + "?client_id=" + clientId + "&redirect_uri=" + "redirectAddress" + "&response_type=" + responseType + "&scope=" + scope + "&state=" + state;
     }
 
     private String extractString(String json, String key) {

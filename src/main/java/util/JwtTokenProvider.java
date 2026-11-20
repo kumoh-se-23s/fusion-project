@@ -11,7 +11,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 
-
 public class JwtTokenProvider {
     final private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -24,7 +23,7 @@ public class JwtTokenProvider {
 
     public String createAccessToken(long userId) {
         Date now = new Date();
-        Date expiry = new Date(now.getTime() + 1000 * 60 * 15);
+        Date expiry = new Date(now.getTime() + 1000L * 1800);
 
         return Jwts.builder()
                 .subject(String.valueOf(userId))
@@ -38,7 +37,7 @@ public class JwtTokenProvider {
 
     public String createRefreshToken(long userId) {
         Date now = new Date();
-        Date expiry = new Date(now.getTime() + 1000 * 60 * 60);
+        Date expiry = new Date(now.getTime() + 1000L * 1209600);
 
         return Jwts.builder()
                 .subject(String.valueOf(userId))
@@ -77,7 +76,7 @@ public class JwtTokenProvider {
             return false;
         }
 
-        if (!"access".equals(claims.get("type", String.class))) {
+        if (!"access".equals(claims.get("type", String.class)) || !"refresh".equals(claims.get("type", String.class))) {
             return false;
         }
 
