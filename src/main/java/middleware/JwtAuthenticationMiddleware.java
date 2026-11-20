@@ -1,10 +1,11 @@
-package util;
+package middleware;
 
 import com.minihttp.core.handler.Handler;
 import com.minihttp.core.middleware.Middleware;
 import com.minihttp.packet.HttpRequest;
 import com.minihttp.packet.HttpResponse;
 import exception.UnauthorizedException;
+import util.JwtTokenProvider;
 
 public class JwtAuthenticationMiddleware implements Middleware {
     private static final String BEARER_PREFIX = "Bearer ";
