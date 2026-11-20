@@ -4,7 +4,10 @@ import com.minihttp.core.handler.Handler;
 import com.minihttp.core.middleware.Middleware;
 import com.minihttp.packet.HttpRequest;
 import com.minihttp.packet.HttpResponse;
+import exception.InvalidException;
 import exception.UnauthorizedException;
+
+import java.util.Objects;
 
 public class TokenWhitelistMiddleware implements Middleware {
     private static final String BEARER_PREFIX = "Bearer ";
@@ -25,8 +28,19 @@ public class TokenWhitelistMiddleware implements Middleware {
         long userId = jwtTokenProvider.getUserId(jwt);
         String tokenType = jwtTokenProvider.getTokenType(jwt);
 
-        if (redisUtil.checkWhiteList(tokenType, jti, userId)) {
-            return next.handle(request);
+        if (redisUtil.isRegisteredInRedis(tokenType, jti, userId)) {
+            if (Objects.equals(tokenType, "access")) {
+                return next.handle(request);
+            } else if (Objects.equals(tokenType, "refresh")) {
+                String newRefreshToken = jwtTokenProvider.createRefreshToken(userId);
+                String newJti = jwtTokenProvider.getJti(newRefreshToken);
+                redisUtil.save("refresh" + userId + " : ", newJti, 1209600);
+
+                request.header().set("Authorization", BEARER_PREFIX + newRefreshToken);
+                return next.handle(request);
+            } else {
+                throw new InvalidException();
+            }
         }
 
         throw new UnauthorizedException();
