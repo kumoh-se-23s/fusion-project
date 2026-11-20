@@ -1,28 +1,35 @@
+
 package service.external;
 
 import constant.ProjectState;
 import exception.InvalidException;
-import exception.NotFoundException;
 import exception.LimitNumberOutException;
+import exception.NotFoundException;
 import exception.TransactionException;
 
 import lombok.RequiredArgsConstructor;
 
 import model.Serializer;
-
-import model.domain.*;
-
+import model.domain.Donate;
+import model.domain.Project;
+import model.domain.Reward;
 import model.dto.RewardData;
 import model.dto.request.reward.CreateRewardDataRequest;
-
+import model.dto.response.DataCollectionResponse;
+import model.dto.response.SingleDataResponse;
 import model.dto.response.IdResponse;
+
 import repository.CategoryRepository;
 import repository.DonateRepository;
 import repository.ProjectRepository;
 import repository.RewardRepository;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RequiredArgsConstructor
 public class RewardService {
@@ -32,200 +39,339 @@ public class RewardService {
     private final RewardRepository rewardRepository;
     private final CategoryRepository categoryRepository;
 
+    /**
+     * 리워드 생성
+     */
+    public IdResponse createReward(
+            Long loginUserId,
+            CreateRewardDataRequest request) {
 
-    // 1. 프로젝트에 리워드 등록
-    public IdResponse createReward(CreateRewardDataRequest request) {
-
-        // 요청값 검사
-        if (request == null) {
-            throw new LimitNumberOutException(
-                    "리워드 등록 요청 정보가 없습니다."
-            );
+        if (loginUserId == null || request == null) {
+            throw new InvalidException();
         }
 
         if (request.getProjectFk() == null) {
             throw new LimitNumberOutException(
-                    "프로젝트 또는 카테고리 ID가 없습니다."
-            );
+                    "프로젝트 ID가 없습니다.");
         }
 
         if (request.getRewardName() == null
                 || request.getRewardName().isBlank()) {
             throw new LimitNumberOutException(
-                    "리워드 이름을 입력해야 합니다."
-            );
+                    "리워드 이름을 입력해야 합니다.");
         }
 
         if (request.getProvideDate() == null) {
             throw new LimitNumberOutException(
-                    "리워드 제공 예정일이 없습니다."
-            );
+                    "리워드 제공 예정일이 없습니다.");
         }
 
-        // 금액 검사
         if (request.getRewardPerAmount() == null
                 || request.getRewardPerAmount()
                 .compareTo(BigDecimal.ZERO) <= 0) {
             throw new LimitNumberOutException(
-                    "리워드 필요 금액은 0원보다 커야 합니다."
-            );
+                    "리워드 금액은 0원보다 커야 합니다.");
         }
 
-        // 수량 검사
         if (request.getRewardMaxQuantity() == null
                 || request.getRewardMaxQuantity() <= 0) {
             throw new LimitNumberOutException(
-                    "제공 가능 수량은 1개 이상이어야 합니다."
-            );
+                    "리워드 수량은 1개 이상이어야 합니다.");
         }
 
-        // 프로젝트 조회
         Project project = projectRepository
                 .findById(request.getProjectFk())
-                .orElseThrow(
-                        () -> new NotFoundException(
-                                "리워드를 등록할 프로젝트를 찾을 수 없습니다."
-                        )
-                );
+                .orElseThrow(() -> new NotFoundException(
+                        "프로젝트를 찾을 수 없습니다."));
 
-        // Service에서 초기값 설정
+        if (project.getMaker() == null
+                || !loginUserId.equals(
+                project.getMaker().getId())) {
+            throw new InvalidException();
+        }
+
         request.prepareForCreate(project);
 
-        // Builder 대신 Serializer 사용
         Reward reward = Serializer.toDomain(
-                request,
-                Reward.class
-        );
+                request, Reward.class);
 
-        // 리워드 저장
         Reward result = rewardRepository.create(reward);
+
         if (result == null) {
-             throw new TransactionException(
-                    "리워드 저장에 실패했습니다."
-            );
+            throw new TransactionException(
+                    "리워드 저장에 실패했습니다.");
         }
-        //첫 리워드 작성 시 프로젝트를 승인 대기로 변경
-        if (project.getState() == ProjectState.JUST_USER_INPUT) {
-            projectRepository.updateByPending(project.getId());
+
+        if (project.getState()
+                == ProjectState.JUST_USER_INPUT) {
+            projectRepository.updateByPending(
+                    project.getId());
         }
+
         return new IdResponse(result.getId());
     }
 
+    /**
+     * 리워드 ID로 조회
+     */
+    public SingleDataResponse<RewardData> getRewardById(
+            Long rewardId) {
 
-    //  프로젝트 ID로 리워드 조회
-    public List<RewardData> getRewardByProject(Long projectId) {
+        if (rewardId == null) {
+            throw new LimitNumberOutException(
+                    "리워드 ID가 없습니다.");
+        }
+
+        Reward reward = rewardRepository
+                .findById(rewardId)
+                .orElseThrow(() -> new NotFoundException(
+                        "리워드를 찾을 수 없습니다."));
+
+        RewardData dto = Serializer.toData(
+                reward, RewardData.class);
+
+        return new SingleDataResponse<>(dto);
+    }
+
+    /**
+     * 프로젝트별 리워드 조회
+     */
+    public DataCollectionResponse<RewardData> findRewardByProject(
+            Long projectId) {
 
         if (projectId == null) {
             throw new LimitNumberOutException(
-                    "조회할 프로젝트 ID가 없습니다."
-            );
+                    "프로젝트 ID가 없습니다.");
         }
 
-        List<Reward> rewardList =
+        List<Reward> rewards =
                 rewardRepository.findByProjectId(projectId);
 
-        return Serializer.toDataList(
-                rewardList,
-                RewardData.class
-        );
+        return toCollection(rewards);
     }
 
+    /**
+     * 본인이 후원한 리워드 조회
+     */
+    public DataCollectionResponse<RewardData> getRewardByDonate(
+            Long loginUserId,
+            Long userId) {
 
-    //  본인이 후원한 리워드 조회
-    public List<RewardData> getRewardByDonate(Long userId) {
-
-        if (userId == null) {
-            throw new LimitNumberOutException(
-                    "조회할 사용자 ID가 없습니다."
-            );
+        if (loginUserId == null
+                || !loginUserId.equals(userId)) {
+            throw new InvalidException();
         }
 
-        List<Donate> donateList =
+        List<Donate> donates =
                 donateRepository.findByUserId(userId);
 
-        List<Reward> rewardList = new ArrayList<>();
+        List<Reward> rewards = new ArrayList<>();
 
-        for (Donate donate : donateList) {
-
-            Reward reward = donate.getReward();
-
-            if (reward != null) {
-                rewardList.add(reward);
+        for (Donate donate : donates) {
+            if (donate.getReward() != null) {
+                rewards.add(donate.getReward());
             }
         }
 
-        return Serializer.toDataList(
-                rewardList,
-                RewardData.class
-        );
+        return toCollection(rewards);
     }
 
-
-    //  메이커의 프로젝트별 리워드 조회
-    public List<List<RewardData>> getRewardFindByMaker(
-            Long makerId
-    ) {
+    /**
+     * 메이커별 리워드 조회
+     */
+    public DataCollectionResponse<RewardData> getRewardFindByMaker(
+            Long makerId) {
 
         if (makerId == null) {
             throw new LimitNumberOutException(
-                    "조회할 메이커 ID가 없습니다."
-            );
+                    "메이커 ID가 없습니다.");
         }
 
-        List<Project> projectList =
+        List<Project> projects =
                 projectRepository.findByUserId(makerId);
 
-        List<List<RewardData>> dtoList = new ArrayList<>();
+        List<Reward> rewards = new ArrayList<>();
 
-        for (Project project : projectList) {
+        for (Project project : projects) {
+            List<Reward> projectRewards =
+                    rewardRepository.findByProjectId(
+                            project.getId());
 
-            dtoList.add(
-                    getRewardByProject(project.getId())
-            );
+            if (projectRewards != null) {
+                rewards.addAll(projectRewards);
+            }
         }
 
-        return dtoList;
+        return toCollection(rewards);
     }
-    //리워드수정
-    //소속 펀딩pk도 수정이 가능하게 만들기
-    //메이커가 본인 펀딩을 수정하는 것
-    //Cortroller에서 로그인하는 것과 본인펀딩인지 확인하는건 다른 것, 로그인한 사용자라는 것은 알 수 있으나 본인 프로젝트라는 것은 알 수 없기 때문에
-    //근데 생각해보니 수정 삭제 기능을 넣어야 하나..??? 만들고나서는 수정 삭제 하면 안되지 않나
-    public void updateReward(Long rewardId, CreateRewardDataRequest request){
-        Reward reward = rewardRepository.findById(rewardId)
-                .orElseThrow(NotFoundException::new);//null값 통과 시키지말고 없으면 에러 일으키기
+
+    /**
+     * 리워드 수정
+     */
+    public void updateReward(
+            Long loginUserId,
+            Long rewardId,
+            CreateRewardDataRequest request) {
+
+        if (loginUserId == null
+                || rewardId == null
+                || request == null) {
+            throw new InvalidException();
+        }
+
+        Reward reward = rewardRepository
+                .findById(rewardId)
+                .orElseThrow(() -> new NotFoundException(
+                        "리워드를 찾을 수 없습니다."));
+
         Project project = reward.getProject();
-        AppUser maker = project.getMaker();
-        Long loginUserID;//이걸 어떻게 가져오면 좋을지?
-        Map <String,Object> updates = new HashMap<>();
-        if(!maker.getId().equals(loginUserId)){
-            throw new UnsupportedOperationException();
-        }else{
-            //모든 필드 하나씩 전부 검사
-            if(request.getRewardName()!=null){
-                updates.put("name",request.getRewardName());
+
+        if (project == null
+                || project.getMaker() == null
+                || !loginUserId.equals(
+                project.getMaker().getId())) {
+            throw new InvalidException();
+        }
+
+        if (request.getProjectFk() != null
+                && !request.getProjectFk().equals(
+                project.getId())) {
+            throw new InvalidException();
+        }
+
+        Map<String, Object> updates = new HashMap<>();
+
+        if (request.getRewardName() != null) {
+            if (request.getRewardName().isBlank()) {
+                throw new LimitNumberOutException(
+                        "리워드 이름이 비어 있습니다.");
             }
 
-
-        }
-        if(!updates.isEmpty()){
-            rewardRepository.update(rewardId,updates);
+            updates.put("name",
+                    request.getRewardName());
         }
 
+        if (request.getRewardImg() != null) {
+            updates.put("imgFile",
+                    request.getRewardImg());
+        }
+
+        if (request.getRewardText() != null) {
+            updates.put("text",
+                    request.getRewardText());
+        }
+
+        if (request.getProvideDate() != null) {
+            updates.put("provideDate",
+                    request.getProvideDate());
+        }
+
+        if (request.getRewardPerAmount() != null) {
+            if (request.getRewardPerAmount()
+                    .compareTo(BigDecimal.ZERO) <= 0) {
+                throw new LimitNumberOutException(
+                        "금액은 0원보다 커야 합니다.");
+            }
+
+            updates.put("rewardPerAmount",
+                    request.getRewardPerAmount());
+        }
+
+        if (request.getRewardMaxQuantity() != null) {
+
+            Long oldMax = reward.getMaxQuantity();
+            Long oldRemain = reward.getRemainQuantity();
+            Long newMax = request.getRewardMaxQuantity();
+
+            if (oldMax == null || oldRemain == null
+                    || newMax <= 0) {
+                throw new LimitNumberOutException(
+                        "수량을 확인할 수 없습니다.");
+            }
+
+            long alreadySelected = oldMax - oldRemain;
+
+            if (newMax < alreadySelected) {
+                throw new LimitNumberOutException(
+                        "이미 신청된 수량보다 적게 수정할 수 없습니다.");
+            }
+
+            updates.put("maxQuantity", newMax);
+            updates.put("remainQuantity",
+                    newMax - alreadySelected);
+        }
+
+        if (!updates.isEmpty()) {
+            updates.put("updatedAt",
+                    LocalDateTime.now());
+
+            rewardRepository.update(rewardId, updates)
+                    .orElseThrow(() -> new TransactionException(
+                            "리워드 수정에 실패했습니다."));
+        }
     }
 
-    //리워드 삭제
-    public void deleteReward(Long rewardId){
-        //여기서도
-        Reward reward = rewardRepository.findById(rewardId)
-                .orElseThrow(NotFoundException::new);//null값 통과 시키지말고 없으면 에러 일으키기
-        Project project = reward.getProject();
-        AppUser maker = project.getMaker();
-        AppUser loginUser;
-        if(!maker.equals(loginUser)){
-            throw new InvalidException();//권한이슈
-        }else{
-            rewardRepository.delete(rewardId);
+    /**
+     * 리워드 삭제
+     */
+    public void deleteReward(
+            Long loginUserId,
+            Long rewardId) {
+
+        if (loginUserId == null || rewardId == null) {
+            throw new InvalidException();
         }
+
+        Reward reward = rewardRepository
+                .findById(rewardId)
+                .orElseThrow(() -> new NotFoundException(
+                        "리워드를 찾을 수 없습니다."));
+
+        Project project = reward.getProject();
+
+        if (project == null
+                || project.getMaker() == null
+                || !loginUserId.equals(
+                project.getMaker().getId())) {
+            throw new InvalidException();
+        }
+
+        // 후원 내역이 존재하면 삭제 제한
+        for (Donate donate : donateRepository.findAll()) {
+            if (donate.getReward() != null
+                    && rewardId.equals(
+                    donate.getReward().getId())) {
+                throw new InvalidException();
+            }
+        }
+
+        rewardRepository.delete(rewardId);
+    }
+
+    /**
+     * 관리자 전체 리워드 조회
+     */
+    public DataCollectionResponse<RewardData> getAllRewards() {
+
+        List<Reward> rewards =
+                rewardRepository.findAll();
+
+        return toCollection(rewards);
+    }
+
+    /**
+     * 리워드 목록을 응답 DTO로 변환
+     */
+    private DataCollectionResponse<RewardData> toCollection(
+            List<Reward> rewards) {
+
+        List<RewardData> dtoList =
+                Serializer.toDataList(
+                        rewards, RewardData.class);
+
+        return DataCollectionResponse.<RewardData>builder()
+                .amount((long) dtoList.size())
+                .datas(dtoList)
+                .build();
     }
 }
