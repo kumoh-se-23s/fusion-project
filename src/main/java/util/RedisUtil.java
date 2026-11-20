@@ -35,14 +35,14 @@ public class RedisUtil {
         }
     }
 
-    public boolean checkWhiteList(String jti, String token) {
+    public boolean checkWhiteList(String jti, long userId) {
         try (Jedis jedis = getPool().getResource()) {
             String value = jedis.get("white_list:" + jti);
 
             if(value == null) {
                 return false;
             } else {
-                return value.equals(token);
+                return value.equals(String.valueOf(userId));
             }
         }
     }
