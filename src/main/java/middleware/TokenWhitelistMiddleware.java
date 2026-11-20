@@ -11,6 +11,8 @@ import util.RedisUtil;
 
 import java.util.Objects;
 
+import java.util.Objects;
+
 public class TokenWhitelistMiddleware implements Middleware {
     private static final String BEARER_PREFIX = "Bearer ";
 
