@@ -45,7 +45,7 @@ public class RedisUtil {
         }
     }
 
-    public boolean checkWhiteList(String tokenType, String jti, long userId) {
+    public boolean isRegisteredInRedis(String tokenType, String jti, long userId) {
         try (Jedis jedis = getPool().getResource()) {
             String value;
 

@@ -25,7 +25,6 @@ public class JwtAuthenticationMiddleware implements Middleware {
 
         throw new UnauthorizedException();
     }
-
     private String extractToken(HttpRequest request) {
         String value = request.header().get("Authorization")
                 .orElseThrow(UnauthorizedException::new);
@@ -42,4 +41,5 @@ public class JwtAuthenticationMiddleware implements Middleware {
 
         return token;
     }
+
 }
