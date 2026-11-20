@@ -1,7 +1,6 @@
 package constant;
 
 import exception.InvalidSearchTypeException;
-import lombok.Getter;
 import repository.Order;
 
 import java.util.Arrays;
@@ -10,16 +9,15 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-@Getter
 public enum AdminProjectSearchType {
     //최신순
     DESC_CREATE_AT("DESC_CREATE_AT", Order.desc("createAt")),
 
     //날짜순
-    ASC_CREATE_AT("ASC_CREATE_AT", Order.desc("createAt")),
+    ASC_CREATE_AT("ASC_CREATE_AT", Order.asc("createAt")),
 
     //총 펀딩 금액 오름차순
-    ASC_DONATE_AMOUNT("ASC_DONATE_AMOUNT", Order.desc("donateAmount")),
+    ASC_DONATE_AMOUNT("ASC_DONATE_AMOUNT", Order.asc("donateAmount")),
 
     //총 펀딩 금액 내림차순
     DESC_DONATE_AMOUNT("DESC_DONATE_AMOUNT", Order.desc("donateAmount")),
@@ -37,7 +35,15 @@ public enum AdminProjectSearchType {
     DESC_SUPPORTER_COUNT("DESC_SUPPORTER_COUNT"),;
 
     private final String stringValue;
-    private final Optional<Order> order;
+    private final Order order;
+
+    public String getStringValue() {
+        return stringValue;
+    }
+
+    public Optional<Order> getOrder() {
+        return Optional.ofNullable(order);
+    }
 
     private static final Map<String, AdminProjectSearchType> BY_STRING_VALUE =
         Arrays.stream(values())
@@ -46,11 +52,11 @@ public enum AdminProjectSearchType {
 
     AdminProjectSearchType(String stringValue, Order order) {
         this.stringValue = stringValue;
-        this.order = Optional.ofNullable(order);
+        this.order = order;
     }
     AdminProjectSearchType(String stringValue) {
         this.stringValue = stringValue;
-        this.order = Optional.empty();
+        this.order = null;
     }
 
     public static AdminProjectSearchType fromString(String stringValue) {

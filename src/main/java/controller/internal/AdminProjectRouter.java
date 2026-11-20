@@ -2,7 +2,6 @@ package controller.internal;
 
 import com.minihttp.core.route.BaseRouter;
 import com.minihttp.core.route.annotation.*;
-import com.minihttp.packet.HttpRequest;
 import model.dto.ProjectData;
 import model.dto.request.project.AdminProjectRequest;
 import model.dto.response.DataCollectionResponse;
@@ -13,7 +12,6 @@ import service.internal.AdminProjectControlService;
 import service.internal.AdminProjectQueryService;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * 관리자 전용 프로젝트 라우터
@@ -45,26 +43,23 @@ public class AdminProjectRouter extends BaseRouter {
     }
 
     @Get()
-    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-    public DataCollectionResponse<ProjectData> getAllProjects(@Query("limit") Optional<Integer> limit) {
+    public DataCollectionResponse<ProjectData> getAllProjects(@Query(value = "limit", required = false) Integer limit) {
         return adminProjectQueryService.getAllProject(limit);
     }
 
     @Get("/pending")
-    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-    public DataCollectionResponse<ProjectData> getPendingProjects(@Query("limit") Optional<Integer> limit) {
+    public DataCollectionResponse<ProjectData> getPendingProjects(@Query(value = "limit", required = false) Integer limit) {
         return adminProjectQueryService.getPendingProject(limit);
     }
 
     @Get("/search")
-    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     public DataCollectionResponse<ProjectData> getFilterProjects(
-            @Query("title") Optional<String> title,
-            @Query("maker_name") Optional<String> makerName,
-            @Query("category_name") Optional<String> categoryName,
-            @Query("state_names") Optional<List<String>> stateList,
-            @Query("limit") Optional<Integer> limit,
-            @Query("search_type") Optional<String> searchType) {
+        @Query(value = "title", required = false) String title,
+        @Query(value = "maker_name", required = false) String makerName,
+        @Query(value = "category_name", required = false) String categoryName,
+        @Query(value = "state_names", required = false) List<String> stateList,
+        @Query(value = "limit", required = false) Integer limit,
+        @Query(value = "search_type", required = false) String searchType) {
 
         return adminProjectQueryService.getAllProject(
                 title,

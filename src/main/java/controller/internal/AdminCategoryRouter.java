@@ -2,7 +2,6 @@ package controller.internal;
 
 import com.minihttp.core.route.BaseRouter;
 import com.minihttp.core.route.annotation.*;
-import com.minihttp.packet.HttpRequest;
 import model.dto.CategoryData;
 import model.dto.request.category.CategoryRequest;
 import model.dto.response.DataCollectionResponse;
@@ -10,8 +9,6 @@ import model.dto.response.DeleteResponse;
 import model.dto.response.IdResponse;
 import model.dto.response.SingleDataResponse;
 import service.internal.AdminCategoryService;
-
-import java.util.Optional;
 
 
 /**
@@ -39,8 +36,7 @@ public class AdminCategoryRouter extends BaseRouter {
     }
 
     @Get()
-    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-    public DataCollectionResponse<CategoryData> getAllCategory(@Query("limit") Optional<Integer> limit) {
+    public DataCollectionResponse<CategoryData> getAllCategory(@Query(value = "limit", required = false) Integer limit) {
         return adminCategoryService.getAllCategory(limit);
     }
 

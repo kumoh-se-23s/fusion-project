@@ -3,6 +3,7 @@ package controller.external;
 import auth.CurrentUser;
 import com.minihttp.core.route.BaseRouter;
 import com.minihttp.core.route.annotation.*;
+import model.dto.DenyProjectData;
 import model.dto.ProjectData;
 import model.dto.request.project.CreateProjectRequest;
 import model.dto.request.project.EditProjectRequest;
@@ -14,7 +15,6 @@ import service.external.ProjectMakerService;
 import service.external.ProjectQueryService;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * 관리자 전용 프로젝트 라우터
@@ -53,19 +53,19 @@ public class ProjectRouter extends BaseRouter {
     }
 
     @Get()
-    public DataCollectionResponse<ProjectData> getAllProjects(@Query("limit") Integer limit) {
+    public DataCollectionResponse<ProjectData> getAllProjects(@Query(value = "limit", required = false) Integer limit) {
         return projectQueryService.getAllProject(limit);
     }
 
 
     @Get("/search")
     public DataCollectionResponse<ProjectData> getFilterProjects(
-            @Query("title") String title,
-            @Query("maker_name") String makerName,
-            @Query("category_name") String categoryName,
-            @Query("state_names") Optional<List<String>> stateList,
-            @Query("limit") Optional<Integer> limit,
-            @Query("search_type") Optional<String> searchType) {
+            @Query(value = "title", required = false) String title,
+            @Query(value = "maker_name", required = false) String makerName,
+            @Query(value = "category_name", required = false) String categoryName,
+            @Query(value = "state_names", required = false) List<String> stateList,
+            @Query(value = "limit", required = false) Integer limit,
+            @Query(value = "search_type", required = false) String searchType) {
 
         return projectQueryService.getAllProject(
                 title,
@@ -75,6 +75,18 @@ public class ProjectRouter extends BaseRouter {
                 limit,
                 searchType
         );
+    }
+    @Get("/my/donate")
+    public DataCollectionResponse<ProjectData> getMyDonateProject(@Depends(CurrentUser.class) Long userId) {
+        return projectQueryService.getUserDonateProject(userId);
+    }
+    @Get("/my")
+    public DataCollectionResponse<ProjectData> getMyCreatedProject(@Depends(CurrentUser.class) Long userId) {
+        return projectMakerService.getMakerProject(userId);
+    }
+    @Get("/my/deny")
+    public DataCollectionResponse<DenyProjectData> getMyDenyProject(@Depends(CurrentUser.class) Long userId) {
+        return projectMakerService.getAllDenyProjects(userId);
     }
 
     @Patch("/{project_id}")
@@ -86,5 +98,5 @@ public class ProjectRouter extends BaseRouter {
     public DeleteResponse deleteProject(@Depends(CurrentUser.class) Long userId, @Path("{project_id}") long projectId) {
         return projectMakerService.deleteMakerSelfProject(userId, projectId);
     }
-
+    
 }

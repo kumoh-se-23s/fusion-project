@@ -43,12 +43,12 @@ public class ProjectQueryServiceTest extends DatabaseTest {
     @DisplayName("카테고리와 상태로 필터링한다")
     void getByCategoryAndState() {
         DataCollectionResponse<ProjectData> response = projectQueryService.getAllProject(
-                Optional.empty(),
-                Optional.empty(),
-                Optional.of(db.tech.getName()),
-                Optional.of(List.of("APPROVED")),
-                Optional.empty(),
-                Optional.empty()
+                null,
+                null,
+                db.tech.getName(),
+                (List.of("APPROVED")),
+                null,
+                null
         );
         LOG.info(response.toJsonString());
         List<Long> idList = response.getDatas().stream()

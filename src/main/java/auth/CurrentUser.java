@@ -10,10 +10,7 @@ public class CurrentUser implements Dependency<Long> {
     public Long resolve(HttpRequest httpRequest) {
         String jwt = httpRequest.header().get("Authorization")
                 .orElseThrow(RuntimeException::new);
-
-        String userToken = tokenProvider.decoding(jwt);
-
-        // http.get("http://localhost/user/decode", jwt)
-        return null;
+        Long userId = tokenProvider.getUserId(jwt);
+        return userId;
     }
 }

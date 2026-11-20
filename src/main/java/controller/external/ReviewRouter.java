@@ -5,14 +5,14 @@ import com.minihttp.core.route.BaseRouter;
 import com.minihttp.core.route.annotation.*;
 import model.dto.ReviewData;
 import model.dto.request.review.AdminReviewRequest;
+import model.dto.request.review.CreateReviewRequest;
+import model.dto.request.review.ReviewDataRequest;
 import model.dto.response.DataCollectionResponse;
 import model.dto.response.DeleteResponse;
 import model.dto.response.IdResponse;
 import model.dto.response.SingleDataResponse;
-import service.internal.AdminReviewControlService;
-import service.internal.AdminReviewQueryService;
-
-import java.util.Optional;
+import service.external.ReviewCommandService;
+import service.external.ReviewQueryService;
 
 /**
  * 관리자 전용 프로젝트 거절 사유 라우터
@@ -21,40 +21,49 @@ import java.util.Optional;
  * @version 1.0
  */
 public class ReviewRouter extends BaseRouter {
-    private final AdminReviewControlService adminReviewControlService;
-    private final AdminReviewQueryService adminReviewQueryService;
+    private final ReviewCommandService reviewCommandService;
+    private final ReviewQueryService reviewQueryService;
 
     public ReviewRouter(
-            AdminReviewControlService adminReviewControlService,
-            AdminReviewQueryService adminReviewQueryService) {
-        this.adminReviewControlService = adminReviewControlService;
-        this.adminReviewQueryService = adminReviewQueryService;
-        super("/internal/review");
+            ReviewCommandService reviewCommandService,
+            ReviewQueryService reviewQueryService) {
+        this.reviewCommandService = reviewCommandService;
+        this.reviewQueryService = reviewQueryService;
+        super("/review");
     }
     @Post()
-    public IdResponse createReview(AdminReviewRequest dto, @Depends(CurrentUser.class) Long userId) {
-        return adminReviewControlService.createReview(dto);
+    public IdResponse createReview(CreateReviewRequest dto, @Depends(CurrentUser.class) Long userId) {
+        return reviewCommandService.createReview(dto, userId);
     }
 
-    @Get("/review_id}")
+    @Get("/{review_id}")
     public SingleDataResponse<ReviewData> getReview(@Path("review_id") long reviewId) {
-        return adminReviewQueryService.getReview(reviewId);
-
+        return reviewQueryService.getReview(reviewId);
     }
 
-    @Get()
-    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-    public DataCollectionResponse<ReviewData> getAllReview(@Query("limit") Optional<Integer> limit) {
-        return adminReviewQueryService.getAllReviews(limit);
+    @Get("/my")
+    public DataCollectionResponse<ReviewData> getMyReview(@Depends(CurrentUser.class) Long userId) {
+        return reviewQueryService.getUserReview(userId);
+    }
+    @Get("/reward/{reward_id}")
+    public DataCollectionResponse<ReviewData> getRewardReview(@Path("reward_id") Long rewardId) {
+        return reviewQueryService.getRewardReview(rewardId);
     }
 
-    @Patch("/review_id}")
-    public IdResponse updateReview(@Path("review_id") long reviewId, AdminReviewRequest dto) {
-        return adminReviewControlService.editReview(reviewId, dto);
+    @Get("/project/{project_id}")
+    public DataCollectionResponse<ReviewData> getProjectReview(@Path("project_id") Long projectId) {
+        return reviewQueryService.getProjectReview(projectId);
+    }
+    @Patch("/{review_id}")
+    public IdResponse updateReview(
+            @Path("review_id") Long reviewId,
+            @Depends(CurrentUser.class) Long userId,
+            ReviewDataRequest dto) {
+        return reviewCommandService.editReview(userId, reviewId, dto);
     }
 
-    @Delete("review_id}")
-    public DeleteResponse deleteReview(@Path("review_id") long reviewId) {
-        return adminReviewControlService.deleteReview(reviewId);
+    @Delete("/{review_id}")
+    public DeleteResponse deleteReview(@Depends(CurrentUser.class) Long userId, @Path("review_id") Long reviewId) {
+        return reviewCommandService.deleteReview(userId, reviewId);
     }
 }
