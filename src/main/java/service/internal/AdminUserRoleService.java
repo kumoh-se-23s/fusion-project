@@ -1,12 +1,12 @@
 package service.internal;
 
+import constant.Role;
 import exception.AlreadyExistException;
 import exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import model.domain.AppUser;
 import model.domain.UserRole;
 import model.domain.UserRoleRelation;
-import model.dto.request.user_role.AssignRoleRequest;
 import model.dto.response.DeleteResponse;
 import model.dto.response.IdResponse;
 import model.dto.response.UserRole.UserRoleResponse;
@@ -14,30 +14,48 @@ import repository.UserRepository;
 import repository.UserRoleRelationRepository;
 import repository.UserRoleRepository;
 import service.BaseService;
-import util.RedisUtil;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RequiredArgsConstructor
 public class AdminUserRoleService extends BaseService {
-    //Redis에 저장하는 사용자별 역할 명단의 키 접두사 (예: roles:7)
-    private static final String ROLE_KEY_PREFIX = "roles:";
-
     private final UserRepository userRepository;
     private final UserRoleRepository userRoleRepository;
     private final UserRoleRelationRepository userRoleRelationRepository;
-    private final RedisUtil redisUtil;
 
-    //사용자에게 역할 부여
-    public IdResponse assignRole(AssignRoleRequest request) {
-        Long relationId = tx.execute(() -> {
-            AppUser user = userRepository.findById(request.getUserId())
-                    .orElseThrow(NotFoundException::new);
+    /**
+     * 유저 권한 삭제
+     *
+     * @param userId
+     * @param roleName
+     * @return DeleteResponse
+     */
+    public DeleteResponse removeRole(long userId, Role roleName) {
+        return tx.execute(() -> {
+            UserRole role = userRoleRepository.findByRole(roleName).orElseThrow(NotFoundException::new);
 
-            UserRole role = userRoleRepository.findByName(request.getRole()).orElseThrow(NotFoundException::new);
+            UserRoleRelation relation = userRoleRelationRepository.findByUserAndRole(userId, role.getId()).orElseThrow(NotFoundException::new);
 
-            if (userRoleRelationRepository.findByUserAndRole(request.getUserId(), role.getId()).isPresent()) {
+            boolean result = userRoleRelationRepository.delete(relation.getId());
+
+            return new DeleteResponse(result);
+        });
+    }
+
+    /**
+     * 유저 권한 부여
+     *
+     * @param userId
+     * @param roleName
+     * @return IdResponse
+     */
+    public IdResponse assignRole(long userId, Role roleName) {
+        long relationId = tx.execute(() -> {
+            AppUser user = userRepository.findById(userId).orElseThrow(NotFoundException::new);
+
+            UserRole role = userRoleRepository.findByRole(roleName).orElseThrow(NotFoundException::new);
+
+            if (userRoleRelationRepository.findByUserAndRole(userId, role.getId()).isPresent()) {
                 throw new AlreadyExistException();
             }
 
@@ -47,32 +65,33 @@ public class AdminUserRoleService extends BaseService {
                     .build();
 
             return userRoleRelationRepository.create(relation).getId();
-        });
 
-        //커밋이 끝난 뒤 Redis 명단을 지운다. 다음 요청 때 MySQL 기준으로 다시 채워진다
-        redisUtil.delete(ROLE_KEY_PREFIX + request.getUserId());
+        });
 
         return new IdResponse(relationId);
     }
 
-    public DeleteResponse removeRole(long userId) {
-        UserRoleRelation userRoleRelation = userRoleRelationRepository.findById(userId).orElseThrow(NotFoundException::new);
-
-        boolean result = userRoleRelationRepository.delete(userRoleRelation.getId());
-
-        return new DeleteResponse(result);
-    }
-
+    /**
+     * 유저 권한 검색 <br>
+     * 있는 유저면 성공 없으면 실패
+     * @param userId
+     * @return UserRoleResponse
+     */
     public UserRoleResponse getRoleByUser(long userId) {
-        List<UserRoleRelation> userRoleRelation = userRoleRelationRepository.findByUserId(userId);
+        return tx.execute(() -> {
+            if (!userRepository.isExistById(userId)) {
+                throw new NotFoundException();
+            }
 
-        List<String> reusltList = new ArrayList<>();
+            List<UserRoleRelation> relations = userRoleRelationRepository.findByUserId(userId);
 
-        userRoleRelation.stream().forEach((e) -> {
-            UserRole userRole = e.getRole();
-            reusltList.add(userRole.getRoleName());
+            List<Role> userRoleList = relations.stream().map(r -> r.getRole().getRole()).toList();
+
+            return new UserRoleResponse(userRoleList);
         });
-
-        return new UserRoleResponse(reusltList);
     }
+
+    //Redis?
+
+
 }
