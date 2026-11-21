@@ -3,6 +3,7 @@ package model.domain;
 import annotation.Column;
 import annotation.Id;
 import annotation.Table;
+import constant.Role;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
@@ -17,5 +18,5 @@ public class UserRole extends BaseDomain {
     private Long id;
 
     @Column(name = "role_name", nullable = false, unique = true, length = 50)
-    private String roleName;
+    private Role role;
 }
