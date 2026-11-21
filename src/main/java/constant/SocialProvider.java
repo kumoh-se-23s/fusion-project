@@ -30,4 +30,4 @@ public enum SocialProvider {
         this.tokenEndpoint = URI.create(tokenEndpoint);
         this.userInfoEndpoint = URI.create(userInfoEndpoint);
     }
-}m
+}
