@@ -47,9 +47,15 @@ public class UserRepository extends BaseRepositoryImpl<AppUser,Long> {
                 .build());
     }
 
+    public boolean isExistNickname(String nickname) {
+        return isExist(Filter.builder()
+                .conditions(Map.of("nickname", nickname))
+                .build());
+    }
+
     public List<AppUser> findByNickName(String nickName) {
         return find(Filter.builder()
-                .conditions(Map.of("nickName", nickName))
+                .conditions(Map.of("nickname", nickName))
                 .build()
         );
     }
