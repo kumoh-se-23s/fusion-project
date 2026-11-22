@@ -6,10 +6,7 @@ import model.domain.AppUser;
 import model.domain.LocalAccount;
 import model.dto.AccountData;
 import model.dto.TokenPair;
-import model.dto.request.account.CreateLocalAccountRequest;
 import model.dto.request.account.DeleteAccountRequest;
-import model.dto.request.user.CreateSocialUserRequest;
-import model.dto.request.user.CreateUserRequest;
 import model.dto.response.IdResponse;
 import model.dto.response.TokenResponse;
 import redis.clients.jedis.Jedis;
@@ -38,43 +35,6 @@ public class AuthService extends BaseService {
         this.localAccountRepository = localAccountRepository;
         this.userRepository = userRepository;
         this.redisUtil = redisUtil;
-    }
-
-    /**
-     * 로컬 회원가입
-     * @param accountRequest
-     * @param userRequest
-     * @return TokenResponse
-     */
-    public TokenResponse localSignUp(CreateLocalAccountRequest accountRequest, CreateUserRequest userRequest) {
-        return tx.execute(() -> {
-            if (userRepository.isExistEmail(userRequest.getUserData().getEmail())) {
-                throw new DuplicateEmailException();
-            }
-
-            if (localAccountRepository.isExistLoginId(accountRequest.getId())) {
-                throw new DuplicateIdException();
-            }
-
-            String salt = accountUtil.generateSalt();
-
-            AppUser appuser = userRepository.createUser(userRequest.getUserData()).orElseThrow(InvalidRequestException::new);
-            try {
-                localAccountRepository.createLocalAccount(appuser, accountRequest.getId(), accountUtil.hash(accountRequest.getPassword(), salt), salt);
-            } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-                throw new InvalidException();
-            }
-
-            return issueTokenPair(appuser.getId());
-        });
-    }
-
-    public TokenPair SocialSignUp(CreateSocialUserRequest request) {
-        return tx.execute(() -> {
-
-
-
-        });
     }
 
     /**
@@ -135,7 +95,8 @@ public class AuthService extends BaseService {
         redisUtil.delete("refresh" + userId + " : ");
     }
 
-    private TokenResponse issueTokenPair(long userId) {
+    //로그인/회원가입 후 토큰 발급 (UserService.localSignUp에서도 사용)
+    public TokenResponse issueTokenPair(long userId) {
         String accessToken = jwtTokenProvider.createAccessToken(userId);
         String refreshToken = jwtTokenProvider.createRefreshToken(userId);
 
