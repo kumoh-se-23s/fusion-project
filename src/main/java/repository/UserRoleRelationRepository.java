@@ -18,13 +18,12 @@ public class UserRoleRelationRepository extends BaseRepositoryImpl<UserRoleRelat
         return result.stream().findFirst();
     }
 
-    //fk인 user_id를 사용해서 찾는 메서드
+    //fk인 user_id를 사용해서 찾는 메서드 (Filter 키는 컬럼명 user_fk가 아니라 필드명 user)
     public List<UserRoleRelation> findByUserId(long userId) {
-        List<UserRoleRelation> result = find(Filter.builder()
-                .conditions(Map.of("user_fk", userId))
-                .build());
 
-        return result;
+        return find(Filter.builder()
+                .conditions(Map.of("user", userId))
+                .build());
     }
 
 
