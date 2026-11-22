@@ -23,7 +23,7 @@ public class AppUser extends BaseDomain {
 
     //이름
     @Column(name = "user_nick_name", unique = true, nullable = false)
-    private String nickName;
+    private String nickname;
 
     @Column(name = "user_email", unique = true, nullable = false)
     private String email;
