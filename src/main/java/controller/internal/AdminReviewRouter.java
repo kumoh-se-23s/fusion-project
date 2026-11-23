@@ -54,4 +54,8 @@ public class AdminReviewRouter extends BaseRouter {
     public DeleteResponse deleteReview(@Path("review_id") long reviewId) {
         return adminReviewControlService.deleteReview(reviewId);
     }
+    @Delete("/like/{review_id}")
+    public DeleteResponse deleteProjectLikes(@Path("review_id") long reviewId) {
+        return adminReviewControlService.deleteReviewAllLikes(reviewId);
+    }
 }
