@@ -19,7 +19,7 @@ import java.util.Optional;
 
 public class RedisUtil {
     @Getter
-    private static final JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost", 6379, 2000, "fusion-project");
+    private static final JedisPool pool = new JedisPool(new JedisPoolConfig(), "100.67.28.86", 6379, 2000, "fusion-admin");
 
     public void save(String key, Object value, int duration) {
         try (Jedis jedis = getPool().getResource()) {
