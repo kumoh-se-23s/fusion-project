@@ -73,7 +73,7 @@ public class LocalAccountService extends BaseService {
             String hashedPassword = hash(newPassword, newSalt);
 
             if (!localAccountRepository.updatePassword(localAccount.getId(), hashedPassword, newSalt)) {
-                throw new InvalidException();
+                throw new InvalidException("예상치 못한 예외");
             }
 
             return new IdResponse(localAccount.getId());
@@ -88,16 +88,20 @@ public class LocalAccountService extends BaseService {
     private boolean matches(String inputPassword, LocalAccount localAccount) {
         try {
             return accountUtil.matches(inputPassword, localAccount.getSalt(), localAccount.getPassword());
-        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-            throw new InvalidException(e.getMessage());
+        } catch (NoSuchAlgorithmException e) {
+            throw new InvalidException("알고리즘을 못 찾음");
+        } catch (InvalidKeySpecException e) {
+            throw new InvalidException("설정 값이 잘못됨");
         }
     }
 
     private String hash(String password, String salt) {
         try {
             return accountUtil.hash(password, salt);
-        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-            throw new InvalidException(e.getMessage());
+        } catch (NoSuchAlgorithmException e) {
+            throw new InvalidException("알고리즘을 못 찾음");
+        } catch (InvalidKeySpecException e) {
+            throw new InvalidException("설정 값이 잘못됨");
         }
     }
 }

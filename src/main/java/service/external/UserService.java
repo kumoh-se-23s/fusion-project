@@ -73,8 +73,10 @@ public class UserService extends BaseService {
             String salt = accountUtil.generateSalt();
             try {
                 localAccountRepository.createLocalAccount(user, request.getLoginId(), accountUtil.hash(request.getPassword(), salt), salt);
-            } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-                throw new InvalidException(e.getMessage());
+            } catch (NoSuchAlgorithmException e) {
+                throw new InvalidException("알고리즘을 못 찾음");
+            } catch (InvalidKeySpecException e) {
+                throw new InvalidException("설정 값이 잘못됨");
             }
 
             //기본 권한(USER) 부여. USER 권한 데이터가 없으면 서버 설정 문제이므로 롤백

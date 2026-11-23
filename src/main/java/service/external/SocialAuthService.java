@@ -108,7 +108,7 @@ public class SocialAuthService extends BaseService {
         try {
             return objectMapper.readValue(json, SocialUserInfo.class);
         } catch (JsonProcessingException e) {
-            throw new InvalidException(e.getMessage());
+            throw new InvalidException("Json을 처리하지 못함");
         }
     }
 }

@@ -1,7 +1,6 @@
 package service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import constant.SocialProvider;
@@ -95,7 +94,7 @@ public class OAuthClient {
         try {
             root = OBJECT_MAPPER.readTree(json);
         } catch (JsonProcessingException e) {
-            throw new InvalidException();
+            throw new InvalidException("JSON 처리 못함");
         }
 
         return root.get(key).asText();
@@ -122,7 +121,7 @@ public class OAuthClient {
             return root.get("access_token").asText();
 
         } catch (JsonProcessingException e) {
-            throw new InvalidException();
+            throw new InvalidException("JSON 처리 못함");
         }
     }
 
@@ -140,7 +139,7 @@ public class OAuthClient {
         try {
             userInfo = OBJECT_MAPPER.readTree(jsonUserInfo);
         } catch (JsonProcessingException e) {
-            throw new InvalidException();
+            throw new InvalidException("JSON 처리 못함");
         }
 
         return userInfo;
@@ -156,8 +155,10 @@ public class OAuthClient {
 
             //수정 필요
             throw new InvalidException();
-        } catch (IOException | InterruptedException e) {
-            throw new InvalidException();
+        } catch (IOException e) {
+            throw new InvalidException("소셜 서버 통신 실패");
+        } catch (InterruptedException e) {
+            throw new InvalidException("소셜 요청 중단");
         }
     }
 
@@ -192,7 +193,7 @@ public class OAuthClient {
 
     private String encodedForm(Map<String, String> params) {
         return params.entrySet().stream()
-                .map(e -> encode(e.getKey()).orElseThrow(InvalidException::new) + "=" + encode(e.getValue()).orElseThrow(InvalidException::new))
+                .map(e -> encode(e.getKey()).orElseThrow(() -> new InvalidException("인코딩 하기 전의 값이 null")) + "=" + encode(e.getValue()).orElseThrow(() -> new InvalidException("인코딩 하기 전의 값이 null")))
                 .collect(Collectors.joining("&"));
     }
 }

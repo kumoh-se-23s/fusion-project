@@ -77,8 +77,10 @@ public class AuthService extends BaseService {
                 //토큰에는 로컬 계정 id가 아니라 유저 id를 넣는다 (다른 API가 모두 유저 id로 사용자를 찾음)
                 //Redis 저장도 회원가입과 같은 방식(키: access/refresh + userId, 값: jti)으로 맞춘다
                 return issueTokenPair(localAccount.getUser().getId());
-            } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-                throw new InvalidException();
+            } catch (NoSuchAlgorithmException e) {
+                throw new InvalidException("알고리즘을 찾지 못함");
+            } catch (InvalidKeySpecException e) {
+                throw new InvalidException("설정 값이 잘못됨");
             }
         });
     }
@@ -161,8 +163,10 @@ public class AuthService extends BaseService {
                     throw new PasswordMisMatchException();
                 }
 
-            } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-                throw new InvalidException(e.getMessage());
+            } catch (NoSuchAlgorithmException e) {
+                throw new InvalidException("알고리즘을 못 찾음");
+            } catch (InvalidKeySpecException e) {
+                throw new InvalidException("설정 값이 잘못됨");
             }
         });
 
