@@ -92,15 +92,15 @@ public final class Serializer {
 
     // ===================================================================== public API
 
-    public static <Data extends JsonSerializable> Data toData(BaseDomain anyDomain, @NonNull Class<Data> dataClass) {
+    public static <Data extends BaseData> Data toData(BaseDomain anyDomain, @NonNull Class<Data> dataClass) {
         return dataClass.cast(Serializer.convertObject(anyDomain, dataClass, Direction.TO_DATA, new Context()));
     }
 
-    public static <Model extends JsonSerializable> Model toDomain(BaseData anyData, @NonNull Class<Model> domainClass) {
+    public static <Model extends BaseDomain> Model toDomain(BaseData anyData, @NonNull Class<Model> domainClass) {
         return domainClass.cast(Serializer.convertObject(anyData, domainClass, Direction.TO_DOMAIN, new Context()));
     }
 
-    public static <Data extends JsonSerializable> List<Data> toDataList(Collection<? extends BaseDomain> domains, @NonNull Class<Data> dataClass) {
+    public static <Data extends BaseData> List<Data> toDataList(Collection<? extends BaseDomain> domains, @NonNull Class<Data> dataClass) {
         List<Data> result = new ArrayList<>();
         if (domains == null) return result;
 
@@ -111,7 +111,7 @@ public final class Serializer {
         return result;
     }
 
-    public static <Model extends JsonSerializable> List<Model> toDomainList(Collection<? extends BaseData> datas, @NonNull Class<Model> domainClass) {
+    public static <Model extends BaseDomain> List<Model> toDomainList(Collection<? extends BaseData> datas, @NonNull Class<Model> domainClass) {
         List<Model> result = new ArrayList<>();
         if (datas == null) return result;
 
