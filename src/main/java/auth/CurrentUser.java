@@ -1,17 +1,19 @@
 package auth;
 
-import com.minihttp.core.route.dependency.Dependency;
+import com.minihttp.core.route.dependency.Dependency;import com.minihttp.core.route.dependency.security.BearerSchema;
 import com.minihttp.packet.HttpRequest;
 import exception.UnauthorizedException;
 import util.JwtTokenProvider;
 
-public class CurrentUser implements Dependency<Long> {
+public class CurrentUser extends BearerSchema<Long> {
     private final JwtTokenProvider tokenProvider = new JwtTokenProvider();
 
-    public Long resolve(HttpRequest httpRequest) {
+    @Override
+    protected Long authenticate(String token) {
+        if (!this.tokenProvider.validateToken(token)) {
+            throw new UnauthorizedException();
+        }
 
-        String jwt = httpRequest.header().get("Authorization")
-                .orElseThrow(UnauthorizedException::new);
-        return tokenProvider.getUserId(jwt);
+        return tokenProvider.getUserId(token);
     }
 }
