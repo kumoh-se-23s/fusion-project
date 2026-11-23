@@ -62,16 +62,19 @@ public class OAuthClient {
         String name;
         SocialUserInfo userInfo = switch (socialProvider) {
             case GOOGLE -> SocialUserInfo.builder()
+                    .providerUserId(userInfoJsonNode.get("sub").asText())
                     .email(userInfoJsonNode.get("email").asText())
                     .name(userInfoJsonNode.get("name").asText())
                     .build();
 
             case KAKAO -> SocialUserInfo.builder()
+                    .providerUserId(userInfoJsonNode.get("id").asText())
                     .email(userInfoJsonNode.get("kakao_account").get("email").asText())
                     .name(userInfoJsonNode.get("kakao_account").get("profile").get("nickname").asText())
                     .build();
 
             case NAVER -> SocialUserInfo.builder()
+                    .providerUserId(userInfoJsonNode.get("response").get("id").asText())
                     .email(userInfoJsonNode.get("response").get("email").asText())
                     .name(userInfoJsonNode.get("response").get("name").asText())
                     .build();
