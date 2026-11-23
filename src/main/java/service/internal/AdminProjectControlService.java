@@ -53,7 +53,7 @@ public class AdminProjectControlService extends BaseService {
             Category category = categoryRepository.findById(request.getCategoryId())
                     .orElseThrow(NotFoundException::new);
 
-            Project project = Serializer.toDomain(request, Project.class)
+            Project project = Serializer.toDomain(request.getRequest(), Project.class)
                     .toBuilder()
                     .maker(maker)
                     .category(category)
