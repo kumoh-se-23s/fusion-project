@@ -1,5 +1,6 @@
 package model.dto;
 
+import constant.SocialProvider;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,4 +16,7 @@ public class SocialUserInfo {
     private String providerUserId;
     private String email;
     private String name;
+
+    //어떤 소셜 제공자로 가입하는지. 콜백에서 회원가입 키와 함께 Redis에 저장할 때만 채운다 (OAuthClient는 비워 둠)
+    private SocialProvider socialProvider;
 }
