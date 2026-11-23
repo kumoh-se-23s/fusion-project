@@ -1,21 +1,21 @@
 package exception;
 
+import com.minihttp.packet.protocol.HttpStatus;
+
 public class InvalidSearchTypeException extends BusinessException {
     private static final String DEFAULT_MESSAGE ="Invalid Search Type";
-    private static final int DEFAULT_STATE_CODE = 400;
+    private static final HttpStatus DEFAULT_STATE_CODE = HttpStatus.BAD_REQUEST;
 
     public InvalidSearchTypeException() {
-        super(DEFAULT_MESSAGE, DEFAULT_STATE_CODE);
+        super(DEFAULT_STATE_CODE, DEFAULT_MESSAGE);
     }
-    public InvalidSearchTypeException(Throwable cause) {
-        super(DEFAULT_MESSAGE, cause, DEFAULT_STATE_CODE);
+    public InvalidSearchTypeException(Object message) {
+        super(DEFAULT_STATE_CODE, message);
     }
-    public InvalidSearchTypeException(String message) {
-        super(message, DEFAULT_STATE_CODE);
+    public InvalidSearchTypeException(HttpStatus httpStatus) {
+        super(httpStatus, DEFAULT_MESSAGE);
     }
-
-    public InvalidSearchTypeException(String message, Throwable cause) {
-        super(message, cause, DEFAULT_STATE_CODE);
+    public InvalidSearchTypeException(HttpStatus httpStatus, Object message) {
+        super(httpStatus, message);
     }
-
 }
