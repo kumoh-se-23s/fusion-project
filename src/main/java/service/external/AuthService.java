@@ -61,7 +61,11 @@ public class AuthService extends BaseService {
      * @return access / refresh 토큰
      */
     public TokenResponse localLogin(AccountData accountData) {
-        //계정 조회만 하므로 읽기 전용 트랜잭션
+
+        if(accountData.getPassword() == null) {
+            throw new InvalidRequestException("비밀번호를 입력해야 합니다.");
+        }
+
         return tx.execute(true, () -> {
             try {
                 LocalAccount localAccount = localAccountRepository.findByLoginId(accountData.getLoginId())
