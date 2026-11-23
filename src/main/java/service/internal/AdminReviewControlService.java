@@ -92,6 +92,8 @@ public class AdminReviewControlService extends BaseService {
     public DeleteResponse deleteReviewAllLikes(Long reviewId) {
         return tx.execute(() -> {
             boolean result = true;
+            Review review = reviewRepository.findById(reviewId)
+                    .orElseThrow(NotFoundException::new);
 
             List<ReviewLike> reviewLikeList = reviewLikeRepository.findByReview(reviewId);
             for (ReviewLike reviewLike : reviewLikeList) {

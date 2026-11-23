@@ -47,6 +47,7 @@ public class AdminProjectQueryService extends BaseService {
             Integer limit,
             String searchType) {
         return tx.execute(true, () -> {
+            Integer limitValue = limit;
             AdminProjectSearchType projectSearchType = AdminProjectSearchType.fromString(searchType);
             List<ProjectState> projectStateList = ProjectState.fromStringList(stateList);
 
@@ -67,31 +68,34 @@ public class AdminProjectQueryService extends BaseService {
                     .findFirst()
                     .orElseThrow(NotFoundException::new);
             }
-
-            List<Project> projectList = projectRepository.findByFilter(
-                    title,
-                    maker,
-                    category,
-                    projectStateList,
-                    limit,
-                    order.map(Sort::by).orElse(Sort.defaultSort()));
-
-            if (projectList.isEmpty()) {
-                throw new NotFoundException();
-            }
-
             boolean isAchievementRate =
                     projectSearchType == AdminProjectSearchType.ASC_ACHIEVEMENT_RATE
                     || projectSearchType == AdminProjectSearchType.DESC_ACHIEVEMENT_RATE;
 
             boolean isSupporterCount = projectSearchType == AdminProjectSearchType.DESC_SUPPORTER_COUNT
                         || projectSearchType == AdminProjectSearchType.ASC_SUPPORTER_COUNT;
+            if (isSupporterCount || isAchievementRate) {
+                limitValue = null;
+            }
+            List<Project> projectList = projectRepository.findByFilter(
+                    title,
+                    maker,
+                    category,
+                    projectStateList,
+                    limitValue,
+                    order.map(Sort::by).orElse(Sort.defaultSort()));
+
+            if (projectList.isEmpty()) {
+                throw new NotFoundException();
+            }
+
+
 
             if (order.isEmpty()) {
                 if (isAchievementRate) {
-                    projectList = sortByAchievementRate(projectList, projectSearchType);
+                    projectList = sortByAchievementRate(projectList, projectSearchType, limit);
                 } else if (isSupporterCount) {
-                    projectList = sortBySupporterCount(projectList, projectSearchType);
+                    projectList = sortBySupporterCount(projectList, projectSearchType, limit);
                 } else {
                     throw new InvalidSearchTypeException("Not Implement Search Type");
                 }
@@ -111,19 +115,22 @@ public class AdminProjectQueryService extends BaseService {
         return project.getDonateAmount().divide(purpose, 4, RoundingMode.HALF_UP);
     }
 
-    private List<Project> sortByAchievementRate(List<Project> projectList, AdminProjectSearchType projectSearchType) {
+    private List<Project> sortByAchievementRate(List<Project> projectList, AdminProjectSearchType projectSearchType, Integer limit) {
         Comparator<Project> comparator = Comparator.comparing(this::achievementRate);
 
-        if (projectSearchType != AdminProjectSearchType.DESC_ACHIEVEMENT_RATE) {
+        if (projectSearchType == AdminProjectSearchType.DESC_ACHIEVEMENT_RATE) {
             comparator = comparator.reversed();
         }
-
+        if (limit == null) {
+            limit = projectList.size();
+        }
         return projectList.stream()
                 .sorted(comparator)
+                .limit(limit)
                 .toList();
     }
 
-    private List<Project> sortBySupporterCount(List<Project> projectList, AdminProjectSearchType projectSearchType) {
+    private List<Project> sortBySupporterCount(List<Project> projectList, AdminProjectSearchType projectSearchType, Integer limit) {
         List<Reward> rewardList = rewardRepository.findByProjects(projectList);
         List<Donate> donateList = donateRepository.findByRewards(rewardList);
 
@@ -135,12 +142,15 @@ public class AdminProjectQueryService extends BaseService {
         Comparator<Project> comparator = Comparator.comparing(
                 (Project p) -> countMap.getOrDefault(p.getId(), 0L));
 
-        if (projectSearchType == AdminProjectSearchType.DESC_ACHIEVEMENT_RATE) {
+        if (projectSearchType == AdminProjectSearchType.DESC_SUPPORTER_COUNT) {
             comparator = comparator.reversed();
         }
-
+        if (limit == null) {
+            limit = projectList.size();
+        }
         return projectList.stream()
                 .sorted(comparator)
+                .limit(limit)
                 .toList();
     }
 

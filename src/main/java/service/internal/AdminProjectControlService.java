@@ -72,8 +72,18 @@ public class AdminProjectControlService extends BaseService {
     public IdResponse editProject(Long projectId, AdminProjectRequest request) {
         return tx.execute(false, () -> {
             Map<String, Object> dtoMap = request.getRequest().toUpdateMap();
-            dtoMap.put("category", request.getCategoryId());
-            dtoMap.put("maker", request.getMakerId());
+            if (request.getCategoryId() != null) {
+                Category category = categoryRepository.findById(request.getCategoryId())
+                        .orElseThrow(NotFoundException::new);
+
+                dtoMap.put("category", request.getCategoryId());
+            }
+            if (request.getMakerId() != null) {
+                AppUser appUser = userRepository.findById(request.getMakerId())
+                        .orElseThrow(NotFoundException::new);
+
+                dtoMap.put("maker", request.getMakerId());
+            }
             return new IdResponse(
                     projectRepository.update(projectId, dtoMap).
                         orElseThrow(NotFoundException::new).getId()
@@ -93,6 +103,8 @@ public class AdminProjectControlService extends BaseService {
     public DeleteResponse deleteProjectAllLikes(Long projectId) {
         return tx.execute(() -> {
             boolean result = true;
+            Project project = projectRepository.findById(projectId)
+                    .orElseThrow(NotFoundException::new);
             List<ProjectLike> projectLikeList = projectLikeRepository.findByProject(projectId);
             for (ProjectLike projectLike : projectLikeList) {
 
