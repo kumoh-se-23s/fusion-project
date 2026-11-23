@@ -17,39 +17,6 @@ import util.RedisUtil;
  */
 @Getter
 public class AppConfig {
-    private final CategoryRepository categoryRepository = new CategoryRepository();
-    private final DenyProjectRepository denyProjectRepository = new DenyProjectRepository();
-    private final DonateRepository donateRepository = new DonateRepository();
-    private final ProjectLikeRepository projectLikeRepository = new ProjectLikeRepository();
-    private final ProjectRepository projectRepository = new ProjectRepository();
-    private final ReviewLikeRepository reviewLikeRepository = new ReviewLikeRepository();
-    private final ReviewRepository reviewRepository = new ReviewRepository();
-    private final RewardRepository rewardRepository = new RewardRepository();
-    private final UserRepository userRepository = new UserRepository();
-    private final UserRoleRepository userRoleRepository = new UserRoleRepository();
-    private final UserRoleRelationRepository userRoleRelationRepository = new UserRoleRelationRepository();
-
-    private final AdminCategoryService adminCategoryService = new AdminCategoryService(categoryRepository);
-
-    private final ProjectMakerService projectMakerService = new ProjectMakerService(
-            projectRepository, donateRepository, rewardRepository,
-            userRepository, categoryRepository, denyProjectRepository);
-    private final ProjectQueryService projectQueryService = new ProjectQueryService(
-            projectRepository, categoryRepository,  userRepository, donateRepository);
-    private final service.external.RewardService rewardService = new RewardService(
-            projectRepository, donateRepository, rewardRepository, categoryRepository);
-    private final service.external.DonateService donateService = new DonateService(
-            donateRepository, rewardRepository, projectRepository, userRepository
-    );
-    //이름이 같은 external.ProjectService와 구분하기 위해 전체 경로 사용
-    private final AdminProjectControlService adminProjectControlService =
-            new AdminProjectControlService(projectRepository, userRepository, categoryRepository, projectLikeRepository, userRoleRelationRepository);
-    private final ReviewCommandService reviewCommandService = new ReviewCommandService(
-            reviewRepository, userRepository, donateRepository, rewardRepository);
-    private final RedisUtil redisUtil = new RedisUtil();
-    private final AdminUserRoleService adminUserRoleService = new AdminUserRoleService(
-            userRepository, userRoleRepository, userRoleRelationRepository, redisUtil);
-
     public AppConfig() {
         //db.ddl-auto 설정에 따라 도메인 기준으로 테이블 생성
         SchemaGenerator.Mode ddlMode = SchemaGenerator.Mode.from(PropertieData.get("db.ddl-auto", "none"));
