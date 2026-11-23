@@ -5,6 +5,6 @@ public class InvalidTokenException extends BusinessException{
     private static final int DEFAULT_STATE_CODE = 403;
 
     public InvalidTokenException() {
-        super(MESSAGE,DEFAULT_STATE_CODE);
+        super();
     }
 }
