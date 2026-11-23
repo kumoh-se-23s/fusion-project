@@ -8,7 +8,6 @@ import model.dto.UserData;
 import model.dto.request.user.UpdateUserRequest;
 import model.dto.response.DeleteResponse;
 import model.dto.response.IdResponse;
-import model.dto.response.user.UserResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -111,30 +110,6 @@ class ProfileServiceTest {
     }
 
     // ===================================================================== 테스트
-
-    @Nested
-    @DisplayName("getMyInfo")
-    class GetMyInfo {
-
-        @Test
-        @DisplayName("사용자 정보를 UserData에 담아 돌려준다")
-        void success() {
-            UserResponse response = profileService.getMyInfo(USER_ID);
-            UserData data = response.getUserData();
-
-            assertEquals("홍길동", data.getName());
-            assertEquals("hong@example.com", data.getEmail());
-            assertEquals("서울시", data.getAddress());
-            assertEquals("12345", data.getPostal());
-            assertEquals("010-1234-5678", data.getPhone());
-        }
-
-        @Test
-        @DisplayName("없는 사용자면 NotFoundException이 발생한다")
-        void unknownUser() {
-            assertThrows(NotFoundException.class, () -> profileService.getMyInfo(999L));
-        }
-    }
 
     @Nested
     @DisplayName("updateUser")

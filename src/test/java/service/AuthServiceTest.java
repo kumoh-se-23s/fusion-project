@@ -140,7 +140,7 @@ class AuthServiceTest {
                 .build());
 
         authService = new AuthService(
-                new JwtTokenProvider(), accountUtil, accountRepository, new UserRepository(), new FakeJedisPool(jedis));
+                new JwtTokenProvider(), accountUtil, accountRepository, new UserRepository(), new FakeJedisPool(jedis), null);
     }
 
     private String subjectOf(String token) {

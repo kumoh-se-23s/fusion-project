@@ -8,7 +8,6 @@ import model.domain.Project;
 import model.domain.Review;
 import model.domain.Reward;
 import model.dto.ProjectData;
-import model.dto.UserData;
 import model.dto.request.donate.CreateDonateRequest;
 import model.dto.request.project.CreateProjectRequest;
 import model.dto.request.project.GetProjectByCategoryAndStateRequest;
@@ -21,7 +20,6 @@ import model.dto.response.project.ProjectRewardResponse;
 import model.dto.response.reward.RewardInfoResponse;
 import model.dto.response.reward.RewardUserResponse;
 import model.dto.response.user.UserAddressResponse;
-import model.dto.response.user.UserResponse;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.ClassOrderer;
@@ -210,11 +208,7 @@ public class MainTest extends DatabaseTest {
 
         @BeforeEach
         void setUp() {
-            profileService = new ProfileService(
-                    db.config.getUserRepository(),
-                    db.config.getUserRoleRepository(),
-                    db.config.getUserRoleRelationRepository()
-            );
+            profileService = new ProfileService(db.config.getUserRepository());
         }
 
         @Test
@@ -223,14 +217,11 @@ public class MainTest extends DatabaseTest {
             AppUser maker = db.maker1;
             long makerId = maker.getId();
 
+            UpdateUserRequest request = UpdateUserRequest.builder()
+                    .name("[시연 05] 변경된 이름")
+                    .build();
 
-            UserResponse userResponse = profileService.getMyInfo(makerId);
-            UserData testUserData = userResponse.getUserData();
-
-            testUserData.setName("[시연 05] 변경된 이름");
-
-
-            IdResponse response = profileService.updateUser(makerId, new UpdateUserRequest(testUserData));
+            IdResponse response = profileService.updateUser(makerId, request);
             AppUser result = db.config.getUserRepository().findById(response.getId())
                     .orElseThrow(AssertionError::new);
             assertEquals(makerId, response.getId());
