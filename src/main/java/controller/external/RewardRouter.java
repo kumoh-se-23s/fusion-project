@@ -68,9 +68,9 @@ public class RewardRouter extends BaseRouter {
                 loginUserId, userId);
     }
 
-    /**
-     * 메이커별 리워드 조회
-     */
+
+    //  메이커별 리워드 조회
+
     @Get()
     public DataCollectionResponse<RewardData> getRewardByMaker(
             @Query("maker_id") Long makerId) {
