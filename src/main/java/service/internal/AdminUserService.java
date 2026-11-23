@@ -38,7 +38,7 @@ public class AdminUserService extends BaseService {
      */
     public AdminUserListResponse getAllUsers(Integer limit) {
         if (limit != null && limit <= 0) {
-            throw new InvalidRequestException("limit은 1 이상이어야 합니다", BAD_REQUEST);
+            throw new InvalidRequestException("limit은 1 이상이어야 합니다");
         }
 
         return tx.execute(true, () -> {

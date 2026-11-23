@@ -54,7 +54,7 @@ public class SocialAuthService extends BaseService {
      */
     public TokenResponse socialSignUp(String key, CreateSocialUserRequest request) {
         if (request.getNickname() == null || request.getNickname().isBlank()) {
-            throw new InvalidRequestException("닉네임은 꼭 입력해야 합니다", BAD_REQUEST);
+            throw new InvalidRequestException("닉네임은 꼭 입력해야 합니다");
         }
 
         //가입이 실패해도(예: 닉네임 중복) 다시 시도할 수 있도록, 키는 가입이 끝난 뒤에 지운다

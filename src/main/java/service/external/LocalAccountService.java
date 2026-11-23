@@ -51,11 +51,11 @@ public class LocalAccountService extends BaseService {
 
         //DB를 보기 전에 입력부터 검사한다. null이면 hash()에서 터져 500이 나가므로 여기서 400으로 막는다
         if (isBlank(currentPassword) || isBlank(newPassword)) {
-            throw new InvalidRequestException("현재 비밀번호와 새 비밀번호를 모두 입력해야 합니다.", BAD_REQUEST);
+            throw new InvalidRequestException("현재 비밀번호와 새 비밀번호를 모두 입력해야 합니다.");
         }
 
         if (currentPassword.equals(newPassword)) {
-            throw new InvalidRequestException("새 비밀번호가 현재 비밀번호와 같습니다.", BAD_REQUEST);
+            throw new InvalidRequestException("새 비밀번호가 현재 비밀번호와 같습니다.");
         }
 
         return tx.execute(() -> {
@@ -63,7 +63,7 @@ public class LocalAccountService extends BaseService {
 
             //소셜로만 가입한 유저는 로컬 계정이 없다
             LocalAccount localAccount = localAccountRepository.findByFk(appUser)
-                    .orElseThrow(() -> new InvalidRequestException("로컬 계정이 없는 유저입니다.", BAD_REQUEST));
+                    .orElseThrow(() -> new InvalidRequestException("로컬 계정이 없는 유저입니다."));
 
             //equals 대신 matches: 비교 시간이 항상 같아 타이밍 공격을 막는다
             if (!matches(currentPassword, localAccount)) {
@@ -74,7 +74,7 @@ public class LocalAccountService extends BaseService {
             String hashedPassword = hash(newPassword, newSalt);
 
             if (!localAccountRepository.updatePassword(localAccount.getId(), hashedPassword, newSalt)) {
-                throw new InvalidException("예상치 못한 예외");
+                throw new UpdatePasswordException("비밀번호 변경 실패");
             }
 
             return new IdResponse(localAccount.getId());

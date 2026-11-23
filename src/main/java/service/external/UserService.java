@@ -98,7 +98,7 @@ public class UserService extends BaseService {
     private void validateSignUp(LocalSignUpRequest request) {
         if (isBlank(request.getLoginId()) || isBlank(request.getPassword())
                 || isBlank(request.getName()) || isBlank(request.getNickname()) || isBlank(request.getEmail())) {
-            throw new InvalidRequestException("아이디, 비밀번호, 이름, 닉네임, 이메일은 꼭 입력해야 합니다", BAD_REQUEST);
+            throw new InvalidRequestException("아이디, 비밀번호, 이름, 닉네임, 이메일은 꼭 입력해야 합니다");
         }
     }
 
