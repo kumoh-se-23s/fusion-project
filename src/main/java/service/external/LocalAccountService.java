@@ -1,5 +1,6 @@
 package service.external;
 
+import com.minihttp.packet.protocol.HttpStatus;
 import exception.*;
 import lombok.RequiredArgsConstructor;
 import model.domain.AppUser;
@@ -17,7 +18,7 @@ import java.security.spec.InvalidKeySpecException;
 
 @RequiredArgsConstructor
 public class LocalAccountService extends BaseService {
-    private static final int BAD_REQUEST = 400;
+    private static final HttpStatus BAD_REQUEST = HttpStatus.BAD_REQUEST;
 
     private final AccountUtil accountUtil;
     private final UserRepository userRepository;

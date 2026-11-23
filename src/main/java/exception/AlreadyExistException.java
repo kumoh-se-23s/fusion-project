@@ -1,20 +1,22 @@
 package exception;
 
+import com.minihttp.packet.protocol.HttpStatus;
+
 public class AlreadyExistException extends BusinessException {
     private static final String DEFAULT_MESSAGE ="Already Exist Data";
-    private static final int DEFAULT_STATE_CODE = 409;
+    private static final HttpStatus DEFAULT_STATE_CODE = HttpStatus.CONFLICT;
 
     public AlreadyExistException() {
-        super(DEFAULT_MESSAGE, DEFAULT_STATE_CODE);
+        super(DEFAULT_STATE_CODE, DEFAULT_MESSAGE);
     }
-    public AlreadyExistException(Throwable cause) {
-        super(DEFAULT_MESSAGE, cause, DEFAULT_STATE_CODE);
-    }
-    public AlreadyExistException(String message) {
-        super(message,  DEFAULT_STATE_CODE);
+    public AlreadyExistException(Object message) {
+        super(DEFAULT_STATE_CODE, message);
     }
 
-    public AlreadyExistException(String message, Throwable cause) {
-        super(message, cause, DEFAULT_STATE_CODE);
+    public AlreadyExistException(HttpStatus httpStatus) {
+        super(httpStatus, DEFAULT_MESSAGE);
+    }
+    public AlreadyExistException(HttpStatus httpStatus, Object message) {
+        super(httpStatus, message);
     }
 }

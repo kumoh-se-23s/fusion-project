@@ -1,20 +1,21 @@
 package exception;
 
+import com.minihttp.packet.protocol.HttpStatus;
+
 public class NotPendingProjectException extends BusinessException {
     private static final String DEFAULT_MESSAGE ="Not Pending Project";
-    private static final int DEFAULT_STATE_CODE = 409;
+    private static final HttpStatus DEFAULT_STATE_CODE = HttpStatus.CONFLICT;
 
     public NotPendingProjectException() {
-        super(DEFAULT_MESSAGE, DEFAULT_STATE_CODE);
+        super(DEFAULT_STATE_CODE, DEFAULT_MESSAGE);
     }
-    public NotPendingProjectException(Throwable cause) {
-        super(DEFAULT_MESSAGE, cause, DEFAULT_STATE_CODE);
+    public NotPendingProjectException(Object message) {
+        super(DEFAULT_STATE_CODE, message);
     }
-    public NotPendingProjectException(String message) {
-        super(message,  DEFAULT_STATE_CODE);
+    public NotPendingProjectException(HttpStatus httpStatus) {
+        super(httpStatus, DEFAULT_MESSAGE);
     }
-
-    public NotPendingProjectException(String message, Throwable cause) {
-        super(message, cause, DEFAULT_STATE_CODE);
+    public NotPendingProjectException(HttpStatus httpStatus, Object message) {
+        super(httpStatus, message);
     }
 }

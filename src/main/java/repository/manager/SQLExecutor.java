@@ -87,7 +87,7 @@ public final class SQLExecutor {
     private static RuntimeException translate(String message, SQLException e) {
         if (e.getErrorCode() == MYSQL_DUPLICATE_ENTRY) {
             //DB 메시지에는 중복된 실제 값이 들어있으므로 메시지에 노출하지 않고 cause로만 보관
-            return new AlreadyExistException("Duplicate value", e);
+            return new AlreadyExistException(e);
         }
         return new QueryErrorException(message, e);
     }

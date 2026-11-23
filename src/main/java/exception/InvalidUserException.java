@@ -1,21 +1,21 @@
 package exception;
 
+import com.minihttp.packet.protocol.HttpStatus;
+
 public class InvalidUserException extends BusinessException {
-    private static final String DEFAULT_MESSAGE ="Invalid User";
-    private static final int DEFAULT_STATE_CODE = 409;
+    private static final String DEFAULT_MESSAGE ="Invalid User Info";
+    private static final HttpStatus DEFAULT_STATE_CODE = HttpStatus.FORBIDDEN;
 
     public InvalidUserException() {
-        super(DEFAULT_MESSAGE, DEFAULT_STATE_CODE);
+        super(DEFAULT_STATE_CODE, DEFAULT_MESSAGE);
     }
-    public InvalidUserException(Throwable cause) {
-        super(DEFAULT_MESSAGE, cause, DEFAULT_STATE_CODE);
+    public InvalidUserException(Object message) {
+        super(DEFAULT_STATE_CODE, message);
     }
-    public InvalidUserException(String message) {
-        super(message, DEFAULT_STATE_CODE);
+    public InvalidUserException(HttpStatus httpStatus) {
+        super(httpStatus, DEFAULT_MESSAGE);
     }
-
-    public InvalidUserException(String message, Throwable cause) {
-        super(message, cause, DEFAULT_STATE_CODE);
+    public InvalidUserException(HttpStatus httpStatus, Object message) {
+        super(httpStatus, message);
     }
-
 }

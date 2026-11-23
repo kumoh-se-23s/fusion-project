@@ -1,21 +1,21 @@
 package exception;
 
+import com.minihttp.packet.protocol.HttpStatus;
+
 public class LimitNumberOutException extends BusinessException {
     private static final String DEFAULT_MESSAGE ="Limit Number is Out of range";
-    private static final int DEFAULT_STATE_CODE = 400;
+    private static final HttpStatus DEFAULT_STATE_CODE = HttpStatus.BAD_REQUEST;
 
     public LimitNumberOutException() {
-        super(DEFAULT_MESSAGE, DEFAULT_STATE_CODE);
+        super(DEFAULT_STATE_CODE, DEFAULT_MESSAGE);
     }
-    public LimitNumberOutException(Throwable cause) {
-        super(DEFAULT_MESSAGE, cause, DEFAULT_STATE_CODE);
+    public LimitNumberOutException(Object message) {
+        super(DEFAULT_STATE_CODE, message);
     }
-    public LimitNumberOutException(String message) {
-        super(message, DEFAULT_STATE_CODE);
+    public LimitNumberOutException(HttpStatus httpStatus) {
+        super(httpStatus, DEFAULT_MESSAGE);
     }
-
-    public LimitNumberOutException(String message, Throwable cause) {
-        super(message, cause, DEFAULT_STATE_CODE);
+    public LimitNumberOutException(HttpStatus httpStatus, Object message) {
+        super(httpStatus, message);
     }
-
 }

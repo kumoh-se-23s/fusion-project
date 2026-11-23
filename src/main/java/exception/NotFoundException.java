@@ -1,21 +1,21 @@
 package exception;
 
+import com.minihttp.packet.protocol.HttpStatus;
+
 public class NotFoundException extends BusinessException {
     private static final String DEFAULT_MESSAGE ="NOT FOUND";
-    private static final int DEFAULT_STATE_CODE = 404;
+    private static final HttpStatus DEFAULT_STATE_CODE = HttpStatus.NOT_FOUND;
+
     public NotFoundException() {
-        super(DEFAULT_MESSAGE, DEFAULT_STATE_CODE);
+        super(DEFAULT_STATE_CODE, DEFAULT_MESSAGE);
     }
-
-    public NotFoundException(Throwable cause) {
-        super(DEFAULT_MESSAGE, cause, DEFAULT_STATE_CODE);
+    public NotFoundException(Object message) {
+        super(DEFAULT_STATE_CODE, message);
     }
-
-    public NotFoundException(String message) {
-        super(message, DEFAULT_STATE_CODE);
+    public NotFoundException(HttpStatus httpStatus) {
+        super(httpStatus, DEFAULT_MESSAGE);
     }
-
-    public NotFoundException(String message, Throwable cause) {
-        super(message, cause, DEFAULT_STATE_CODE);
+    public NotFoundException(HttpStatus httpStatus, Object message) {
+        super(httpStatus, message);
     }
 }
