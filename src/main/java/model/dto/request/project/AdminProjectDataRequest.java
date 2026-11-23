@@ -1,10 +1,12 @@
 package model.dto.request.project;
 
+import annotation.BindDomain;
 import constant.ProjectState;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import model.domain.Project;
 import model.dto.request.UpdateRequest;
 
 import java.math.BigDecimal;
@@ -14,6 +16,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @Getter
+@BindDomain(values = Project.class)
 public class AdminProjectDataRequest extends UpdateRequest {
     private LocalDateTime startDate;
 
