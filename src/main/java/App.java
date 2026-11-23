@@ -5,8 +5,14 @@ import config.AppConfig;
 import config.AuthProperties;
 import controller.external.*;
 import controller.internal.*;
+import exception.AppException;
 import exception.BusinessException;
+import exception.DatabaseException;
+import exception.StructureException;
+import handler.AppExceptionHandler;
 import handler.BusinessExceptionHandler;
+import handler.DataBaseExceptionHandler;
+import handler.StructureExceptionHandler;
 import service.OAuthClient;
 import util.RedisUtil;
 
@@ -52,6 +58,9 @@ public class App {
                 .includeRouter(AdminUserRouter.class)
                 .middleware(CorsMiddleware.builder().build())
                 .exceptionHandler(BusinessException.class, new BusinessExceptionHandler())
+                .exceptionHandler(AppException.class, new AppExceptionHandler())
+                .exceptionHandler(StructureException.class, new StructureExceptionHandler())
+                .exceptionHandler(DatabaseException.class, new DataBaseExceptionHandler())
                 .run(ServerConfig.builder().listen(8080).build());
     }
 }
