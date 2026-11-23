@@ -13,7 +13,6 @@ import model.dto.request.Request;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-@BindDomain(values = Review.class)
 public class AdminReviewRequest extends Request {
     @DataField(name = "reward.id")
     private Long rewardId;
