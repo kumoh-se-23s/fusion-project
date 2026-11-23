@@ -56,3 +56,30 @@ tasks.test {
 tasks.withType(JavaCompile).configureEach {
     options.compilerArgs << '-parameters'
 }
+// 엔드포인트 테스트 (클라이언트 -> 엔드포인트 -> 로직). 실행: ./gradlew apiTest
+// 기존 src/test와 분리해서 서로의 컴파일 오류에 영향을 받지 않게 한다.
+sourceSets {
+    apiTest {
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
+}
+
+configurations {
+    apiTestImplementation.extendsFrom implementation, testImplementation
+    apiTestRuntimeOnly.extendsFrom runtimeOnly, testRuntimeOnly
+    apiTestCompileOnly.extendsFrom compileOnly
+    apiTestAnnotationProcessor.extendsFrom annotationProcessor
+}
+
+tasks.register('apiTest', Test) {
+    description = 'docs에 잡힌 엔드포인트 기준 테스트를 실행한다.'
+    group = 'verification'
+    testClassesDirs = sourceSets.apiTest.output.classesDirs
+    classpath = sourceSets.apiTest.runtimeClasspath
+    useJUnitPlatform()
+    testLogging {
+        events 'failed'
+        exceptionFormat 'full'
+    }
+}
