@@ -70,13 +70,13 @@ public class DonateService extends BaseService {
             CreateDonateRequest request) {
 
         if (loginUserId == null || request == null) {
-            throw new InvalidException();
+            throw new InvalidRequestException("필수값이 누락됐습니다.");
         }
 
         if (request.getUserFk() != null
                 && !loginUserId.equals(
                 request.getUserFk())) {
-            throw new InvalidException();
+            throw new InvalidRequestException("필수값이 누락됐습니다.");
         }
 
         CreateDonateRequest safeRequest =
@@ -220,8 +220,8 @@ public class DonateService extends BaseService {
         return toCollection(result);
     }
 
-    /**
-     * 프로젝트별 후원 조회
+    /*
+      프로젝트별 후원 조회
      */
     public DataCollectionResponse<DonateData> findDonateByFunding(
             Long projectId) {
@@ -257,7 +257,7 @@ public class DonateService extends BaseService {
             Optional<Long> projectId) {
 
         if (loginUserId == null) {
-            throw new InvalidException();
+            throw new InvalidRequestException("필수사항을 입력하지않았습니다.");
         }
 
         int count = 0;
@@ -274,7 +274,7 @@ public class DonateService extends BaseService {
         // 사용자별 조회: 본인만 허용
         if (userId.isPresent()) {
             if (!loginUserId.equals(userId.get())) {
-                throw new InvalidException();
+                throw new InvalidRequestException("필수값이 누락됐습니다.");
             }
 
             return findDonateByUser(userId.get());
@@ -293,7 +293,7 @@ public class DonateService extends BaseService {
                     || project.getMaker() == null
                     || !loginUserId.equals(
                     project.getMaker().getId())) {
-                throw new InvalidException();
+                throw new InvalidRequestException("필수값이 누락됐습니다.");
             }
 
             return findDonateByReward(rewardId.get());
@@ -308,7 +308,7 @@ public class DonateService extends BaseService {
         if (project.getMaker() == null
                 || !loginUserId.equals(
                 project.getMaker().getId())) {
-            throw new InvalidException();
+            throw new InvalidRequestException("필수값이 누락됐습니다.");
         }
 
         return findDonateByFunding(projectId.get());
@@ -400,7 +400,7 @@ public class DonateService extends BaseService {
             Long userId) {
 
         if (donateId == null || userId == null) {
-            throw new InvalidException();
+            throw new InvalidRequestException("필수값이 누락됐습니다.");
         }
 
         Donate donate = donateRepository
@@ -411,7 +411,7 @@ public class DonateService extends BaseService {
         if (donate.getUser() == null
                 || !userId.equals(
                 donate.getUser().getId())) {
-            throw new InvalidException();
+            throw new InvalidRequestException("필수값이 누락됐습니다.");
         }
 
         Reward reward = donate.getReward();
@@ -474,7 +474,7 @@ public class DonateService extends BaseService {
                 || donate.getUser() == null
                 || !userId.equals(
                 donate.getUser().getId())) {
-            throw new InvalidException();
+            throw new InvalidRequestException("필수값이 누락됐습니다.");
         }
 
         // amount는 이미 총액

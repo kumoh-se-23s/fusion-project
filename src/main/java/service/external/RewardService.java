@@ -2,11 +2,7 @@
 package service.external;
 
 import constant.ProjectState;
-import exception.InvalidException;
-import exception.LimitNumberOutException;
-import exception.NotFoundException;
-import exception.TransactionException;
-
+import exception.*;
 import lombok.RequiredArgsConstructor;
 
 import model.Serializer;
@@ -47,7 +43,7 @@ public class RewardService {
             CreateRewardDataRequest request) {
 
         if (loginUserId == null || request == null) {
-            throw new InvalidException();
+            throw new InvalidRequestException("필수값이 누락됐습니다.");
         }
 
         if (request.getProjectFk() == null) {
@@ -87,7 +83,7 @@ public class RewardService {
         if (project.getMaker() == null
                 || !loginUserId.equals(
                 project.getMaker().getId())) {
-            throw new InvalidException();
+            throw new InvalidRequestException("필수값이 누락됐습니다.");
         }
 
         request.prepareForCreate(project);
@@ -159,7 +155,7 @@ public class RewardService {
 
         if (loginUserId == null
                 || !loginUserId.equals(userId)) {
-            throw new InvalidException();
+            throw new InvalidRequestException("필수값이 누락됐습니다.");
         }
 
         List<Donate> donates =
@@ -216,7 +212,7 @@ public class RewardService {
         if (loginUserId == null
                 || rewardId == null
                 || request == null) {
-            throw new InvalidException();
+            throw new InvalidRequestException("필수값이 누락됐습니다.");
         }
 
         Reward reward = rewardRepository
@@ -230,13 +226,13 @@ public class RewardService {
                 || project.getMaker() == null
                 || !loginUserId.equals(
                 project.getMaker().getId())) {
-            throw new InvalidException();
+            throw new InvalidRequestException("필수값이 누락됐습니다.");
         }
 
         if (request.getProjectFk() != null
                 && !request.getProjectFk().equals(
                 project.getId())) {
-            throw new InvalidException();
+            throw new InvalidRequestException("필수값이 누락됐습니다.");
         }
 
         Map<String, Object> updates = new HashMap<>();
@@ -319,7 +315,7 @@ public class RewardService {
             Long rewardId) {
 
         if (loginUserId == null || rewardId == null) {
-            throw new InvalidException();
+            throw new InvalidRequestException("필수값이 누락됐습니다.");
         }
 
         Reward reward = rewardRepository
@@ -333,7 +329,7 @@ public class RewardService {
                 || project.getMaker() == null
                 || !loginUserId.equals(
                 project.getMaker().getId())) {
-            throw new InvalidException();
+            throw new InvalidRequestException("필수값이 누락됐습니다.");
         }
 
         // 후원 내역이 존재하면 삭제 제한
@@ -341,7 +337,7 @@ public class RewardService {
             if (donate.getReward() != null
                     && rewardId.equals(
                     donate.getReward().getId())) {
-                throw new InvalidException();
+                throw new InvalidRequestException("필수값이 누락됐습니다.");
             }
         }
 
