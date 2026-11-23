@@ -129,7 +129,10 @@ public class ProjectMakerService extends BaseService {
             }
 
             Map<String, Object> dtoMap = request.getProjectDataDTO().toUpdateMap();
-            dtoMap.put("category", request.getCategoryId());
+
+            if (request.getCategoryId() != null) {
+                dtoMap.put("category", request.getCategoryId());
+            }
 
             if (project.getState() == ProjectState.REJECTED) {
                 dtoMap.put("state", ProjectState.PENDING_APPROVAL);

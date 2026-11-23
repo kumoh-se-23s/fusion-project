@@ -1,6 +1,8 @@
 package service.external;
 
+import exception.AlreadyExistException;
 import exception.NotFoundException;
+import exception.NotNullException;
 import lombok.RequiredArgsConstructor;
 import model.domain.AppUser;
 import model.domain.Project;
@@ -53,8 +55,12 @@ public class ProjectLikeService extends BaseService {
 
     public IdResponse editProjectLike(Long projectId, Long userId, LikeRequest request) {
         return tx.execute(() -> {
-            ProjectLike projectLike = projectLikeRepository.findByProjectAndUser(projectId, userId).getFirst();
-
+            ProjectLike projectLike = projectLikeRepository.findByProjectAndUser(projectId, userId).stream()
+                    .findFirst()
+                    .orElseThrow(NotFoundException::new);
+            if (projectLike.getLikeType() == request.getLikeType()) {
+                throw new AlreadyExistException("동일한 좋아요 타입입니다");
+            }
             Project project = updateLikeValue(projectLike.getProject(), projectLike.getLikeType(), -1);
             project = updateLikeValue(project, request.getLikeType(), 1);
 
@@ -66,7 +72,9 @@ public class ProjectLikeService extends BaseService {
     }
     public DeleteResponse deleteProjectLike(Long projectId, Long userId) {
         return tx.execute(() -> {
-            ProjectLike projectLike = projectLikeRepository.findByProjectAndUser(projectId, userId).getFirst();
+            ProjectLike projectLike = projectLikeRepository.findByProjectAndUser(projectId, userId).stream()
+                    .findFirst()
+                    .orElseThrow(NotFoundException::new);
 
             updateLikeValue(projectLike.getProject(), projectLike.getLikeType(), -1);
 
@@ -75,6 +83,9 @@ public class ProjectLikeService extends BaseService {
     }
 
     private Project updateLikeValue(Project project, Boolean likeType, int change) {
+        if (likeType == null) {
+            throw new NotNullException("LikeType is Null");
+        }
         Long current = likeType ? project.getLikeCount() : project.getDislikeCount();
         current += change;
 

@@ -2,6 +2,7 @@ package service.internal;
 
 import exception.AlreadyExistException;
 import exception.NotFoundException;
+import exception.NotNullException;
 import lombok.RequiredArgsConstructor;
 import model.Serializer;
 import model.domain.Category;
@@ -30,7 +31,9 @@ public class AdminCategoryService extends BaseService {
     public IdResponse createCategory(CategoryRequest dto) {
         return tx.execute(() -> {
             Category category = Serializer.toDomain(dto, Category.class);
-
+            if (dto.getName() == null) {
+                throw new NotNullException("Category Name is Null.");
+            }
             if (categoryRepository.isExistByName(dto.getName())) {
                 throw new AlreadyExistException();
             }
@@ -63,7 +66,8 @@ public class AdminCategoryService extends BaseService {
     public IdResponse editCategory(Long categoryId, CategoryRequest dto) {
         return tx.execute(false, () -> {
 
-            if (categoryRepository.isExistByName(dto.getName())) {
+
+            if (dto.getName() != null && categoryRepository.isExistByName(dto.getName())) {
                 throw new AlreadyExistException();
             }
 
