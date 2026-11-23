@@ -11,10 +11,10 @@ import java.util.stream.Collectors;
 
 public enum AdminProjectSearchType {
     //최신순
-    DESC_CREATE_AT("DESC_CREATE_AT", Order.desc("createAt")),
+    DESC_CREATE_AT("DESC_CREATE_AT", Order.desc("createdAt")),
 
     //날짜순
-    ASC_CREATE_AT("ASC_CREATE_AT", Order.asc("createAt")),
+    ASC_CREATE_AT("ASC_CREATE_AT", Order.asc("createdAt")),
 
     //총 펀딩 금액 오름차순
     ASC_DONATE_AMOUNT("ASC_DONATE_AMOUNT", Order.asc("donateAmount")),
