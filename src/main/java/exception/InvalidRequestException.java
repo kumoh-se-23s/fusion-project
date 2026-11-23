@@ -12,4 +12,8 @@ public class InvalidRequestException extends BusinessException {
         super(message);
     }
 
+    public InvalidRequestException(String message, int stateCode) {
+        super(message, stateCode);
+    }
+
 }

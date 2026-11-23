@@ -1,14 +1,10 @@
 package service.external;
 
 import exception.NotFoundException;
-import model.Serializer;
-import model.domain.AppUser;
 import model.domain.UserRoleRelation;
-import model.dto.UserData;
 import model.dto.request.user.UpdateUserRequest;
 import model.dto.response.DeleteResponse;
 import model.dto.response.IdResponse;
-import model.dto.response.user.UserResponse;
 import repository.*;
 import service.BaseService;
 
@@ -24,14 +20,6 @@ public class ProfileService extends BaseService {
         this.userRepository = userRepository;
     }
 
-    public UserResponse getMyInfo(long userId) {
-        AppUser appUser = userRepository.findById(userId).orElseThrow(NotFoundException::new);
-
-        UserData userData = Serializer.toData(appUser, UserData.class);
-
-        return new UserResponse(userData);
-
-    }
 
     public IdResponse updateUser(long userId, UpdateUserRequest request) {
         Long updateResult = userRepository.updateUser(userId, request.toUpdateMap()).orElseThrow(NotFoundException::new);

@@ -1,9 +1,11 @@
 package model.dto.response.UserRole;
 
+import constant.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import model.dto.response.Response;
 
 import java.util.List;
 
@@ -11,6 +13,6 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserRoleResponse {
-    private List<String> userRole;
+public class UserRoleResponse extends Response {
+    private List<Role> userRole;
 }

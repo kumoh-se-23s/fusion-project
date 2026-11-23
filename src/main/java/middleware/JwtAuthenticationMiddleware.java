@@ -1,10 +1,11 @@
-package util;
+package middleware;
 
 import com.minihttp.core.handler.Handler;
 import com.minihttp.core.middleware.Middleware;
 import com.minihttp.packet.HttpRequest;
 import com.minihttp.packet.HttpResponse;
 import exception.UnauthorizedException;
+import util.JwtTokenProvider;
 
 public class JwtAuthenticationMiddleware implements Middleware {
     private static final String BEARER_PREFIX = "Bearer ";
@@ -25,7 +26,6 @@ public class JwtAuthenticationMiddleware implements Middleware {
 
         throw new UnauthorizedException();
     }
-
     private String extractToken(HttpRequest request) {
         String value = request.header().get("Authorization")
                 .orElseThrow(UnauthorizedException::new);
@@ -42,4 +42,5 @@ public class JwtAuthenticationMiddleware implements Middleware {
 
         return token;
     }
+
 }

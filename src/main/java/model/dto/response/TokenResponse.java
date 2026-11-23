@@ -1,18 +1,16 @@
-package model.dto.request.user_role;
+package model.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import model.dto.request.Request;
 
 @Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class AssignRoleRequest extends Request {
-    private Long userId;
+public class TokenResponse extends Response {
+    private String accessToken;
 
-    private String role;
-
+    private String refreshToken;
 }

@@ -2,10 +2,8 @@ package service.external;
 
 import example.db.DatabaseTest;
 import model.domain.AppUser;
-import model.dto.UserData;
 import model.dto.request.user.UpdateUserRequest;
 import model.dto.response.IdResponse;
-import model.dto.response.user.UserResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -20,11 +18,7 @@ public class ProfileServiceTest extends DatabaseTest {
 
     @BeforeEach
     void setUp() {
-        profileService = new ProfileService(
-                db.config.getUserRepository(),
-                db.config.getUserRoleRepository(),
-                db.config.getUserRoleRelationRepository()
-        );
+        profileService = new ProfileService(db.config.getUserRepository());
     }
 
     @Nested
@@ -36,14 +30,11 @@ public class ProfileServiceTest extends DatabaseTest {
             AppUser maker = db.maker1;
             long makerId = maker.getId();
 
+            UpdateUserRequest request = UpdateUserRequest.builder()
+                    .name("호날두")
+                    .build();
 
-            UserResponse userResponse = profileService.getMyInfo(makerId);
-            UserData testUserData = userResponse.getUserData();
-
-            testUserData.setName("호날두");
-
-
-            IdResponse response = profileService.updateUser(makerId, new UpdateUserRequest(testUserData));
+            IdResponse response = profileService.updateUser(makerId, request);
             AppUser result = db.config.getUserRepository().findById(response.getId())
                     .orElseThrow(AssertionError::new);
             assertEquals(makerId, response.getId());
