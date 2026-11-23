@@ -107,7 +107,7 @@ public class AuthService extends BaseService {
         String key = UUID.randomUUID().toString();
 
         if (userRepository.isExistEmail(email)) {
-            AppUser appUser = userRepository.findByEmail(email).orElseThrow(InvalidException::new);
+            AppUser appUser = userRepository.findByEmail(email).orElseThrow(NotFoundException::new);
             redisUtil.save(SOCIAL_LOGIN_KEY + key, appUser.getId(), SOCIAL_KEY_EXPIRE_SECONDS);
 
             return AuthProperties.get("front url") + "?code=" + key;

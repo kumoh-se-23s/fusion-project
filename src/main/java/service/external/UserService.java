@@ -79,7 +79,7 @@ public class UserService extends BaseService {
 
             //기본 권한(USER) 부여. USER 권한 데이터가 없으면 서버 설정 문제이므로 롤백
             UserRole userRole = userRoleRepository.findByRole(Role.USER)
-                    .orElseThrow(() -> new InvalidException("기본 권한(USER)이 없습니다"));
+                    .orElseThrow(() -> new NotFoundException("기본 권한(USER)이 없습니다"));
             userRoleRelationRepository.create(UserRoleRelation.builder()
                     .user(user)
                     .role(userRole)

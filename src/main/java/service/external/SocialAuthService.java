@@ -3,10 +3,7 @@ package service.external;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import constant.Role;
-import exception.AlreadyExistException;
-import exception.InvalidException;
-import exception.InvalidRequestException;
-import exception.UnauthorizedException;
+import exception.*;
 import model.domain.AppUser;
 import model.domain.UserRole;
 import model.domain.UserRoleRelation;
@@ -19,8 +16,6 @@ import repository.UserRoleRelationRepository;
 import repository.UserRoleRepository;
 import service.BaseService;
 import util.RedisUtil;
-
-import java.util.List;
 
 public class SocialAuthService extends BaseService {
     private static final int BAD_REQUEST = 400;
@@ -92,7 +87,7 @@ public class SocialAuthService extends BaseService {
 
             //기본 권한(USER) 부여. USER 권한 데이터가 없으면 서버 설정 문제이므로 롤백
             UserRole userRole = userRoleRepository.findByRole(Role.USER)
-                    .orElseThrow(() -> new InvalidException("기본 권한(USER)이 없습니다"));
+                    .orElseThrow(() -> new NotFoundException("기본 권한(USER)이 없습니다"));
             userRoleRelationRepository.create(UserRoleRelation.builder()
                     .user(user)
                     .role(userRole)

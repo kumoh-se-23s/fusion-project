@@ -73,7 +73,7 @@ public class LocalAccountService extends BaseService {
             String hashedPassword = hash(newPassword, newSalt);
 
             if (!localAccountRepository.updatePassword(localAccount.getId(), hashedPassword, newSalt)) {
-                throw new InvalidException("비밀번호 변경에 실패했습니다.");
+                throw new InvalidException();
             }
 
             return new IdResponse(localAccount.getId());
