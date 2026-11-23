@@ -39,25 +39,6 @@ public class AdminReviewControlService extends BaseService {
 
             Reward reward= rewardRepository.findById(dto.getRewardId())
                     .orElseThrow(NotFoundException::new);
-// 관리자 api에서 굳이 검증은 필요없어 보임
-//
-//            List<Donate> donateList = donateRepository.findByUserAndReward(user, reward);
-//
-//            boolean isDelivered = false;
-//            for (Donate donate : donateList) {
-//                if (donate.getState()) {
-//                    isDelivered = true;
-//                    break;
-//                }
-//            }
-//
-//            if (reward.getProject().getState() != ProjectState.COMPLETED || !isDelivered) {
-//                throw new NotCompleteProjectException("Not Allowed Write Review");
-//            }
-//
-//            if (reviewRepository.isExistUserAndReward(user, reward)) {
-//                throw new AlreadyExistException();
-//            }
 
 
             Review review = Serializer.toDomain(dto.getRequest(), Review.class)
@@ -77,13 +58,19 @@ public class AdminReviewControlService extends BaseService {
 
     public IdResponse editReview(Long reviewId, AdminReviewRequest dto) {
         return tx.execute(false, () -> {
-
-            Reward reward = rewardRepository.findById(dto.getRewardId())
-                    .orElseThrow(NotFoundException::new);
-
             Map<String, Object> dtoMap = dto.getRequest().toUpdateMap();
-            dtoMap.put("reward", reward);
+            if (dto.getRewardId() != null) {
+                Reward reward = rewardRepository.findById(dto.getRewardId())
+                        .orElseThrow(NotFoundException::new);
 
+
+                dtoMap.put("reward", reward);
+            }
+
+            BigDecimal rating = dto.getRequest().getRating();
+            if (rating != null && (rating.compareTo(MIN_RATING) < 0 || rating.compareTo(MAX_RATING) > 0)) {
+                throw new OutOfRangeException("Rating must be between " + MIN_RATING + " and " + MAX_RATING);
+            }
             Review review = reviewRepository.update(reviewId, dtoMap)
                     .orElseThrow(NotFoundException::new);
 
