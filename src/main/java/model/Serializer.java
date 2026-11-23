@@ -4,8 +4,8 @@ import annotation.BindDomain;
 import annotation.DataField;
 import exception.SerializeException;
 import lombok.NonNull;
-import model.domain.Domain;
-import model.dto.DataObject;
+import model.domain.BaseDomain;
+import model.dto.BaseData;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -92,31 +92,31 @@ public final class Serializer {
 
     // ===================================================================== public API
 
-    public static <Data extends DataObject> Data toData(Domain anyDomain, @NonNull Class<Data> dataClass) {
+    public static <Data extends JsonSerializable> Data toData(BaseDomain anyDomain, @NonNull Class<Data> dataClass) {
         return dataClass.cast(Serializer.convertObject(anyDomain, dataClass, Direction.TO_DATA, new Context()));
     }
 
-    public static <Model extends Domain> Model toDomain(DataObject anyData, @NonNull Class<Model> domainClass) {
+    public static <Model extends JsonSerializable> Model toDomain(BaseData anyData, @NonNull Class<Model> domainClass) {
         return domainClass.cast(Serializer.convertObject(anyData, domainClass, Direction.TO_DOMAIN, new Context()));
     }
 
-    public static <Data extends DataObject> List<Data> toDataList(Collection<? extends Domain> domains, @NonNull Class<Data> dataClass) {
+    public static <Data extends JsonSerializable> List<Data> toDataList(Collection<? extends BaseDomain> domains, @NonNull Class<Data> dataClass) {
         List<Data> result = new ArrayList<>();
         if (domains == null) return result;
 
         Context context = new Context();
-        for (Domain domain : domains) {
+        for (BaseDomain domain : domains) {
             result.add(dataClass.cast(Serializer.convertObject(domain, dataClass, Direction.TO_DATA, context)));
         }
         return result;
     }
 
-    public static <Model extends Domain> List<Model> toDomainList(Collection<? extends DataObject> datas, @NonNull Class<Model> domainClass) {
+    public static <Model extends JsonSerializable> List<Model> toDomainList(Collection<? extends BaseData> datas, @NonNull Class<Model> domainClass) {
         List<Model> result = new ArrayList<>();
         if (datas == null) return result;
 
         Context context = new Context();
-        for (DataObject data : datas) {
+        for (BaseData data : datas) {
             result.add(domainClass.cast(Serializer.convertObject(data, domainClass, Direction.TO_DOMAIN, context)));
         }
         return result;
@@ -262,15 +262,15 @@ public final class Serializer {
         }
 
         if (direction == Direction.TO_DATA
-                && Domain.class.isAssignableFrom(sourceRaw)
-                && DataObject.class.isAssignableFrom(targetRaw)
+                && BaseDomain.class.isAssignableFrom(sourceRaw)
+                && BaseData.class.isAssignableFrom(targetRaw)
                 && Serializer.isBound(targetRaw, sourceRaw)) {
             return (value, context) -> Serializer.convertObject(value, targetRaw, Direction.TO_DATA, context);
         }
 
         if (direction == Direction.TO_DOMAIN
-                && DataObject.class.isAssignableFrom(sourceRaw)
-                && Domain.class.isAssignableFrom(targetRaw)
+                && BaseData.class.isAssignableFrom(sourceRaw)
+                && BaseDomain.class.isAssignableFrom(targetRaw)
                 && Serializer.isBound(sourceRaw, targetRaw)) {
             return (value, context) -> Serializer.convertObject(value, targetRaw, Direction.TO_DOMAIN, context);
         }

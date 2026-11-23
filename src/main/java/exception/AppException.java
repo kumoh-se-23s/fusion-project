@@ -1,7 +1,9 @@
 package exception;
 
 
-public abstract class AppException extends RuntimeException {
+import model.JsonSerializable;
+
+public abstract class AppException extends RuntimeException implements JsonSerializable {
 
 
     public AppException(String message) {
@@ -12,6 +14,7 @@ public abstract class AppException extends RuntimeException {
         super(message, cause);
     }
 
+    @Override
     public String toJsonString() {
         return "{"
                 + "\"exception\":" + quote(getClass().getName()) + ","

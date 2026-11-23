@@ -1,10 +1,11 @@
 package exception;
 
 import lombok.Getter;
+import model.JsonSerializable;
 
 //비즈니스 로직이 발생했을때 발생시키는 에러 -> 프론트와 소통을 위해 stateCode를 가짐
 @Getter
-public abstract class BusinessException extends AppException {
+public abstract class BusinessException extends AppException implements JsonSerializable {
     private static final int DEFAULT_STATE_CODE = 510;
     private final int stateCode;
     @Override

@@ -9,7 +9,7 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @SuperBuilder(toBuilder = true)
 @NoArgsConstructor
-public abstract class BaseDomain implements Domain{
+public abstract class BaseDomain {
     @Version
     @Column(name = "version")
     private Long version;

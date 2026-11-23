@@ -5,7 +5,6 @@ import annotation.DataField;
 import exception.SerializeException;
 import model.Serializer;
 import model.domain.AppUser;
-import model.domain.Domain;
 import model.domain.Project;
 import model.dto.BaseData;
 
@@ -55,7 +54,7 @@ public class SerializerExample {
     }
 
     /** 4) 컬렉션 필드 예시용 도메인. (현재 도메인에는 컬렉션 필드가 없어서 예시로만 정의) */
-    public static class UserGroup implements Domain {
+    public static class UserGroup {
         private String title;
         private List<AppUser> members;
     }
