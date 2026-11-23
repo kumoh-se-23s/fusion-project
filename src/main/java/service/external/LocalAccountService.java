@@ -49,7 +49,7 @@ public class LocalAccountService extends BaseService {
         String currentPassword = request.getCurrentPassword();
         String newPassword = request.getNewPassword();
 
-        //DB를 보기 전에 입력부터 검사한다. null이면 hash()에서 터져 500이 나가므로 여기서 400으로 막는다
+
         if (isBlank(currentPassword) || isBlank(newPassword)) {
             throw new InvalidRequestException("현재 비밀번호와 새 비밀번호를 모두 입력해야 합니다.");
         }
@@ -62,6 +62,7 @@ public class LocalAccountService extends BaseService {
             AppUser appUser = userRepository.findById(userId).orElseThrow(UnauthorizedException::new);
 
             //소셜로만 가입한 유저는 로컬 계정이 없다
+            //비즈니스 로직 잘 생각해보기
             LocalAccount localAccount = localAccountRepository.findByFk(appUser)
                     .orElseThrow(() -> new InvalidRequestException("로컬 계정이 없는 유저입니다."));
 

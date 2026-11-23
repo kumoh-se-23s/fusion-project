@@ -9,10 +9,15 @@ public class InvalidRequestException extends BusinessException {
     private static final HttpStatus STATUS_CODE = HttpStatus.BAD_REQUEST;
 
     public InvalidRequestException() {
-        super(DEFAULT_MESSAGE);
+        super(STATUS_CODE, DEFAULT_MESSAGE);
     }
 
     public InvalidRequestException(String message) {
-        super(message);
+        super(STATUS_CODE, message);
     }
+
+    public InvalidRequestException(String message, HttpStatus status) {
+        super(status, message);
+    }
+
 }
