@@ -38,7 +38,7 @@ public class TokenWhitelistMiddleware implements Middleware {
             } else if (Objects.equals(tokenType, "refresh")) {
                 String newRefreshToken = jwtTokenProvider.createRefreshToken(userId);
                 String newJti = jwtTokenProvider.getJti(newRefreshToken);
-                redisUtil.save("refresh" + userId + " : ", newJti, 1209600);
+                redisUtil.save("refresh" + userId + " : ", newJti, JwtTokenProvider.REFRESH_TOKEN_EXPIRE_SECONDS);
 
                 request.header().set("Authorization", BEARER_PREFIX + newRefreshToken);
                 return next.handle(request);
