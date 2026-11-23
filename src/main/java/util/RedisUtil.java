@@ -1,5 +1,6 @@
 package util;
 
+import config.AuthProperties;
 import lombok.Getter;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -19,7 +20,7 @@ import java.util.Optional;
 
 public class RedisUtil {
     @Getter
-    private static final JedisPool pool = new JedisPool(new JedisPoolConfig(), "100.67.28.86", 6379, 2000, "fusion-admin");
+    private static final JedisPool pool = new JedisPool(new JedisPoolConfig(), AuthProperties.get("redis.host"), AuthProperties.getInt("redis.port",0),  AuthProperties.getInt("redis.timeout",0), AuthProperties.get("redis.password"));
 
     public void save(String key, Object value, int duration) {
         try (Jedis jedis = getPool().getResource()) {
