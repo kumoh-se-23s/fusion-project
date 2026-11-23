@@ -48,7 +48,11 @@ dependencies {
 
 }
 
-test {
+tasks.test {
     useJUnitPlatform()
     testLogging.showStandardStreams = true
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs << '-parameters'
 }
