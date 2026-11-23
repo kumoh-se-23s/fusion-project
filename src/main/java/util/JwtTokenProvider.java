@@ -1,6 +1,7 @@
 package util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import config.AuthProperties;
 import exception.TokenExpiredException;
 import exception.UnauthorizedException;
 import io.jsonwebtoken.*;
@@ -20,9 +21,9 @@ public class JwtTokenProvider {
 
     final private String alg = "HS256";
 
-    //비밀 키 위치 옮겨야함
-    final private String secretKey = "YEm5Guw205YIM4QuSKDrQqv/nmvssJwbQQc8OPCJ4lM=";
-    final private SecretKey key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
+    final private SecretKey key = Keys.hmacShaKeyFor(
+            AuthProperties.get("jwt.secret")
+                    .getBytes(StandardCharsets.UTF_8));
 
 
     public String createAccessToken(long userId) {
