@@ -1,7 +1,6 @@
 package auth;
 
-import com.minihttp.core.route.dependency.Dependency;import com.minihttp.core.route.dependency.security.BearerSchema;
-import com.minihttp.packet.HttpRequest;
+import com.minihttp.core.route.dependency.security.BearerSchema;
 import exception.UnauthorizedException;
 import util.JwtTokenProvider;
 
