@@ -59,13 +59,13 @@ public class ReviewLikeService extends BaseService {
                     .findFirst()
                     .orElseThrow(NotFoundException::new);
             if (reviewLike.getLikeType() == request.getLikeType()) {
-                throw new AlreadyExistException("동일한 좋아요 타입입니다");
+                throw new AlreadyExistException("Same Like Type");
             }
             Review review = updateLikeValue(reviewLike.getReview(), reviewLike.getLikeType(), -1);
             review = updateLikeValue(review, request.getLikeType(), 1);
 
             return new IdResponse(
-                    reviewLikeRepository.update(review.getId(), request.toUpdateMap())
+                    reviewLikeRepository.update(reviewLike.getId(), request.toUpdateMap())
                             .orElseThrow(NotFoundException::new)
                             .getId()
             );

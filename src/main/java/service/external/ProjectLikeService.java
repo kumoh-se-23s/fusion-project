@@ -59,12 +59,14 @@ public class ProjectLikeService extends BaseService {
                     .findFirst()
                     .orElseThrow(NotFoundException::new);
             if (projectLike.getLikeType() == request.getLikeType()) {
-                throw new AlreadyExistException("동일한 좋아요 타입입니다");
+                //테스트 오류 안나게 하려면 변경
+//                return projectLike.getId();
+                throw new AlreadyExistException("Same Like Type");
             }
             Project project = updateLikeValue(projectLike.getProject(), projectLike.getLikeType(), -1);
             project = updateLikeValue(project, request.getLikeType(), 1);
 
-            projectLike =  projectLikeRepository.update(project.getId(), request.toUpdateMap())
+            projectLike =  projectLikeRepository.update(projectLike.getId(), request.toUpdateMap())
                             .orElseThrow(NotFoundException::new);
 
             return new IdResponse(projectLike.getId());
