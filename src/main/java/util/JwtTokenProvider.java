@@ -69,8 +69,8 @@ public class JwtTokenProvider {
         }
     }
 
+    //Jwt토큰의 형식 검사
     public boolean validateToken(String token) throws JwtException, IllegalArgumentException {
-
         Claims claims = getClaims(token);
 
         if (claims.getSubject() == null || claims.getSubject().isEmpty()) {
