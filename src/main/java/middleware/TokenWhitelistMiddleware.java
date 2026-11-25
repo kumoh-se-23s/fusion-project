@@ -2,10 +2,13 @@ package middleware;
 
 import com.minihttp.core.handler.Handler;
 import com.minihttp.core.middleware.Middleware;
+import com.minihttp.core.response.JsonResponse;
 import com.minihttp.packet.HttpRequest;
 import com.minihttp.packet.HttpResponse;
+import constant.RedisKey;
 import exception.InvalidTokenException;
 import exception.UnauthorizedException;
+import model.dto.response.TokenResponse;
 import util.JwtTokenProvider;
 import util.RedisUtil;
 
@@ -31,15 +34,22 @@ public class TokenWhitelistMiddleware implements Middleware {
         String tokenType = jwtTokenProvider.getTokenType(jwt);
 
         if (redisUtil.isRegisteredInRedis(tokenType, jti, userId)) {
+            //AccessToken이 들어온 경우
             if (Objects.equals(tokenType, "access")) {
                 return next.handle(request);
-            } else if (Objects.equals(tokenType, "refresh")) {
+            }
+            //RefreshToken이 들어온 경우
+            else if (Objects.equals(tokenType, "refresh")) {
+                String newAccessToken = jwtTokenProvider.createAccessToken(userId);
                 String newRefreshToken = jwtTokenProvider.createRefreshToken(userId);
-                String newJti = jwtTokenProvider.getJti(newRefreshToken);
-                redisUtil.save("refresh" + userId + " : ", newJti, JwtTokenProvider.REFRESH_TOKEN_EXPIRE_SECONDS);
 
-                request.header().set("Authorization", BEARER_PREFIX + newRefreshToken);
-                return next.handle(request);
+                String newAccessJti = jwtTokenProvider.getJti(newAccessToken);
+                String newRefreshJti = jwtTokenProvider.getJti(newRefreshToken);
+
+                redisUtil.save(RedisKey.ACCESS, userId, newAccessJti, JwtTokenProvider.ACCESS_TOKEN_EXPIRE_SECONDS);
+                redisUtil.save(RedisKey.REFRESH, userId, newRefreshJti, JwtTokenProvider.REFRESH_TOKEN_EXPIRE_SECONDS);
+
+                return new JsonResponse(new TokenResponse(newAccessToken, newRefreshToken));
             } else {
                 throw new InvalidTokenException();
             }

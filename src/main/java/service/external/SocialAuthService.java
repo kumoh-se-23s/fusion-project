@@ -2,6 +2,7 @@ package service.external;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import constant.RedisKey;
 import constant.Role;
 import exception.*;
 import model.domain.AppUser;
@@ -59,8 +60,7 @@ public class SocialAuthService extends BaseService {
 
         //가입이 실패해도(예: 닉네임 중복) 다시 시도할 수 있도록, 키는 가입이 끝난 뒤에 지운다
         //회원가입 키는 AuthService.handleCallback에서 저장한다
-        String redisKey = AuthService.SOCIAL_SIGNUP_KEY + key;
-        SocialUserInfo info = readSignupInfo(redisKey);
+        SocialUserInfo info = readSignupInfo(key);
 
         long userId = tx.execute(() -> {
             if (socialAccountRepository.isExistSocialIdentity(info.getSocialProvider(), info.getProviderUserId())) {
@@ -96,15 +96,15 @@ public class SocialAuthService extends BaseService {
             return user.getId();
         });
 
-        redisUtil.delete(redisKey);
+        redisUtil.delete(RedisKey.SOCIAL_SIGNUP, key);
 
         //가입이 커밋된 뒤에 토큰을 만든다 (로컬 회원가입과 같은 방식, Redis 화이트리스트에도 저장됨)
         return authService.issueTokenPair(userId);
     }
 
     //회원가입 키로 저장해 둔 소셜 정보를 읽는다. 없거나 만료면 401
-    private SocialUserInfo readSignupInfo(String redisKey) {
-        String json = redisUtil.getValue(redisKey).orElseThrow(UnauthorizedException::new);
+    private SocialUserInfo readSignupInfo(Object object) {
+        String json = redisUtil.getValue(RedisKey.SOCIAL_SIGNUP,object).orElseThrow(UnauthorizedException::new);
         try {
             return objectMapper.readValue(json, SocialUserInfo.class);
         } catch (JsonProcessingException e) {
