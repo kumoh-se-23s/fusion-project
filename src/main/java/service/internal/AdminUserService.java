@@ -1,6 +1,7 @@
 package service.internal;
 
 import constant.Role;
+import constant.RedisKey;
 import exception.AlreadyExistException;
 import exception.InvalidRequestException;
 import exception.NotFoundException;
@@ -123,8 +124,8 @@ public class AdminUserService extends BaseService {
             return new DeleteResponse(result);
         });
 
-        redisUtil.delete("access" + userId + " : ");
-        redisUtil.delete("refresh" + userId + " : ");
+        redisUtil.delete(RedisKey.ACCESS, userId);
+        redisUtil.delete(RedisKey.REFRESH, userId);
 
         return response;
     }

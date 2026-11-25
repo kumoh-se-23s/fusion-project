@@ -2,20 +2,16 @@ package service.external;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.jdi.request.InvalidRequestStateException;
 import config.AuthProperties;
 import constant.SocialProvider;
+import constant.RedisKey;
 import exception.*;
 import model.domain.AppUser;
 import model.domain.LocalAccount;
 import model.dto.AccountData;
 import model.dto.SocialUserInfo;
-import model.dto.TokenPair;
 import model.dto.request.account.DeleteAccountRequest;
-import model.dto.response.IdResponse;
 import model.dto.response.TokenResponse;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
 import repository.LocalAccountRepository;
 import repository.UserRepository;
 import service.BaseService;
@@ -31,9 +27,6 @@ import java.util.UUID;
 public class AuthService extends BaseService {
     //소셜 로그인 콜백에서 만든 키는 10분 동안만 유효
     private static final int SOCIAL_KEY_EXPIRE_SECONDS = 600;
-    //저장할 때(AuthService.handleCallback)와 꺼낼 때(SocialAuthService.socialSignUp) 같은 키 이름을 쓰도록 한 곳에 모아 둔다
-    static final String SOCIAL_LOGIN_KEY = "social-login:";
-    static final String SOCIAL_SIGNUP_KEY = "social-signup:";
 
     private final JwtTokenProvider jwtTokenProvider;
     private final AccountUtil accountUtil;
@@ -62,7 +55,7 @@ public class AuthService extends BaseService {
      */
     public TokenResponse localLogin(AccountData accountData) {
 
-        if(accountData.getPassword() == null) {
+        if (accountData.getPassword() == null) {
             throw new InvalidRequestException("비밀번호를 입력해야 합니다.");
         }
 
@@ -92,7 +85,7 @@ public class AuthService extends BaseService {
     /**
      * 소셜 로그인 1단계: 소셜 제공자(카카오/구글 등) 로그인 화면 주소를 만든다
      */
-    public String buildAuthorizationUrl(SocialProvider socialProvider, String state) {
+    public String buildAuthorizationUrl(SocialProvider socialProvider) {
         return oAuthClient.getAuthorizationUrl(socialProvider);
     }
 
@@ -114,7 +107,7 @@ public class AuthService extends BaseService {
 
         if (userRepository.isExistEmail(email)) {
             AppUser appUser = userRepository.findByEmail(email).orElseThrow(NotFoundException::new);
-            redisUtil.save(SOCIAL_LOGIN_KEY + key, appUser.getId(), SOCIAL_KEY_EXPIRE_SECONDS);
+            redisUtil.save(RedisKey.SOCIAL_LOGIN, key, appUser.getId(), SOCIAL_KEY_EXPIRE_SECONDS);
 
             return AuthProperties.get("front url") + "?code=" + key;
         }
@@ -126,7 +119,7 @@ public class AuthService extends BaseService {
                 .email(socialUserInfo.getEmail())
                 .name(socialUserInfo.getName())
                 .build();
-        redisUtil.save(SOCIAL_SIGNUP_KEY + key, objectMapper.writeValueAsString(signupInfo), SOCIAL_KEY_EXPIRE_SECONDS);
+        redisUtil.save(RedisKey.SOCIAL_SIGNUP, key, objectMapper.writeValueAsString(signupInfo), SOCIAL_KEY_EXPIRE_SECONDS);
         return AuthProperties.get("front signup url") + "?key=" + key;
     }
 
@@ -140,15 +133,14 @@ public class AuthService extends BaseService {
      * 소셜 로그인 3단계: 프론트가 받은 로그인 키(code)를 토큰으로 바꿔 준다
      */
     public TokenResponse exchangeLoginCode(String code) {
-        String redisKey = SOCIAL_LOGIN_KEY + code;
-        String userId = redisUtil.getValue(redisKey).orElseThrow(UnauthorizedException::new);
-        redisUtil.delete(redisKey);
+        String userId = redisUtil.getValue(RedisKey.SOCIAL_LOGIN, code).orElseThrow(UnauthorizedException::new);
+        redisUtil.delete(RedisKey.SOCIAL_LOGIN, code);
         return socialLogin(Long.parseLong(userId));
     }
 
     public void logout(long userId) {
-        redisUtil.delete("access" + userId + " : ");
-        redisUtil.delete("refresh" + userId + " : ");
+        redisUtil.delete(RedisKey.ACCESS, userId);
+        redisUtil.delete(RedisKey.REFRESH, userId);
     }
 
     public void deleteAccount(long userId, DeleteAccountRequest request) {
@@ -174,7 +166,7 @@ public class AuthService extends BaseService {
             }
         });
 
-        redisUtil.delete("refresh" + userId + " : ");
+        redisUtil.delete(RedisKey.REFRESH, userId);
     }
 
     //로그인/회원가입 후 토큰 발급 (UserService.localSignUp에서도 사용)
@@ -183,8 +175,8 @@ public class AuthService extends BaseService {
         String refreshToken = jwtTokenProvider.createRefreshToken(userId);
 
         //Redis 저장 시간 = JWT 만료 시간 (setex는 초 단위)
-        redisUtil.save("access" + userId + " : ", jwtTokenProvider.getJti(accessToken), JwtTokenProvider.ACCESS_TOKEN_EXPIRE_SECONDS);
-        redisUtil.save("refresh" + userId + " : ", jwtTokenProvider.getJti(refreshToken), JwtTokenProvider.REFRESH_TOKEN_EXPIRE_SECONDS);
+        redisUtil.save(RedisKey.ACCESS, userId, jwtTokenProvider.getJti(accessToken), JwtTokenProvider.ACCESS_TOKEN_EXPIRE_SECONDS);
+        redisUtil.save(RedisKey.REFRESH, userId, jwtTokenProvider.getJti(refreshToken), JwtTokenProvider.REFRESH_TOKEN_EXPIRE_SECONDS);
 
         return new TokenResponse(accessToken, refreshToken);
     }
