@@ -5,10 +5,10 @@ package config;
  * 실제 파일 읽기는 PropertiesFile이 담당한다.
  * 파일이 없으면 빈 설정으로 동작하고, 필수값을 조회할 때 예외가 발생한다.
  */
-public final class PropertieData {
+public final class DBProperties {
     private static final PropertiesFile FILE = new PropertiesFile("db.properties");
 
-    private PropertieData() {
+    private DBProperties() {
     }
 
     //필수 설정값
