@@ -1,6 +1,7 @@
 package util;
 
 import config.AuthProperties;
+import constant.RedisKey;
 import lombok.Getter;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -20,19 +21,19 @@ import java.util.Optional;
 
 public class RedisUtil {
     @Getter
-    private static final JedisPool pool = new JedisPool(new JedisPoolConfig(), AuthProperties.get("redis.host"), AuthProperties.getInt("redis.port",0),  AuthProperties.getInt("redis.timeout",0), AuthProperties.get("redis.password"));
+    private static final JedisPool pool = new JedisPool(new JedisPoolConfig(), AuthProperties.get("redis.host"), AuthProperties.getInt("redis.port", 0), AuthProperties.getInt("redis.timeout", 0), AuthProperties.get("redis.password"));
 
-    public void save(String key, Object value, int duration) {
+    public void save(RedisKey redisKey, Object key, Object value, int duration) {
         try (Jedis jedis = getPool().getResource()) {
-            jedis.setex(key, duration, value.toString());
+            jedis.setex(redisKey.getFormat() + key + " : ", duration, value.toString());
         }
     }
 
-    public Optional<String> getValue(String key) {
-        try(Jedis jedis = getPool().getResource()) {
-            String value = jedis.get(key);
+    public Optional<String> getValue(RedisKey redisKey, Object key) {
+        try (Jedis jedis = getPool().getResource()) {
+            String value = jedis.get(redisKey.getFormat() + key + " : ");
 
-            if(value == null) {
+            if (value == null) {
                 return Optional.empty();
             }
 
@@ -40,9 +41,9 @@ public class RedisUtil {
         }
     }
 
-    public void delete(String key) {
+    public void delete(RedisKey redisKey, Object userId) {
         try (Jedis jedis = getPool().getResource()) {
-            jedis.del(key);
+            jedis.del(redisKey.getFormat() + userId + " : ");
         }
     }
 
@@ -50,7 +51,7 @@ public class RedisUtil {
         try (Jedis jedis = getPool().getResource()) {
             String value;
 
-            if(Objects.equals(tokenType, "access")) {
+            if (Objects.equals(tokenType, "access")) {
                 value = jedis.get("access" + userId + " : ");
             } else {
                 value = jedis.get("refresh" + userId + " : ");
