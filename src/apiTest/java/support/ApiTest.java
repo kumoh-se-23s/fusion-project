@@ -3,6 +3,7 @@ package support;
 import model.domain.AppUser;
 import repository.UserRepository;
 import util.JwtTokenProvider;
+import constant.RedisKey;
 import util.RedisUtil;
 
 import java.util.UUID;
@@ -54,8 +55,8 @@ public abstract class ApiTest {
         RedisUtil redis = bean(RedisUtil.class);
         String accessToken = jwt.createAccessToken(userId);
         String refreshToken = jwt.createRefreshToken(userId);
-        redis.save("access" + userId + " : ", jwt.getJti(accessToken), JwtTokenProvider.ACCESS_TOKEN_EXPIRE_SECONDS);
-        redis.save("refresh" + userId + " : ", jwt.getJti(refreshToken), JwtTokenProvider.REFRESH_TOKEN_EXPIRE_SECONDS);
+        redis.save(RedisKey.ACCESS, userId, jwt.getJti(accessToken), JwtTokenProvider.ACCESS_TOKEN_EXPIRE_SECONDS);
+        redis.save(RedisKey.REFRESH, userId, jwt.getJti(refreshToken), JwtTokenProvider.REFRESH_TOKEN_EXPIRE_SECONDS);
         return accessToken;
     }
 

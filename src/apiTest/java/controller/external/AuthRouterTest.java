@@ -16,6 +16,7 @@ import support.ApiEndpoint;
 import support.ApiResponse;
 import support.ApiTest;
 import util.JwtTokenProvider;
+import constant.RedisKey;
 import util.RedisUtil;
 
 import java.util.Map;
@@ -27,8 +28,6 @@ import static org.junit.jupiter.api.Assertions.*;
 @DisplayName("AuthRouter (/auth)")
 class AuthRouterTest extends ApiTest {
     private static final String PASSWORD = "password1234!";
-    //AuthService.SOCIAL_LOGIN_KEY와 같은 키 접두사 (소셜 로그인 콜백이 일회용 code를 저장하는 곳)
-    private static final String SOCIAL_LOGIN_KEY = "social-login:";
 
     /** 로컬 계정이 있는 유저. 로그인 아이디를 돌려준다. */
     private String createLocalUser(AppUser user) {
@@ -38,17 +37,17 @@ class AuthRouterTest extends ApiTest {
     }
 
     private Optional<String> accessJti(long userId) {
-        return bean(RedisUtil.class).getValue("access" + userId + " : ");
+        return bean(RedisUtil.class).getValue(RedisKey.ACCESS, userId);
     }
 
     private Optional<String> refreshJti(long userId) {
-        return bean(RedisUtil.class).getValue("refresh" + userId + " : ");
+        return bean(RedisUtil.class).getValue(RedisKey.REFRESH, userId);
     }
 
     /** 소셜 로그인 콜백이 하는 것처럼 일회용 로그인 code를 Redis에 넣는다. */
     private String putSocialLoginCode(long userId) {
         String code = UUID.randomUUID().toString();
-        bean(RedisUtil.class).save(SOCIAL_LOGIN_KEY + code, userId, 600);
+        bean(RedisUtil.class).save(RedisKey.SOCIAL_LOGIN, code, userId, 600);
         return code;
     }
 
@@ -266,7 +265,7 @@ class AuthRouterTest extends ApiTest {
                 TokenResponse result = bean(AuthService.class).exchangeLoginCode(code);
 
                 assertIssuedFor(user.getId(), result.getAccessToken(), result.getRefreshToken());
-                assertTrue(bean(RedisUtil.class).getValue(SOCIAL_LOGIN_KEY + code).isEmpty(), "쓴 code가 Redis에 남아 있다");
+                assertTrue(bean(RedisUtil.class).getValue(RedisKey.SOCIAL_LOGIN, code).isEmpty(), "쓴 code가 Redis에 남아 있다");
             }
 
             @Test

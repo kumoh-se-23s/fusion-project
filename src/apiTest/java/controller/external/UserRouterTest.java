@@ -27,6 +27,7 @@ import support.ApiResponse;
 import support.ApiTest;
 import util.AccountUtil;
 import util.JwtTokenProvider;
+import constant.RedisKey;
 import util.RedisUtil;
 
 import java.util.HashMap;
@@ -230,7 +231,7 @@ class UserRouterTest extends ApiTest {
 
                 JwtTokenProvider jwt = bean(JwtTokenProvider.class);
                 assertEquals(Optional.of(jwt.getJti(result.getAccessToken())),
-                        bean(RedisUtil.class).getValue("access" + userId + " : "));
+                        bean(RedisUtil.class).getValue(RedisKey.ACCESS, userId));
             }
 
             @Test

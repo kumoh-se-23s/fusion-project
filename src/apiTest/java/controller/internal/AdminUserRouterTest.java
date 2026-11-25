@@ -24,6 +24,7 @@ import service.internal.AdminUserService;
 import support.ApiEndpoint;
 import support.ApiResponse;
 import support.ApiTest;
+import constant.RedisKey;
 import util.RedisUtil;
 
 import java.util.Map;
@@ -429,12 +430,12 @@ class AdminUserRouterTest extends ApiTest {
                 AppUser user = createUser();
                 login(user);
                 RedisUtil redis = bean(RedisUtil.class);
-                assertTrue(redis.getValue("access" + user.getId() + " : ").isPresent());
+                assertTrue(redis.getValue(RedisKey.ACCESS, user.getId()).isPresent());
 
                 bean(AdminUserService.class).deleteUser(user.getId());
 
-                assertTrue(redis.getValue("access" + user.getId() + " : ").isEmpty());
-                assertTrue(redis.getValue("refresh" + user.getId() + " : ").isEmpty());
+                assertTrue(redis.getValue(RedisKey.ACCESS, user.getId()).isEmpty());
+                assertTrue(redis.getValue(RedisKey.REFRESH, user.getId()).isEmpty());
             }
 
             @Test
