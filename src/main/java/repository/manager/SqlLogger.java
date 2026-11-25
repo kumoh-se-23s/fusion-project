@@ -1,6 +1,6 @@
 package repository.manager;
 
-import config.PropertieData;
+import config.DBProperties;
 
 import java.util.List;
 import java.util.StringJoiner;
@@ -13,7 +13,7 @@ import java.util.logging.Logger;
  */
 final class SqlLogger {
     private static final Logger LOG = Logger.getLogger("fusion.sql");
-    private static final boolean ENABLED = PropertieData.getBoolean("db.show-sql", false);
+    private static final boolean ENABLED = DBProperties.getBoolean("db.show-sql", false);
 
     private SqlLogger() {
     }

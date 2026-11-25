@@ -94,24 +94,28 @@ public class AdminReviewControlService extends BaseService {
             boolean result = true;
             Review review = reviewRepository.findById(reviewId)
                     .orElseThrow(NotFoundException::new);
-
             List<ReviewLike> reviewLikeList = reviewLikeRepository.findByReview(reviewId);
+            Long reviewLikeCount = review.getLikeCount();
+            Long reviewDislikeCount = review.getDislikeCount();
             for (ReviewLike reviewLike : reviewLikeList) {
+                Boolean reviewType = reviewLike.getLikeType();
+
                 if (!reviewLikeRepository.delete(reviewLike.getId())) {
                     result = false;
                 } else {
-                    updateLikeValue(reviewLike.getReview(), reviewLike.getLikeType(), -1);
+                    if (reviewType) {
+                        reviewLikeCount -= 1;
+                    } else {
+                        reviewDislikeCount -= 1;
+                    }
                 }
             }
+            reviewRepository.updateByLike(review.getId(), reviewLikeCount)
+                    .orElseThrow(NotFoundException::new);
+            reviewRepository.updateByDislike(review.getId(), reviewDislikeCount)
+                    .orElseThrow(NotFoundException::new);
+
             return new DeleteResponse(result);
         });
-    }
-
-    private void updateLikeValue(Review review, Boolean likeType, int change) {
-        if (likeType) {
-            reviewRepository.updateByLike(review.getId(), Math.max(review.getLikeCount() + change, 0));
-        } else {
-            reviewRepository.updateByDislike(review.getId(), Math.max(review.getDislikeCount() + change,0));
-        }
     }
 }

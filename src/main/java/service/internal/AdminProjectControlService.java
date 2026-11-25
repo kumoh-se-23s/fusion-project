@@ -106,28 +106,28 @@ public class AdminProjectControlService extends BaseService {
             Project project = projectRepository.findById(projectId)
                     .orElseThrow(NotFoundException::new);
             List<ProjectLike> projectLikeList = projectLikeRepository.findByProject(projectId);
+            Long projectLikeCount = project.getLikeCount();
+            Long projectDislikeCount = project.getDislikeCount();
             for (ProjectLike projectLike : projectLikeList) {
+                Boolean projectType = projectLike.getLikeType();
 
                 if (!projectLikeRepository.delete(projectLike.getId())) {
                     result = false;
                 } else {
-                    updateLikeValue(projectLike.getProject(), projectLike.getLikeType(), -1);
+                    if (projectType) {
+                        projectLikeCount -= 1;
+                    } else {
+                        projectDislikeCount -= 1;
+                    }
                 }
             }
+            projectRepository.updateByLike(project.getId(), projectLikeCount)
+                    .orElseThrow(NotFoundException::new);
+            projectRepository.updateByDislike(project.getId(), projectDislikeCount)
+                    .orElseThrow(NotFoundException::new);
+
             return new DeleteResponse(result);
         });
     }
 
-    private void updateLikeValue(Project project, Boolean likeType, int change) {
-        Long current = likeType ? project.getLikeCount() : project.getDislikeCount();
-        current += change;
-
-        if (likeType) {
-            projectRepository.updateByLike(project.getId(), Math.max(current, 0L))
-                    .orElseThrow(NotFoundException::new);
-        } else {
-            projectRepository.updateByDislike(project.getId(), Math.max(current, 0L))
-                    .orElseThrow(NotFoundException::new);
-        }
-    }
 }

@@ -23,11 +23,11 @@ public class PooledDataSource {
 
     private static BasicDataSource create() {
         BasicDataSource dataSource = new BasicDataSource();
-        dataSource.setUrl(PropertieData.get("db.url"));
-        dataSource.setUsername(PropertieData.get("db.username"));
-        dataSource.setPassword(PropertieData.get("db.password", ""));
-        dataSource.setInitialSize(PropertieData.getInt("db.pool.initial-size", 2));
-        dataSource.setMaxTotal(PropertieData.getInt("db.pool.max-total", 10));
+        dataSource.setUrl(DBProperties.get("db.url"));
+        dataSource.setUsername(DBProperties.get("db.username"));
+        dataSource.setPassword(DBProperties.get("db.password", ""));
+        dataSource.setInitialSize(DBProperties.getInt("db.pool.initial-size", 2));
+        dataSource.setMaxTotal(DBProperties.getInt("db.pool.max-total", 10));
         return dataSource;
     }
 }
