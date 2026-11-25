@@ -3,6 +3,7 @@ package service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import constant.RedisKey;
 import constant.SocialProvider;
 import exception.InvalidException;
 import exception.NotFoundException;
@@ -44,17 +45,17 @@ public class OAuthClient {
      */
     public String getAuthorizationUrl(SocialProvider socialProvider) {
         String state = UUID.randomUUID().toString();
-        redisUtil.save("oauth_state : " + state, state, 300);
+        redisUtil.save(RedisKey.OAUTH_STATE, state, state, 300);
         return buildAuthUrl(socialProvider, state);
     }
 
     public boolean verifyState(String state) {
-        String value = redisUtil.getValue("oauth_state : " + state).orElseThrow(NotFoundException::new);
+        String value = redisUtil.getValue(RedisKey.OAUTH_STATE, state).orElseThrow(NotFoundException::new);
         return true;
     }
 
-    public SocialUserInfo fetchUserInfo(SocialProvider socialProvider, String exchangedCdoe) {
-        String accessToken = extractString(exchangedCdoe, "access_token");
+    public SocialUserInfo fetchUserInfo(SocialProvider socialProvider, String exchangedCode) {
+        String accessToken = extractString(exchangedCode, "access_token");
         JsonNode userInfoJsonNode = requestUserInfo(socialProvider, accessToken);
 
         String email;
