@@ -3,6 +3,15 @@ package controller.external;
 import auth.CurrentUser;
 import com.minihttp.core.route.BaseRouter;
 import com.minihttp.core.route.annotation.*;
+import com.minihttp.packet.HttpResponse;
+import com.minihttp.packet.protocol.ContentType;
+import com.minihttp.packet.protocol.HttpHeaderField;
+import com.minihttp.packet.protocol.HttpStatus;
+import com.minihttp.packet.protocol.HttpVersion;
+import com.minihttp.packet.structure.DefaultHttpBody;
+import com.minihttp.packet.structure.DefaultHttpHeader;
+import com.minihttp.packet.structure.HttpBody;
+import com.minihttp.packet.structure.HttpHeader;
 import model.dto.DenyProjectData;
 import model.dto.ProjectData;
 import model.dto.request.project.CreateProjectRequest;
@@ -88,7 +97,19 @@ public class ProjectRouter extends BaseRouter {
     public DataCollectionResponse<DenyProjectData> getMyDenyProject(@Depends(CurrentUser.class) Long userId) {
         return projectMakerService.getAllDenyProjects(userId);
     }
+    @Get("/image/{project_id}")
+    public HttpResponse getImage(@Path("project_id") Long projectId) {
+        HttpHeader header = new DefaultHttpHeader();
+        HttpBody body = new DefaultHttpBody(projectQueryService.getProjectImage(projectId).getImageBytes());
+        header.add(HttpHeaderField.CONTENT_TYPE, ContentType.IMAGE_PNG.headerValue());
 
+        return new HttpResponse(
+            HttpVersion.HTTP_1_1,
+            header,
+            body,
+            HttpStatus.OK
+        );
+    }
     @Patch("/{project_id}")
     public IdResponse updateProject(@Depends(CurrentUser.class) Long userId, @Path("project_id") long projectId, EditProjectRequest dto) {
         return projectMakerService.editProject(userId, projectId, dto);

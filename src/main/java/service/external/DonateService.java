@@ -65,17 +65,13 @@ public class DonateService extends BaseService {
 
      // 로그인 사용자 정보로 후원 생성
 
-    public IdResponse createDonate(
-            Long loginUserId,
-            CreateDonateRequest request) {
+    public IdResponse createDonate(Long loginUserId, CreateDonateRequest request) {
 
         if (loginUserId == null || request == null) {
             throw new InvalidRequestException("필수값이 누락됐습니다.");
         }
 
-        if (request.getUserFk() != null
-                && !loginUserId.equals(
-                request.getUserFk())) {
+        if (request.getUserFk() != null && !loginUserId.equals(request.getUserFk())) {
             throw new InvalidRequestException("필수값이 누락됐습니다.");
         }
 
@@ -94,8 +90,7 @@ public class DonateService extends BaseService {
      //후원 생성
      // amount는 후원 총금액
 
-    private IdResponse createDonateInternal(
-            CreateDonateRequest request) {
+    private IdResponse createDonateInternal(CreateDonateRequest request) {
 
         if (request.getRewardFk() == null) {
             throw new InvalidRequestException(
@@ -127,41 +122,32 @@ public class DonateService extends BaseService {
 
         Project project = reward.getProject();
 
-        if (project == null
-                || project.getId() == null) {
-            throw new NotFoundException(
-                    "연결된 프로젝트가 없습니다.");
+        if (project == null || project.getId() == null) {
+            throw new NotFoundException("연결된 프로젝트가 없습니다.");
         }
 
         Long remain = reward.getRemainQuantity();
         Long quantity = request.getQuantity();
 
         if (remain == null || remain < quantity) {
-            throw new LimitNumberOutException(
-                    "리워드 재고가 부족합니다.");
+            throw new LimitNumberOutException("리워드 재고가 부족합니다.");
         }
 
-        checkDuplicateDonate(
-                project.getId(), user.getId());
+        checkDuplicateDonate(project.getId(), user.getId());
 
         request.prepareForCreate(user, reward);
 
-        Donate donate = Serializer.toDomain(
-                request, Donate.class);
+        Donate donate = Serializer.toDomain(request, Donate.class);
 
         Donate result = donateRepository.create(donate);
 
         if (result == null) {
-            throw new TransactionException(
-                    "후원 저장에 실패했습니다.");
+            throw new TransactionException("후원 저장에 실패했습니다.");
         }
 
         // 재고 감소
-        rewardRepository.update(
-                reward.getId(),
-                Map.of("remainQuantity", remain - quantity)
-        ).orElseThrow(() -> new TransactionException(
-                "리워드 재고 수정에 실패했습니다."));
+        rewardRepository.update(reward.getId(), Map.of("remainQuantity", remain - quantity))
+                .orElseThrow(() -> new TransactionException("리워드 재고 수정에 실패했습니다."));
 
         BigDecimal currentAmount =
                 project.getDonateAmount() == null
@@ -169,11 +155,9 @@ public class DonateService extends BaseService {
                         : project.getDonateAmount();
 
         // amount 자체가 총금액
-        BigDecimal newAmount =
-                currentAmount.add(result.getAmount());
+        BigDecimal newAmount = currentAmount.add(result.getAmount());
 
-        projectRepository.updateByDonateAmount(
-                project.getId(), newAmount);
+        projectRepository.updateByDonateAmount(project.getId(), newAmount);
 
         return new IdResponse(result.getId());
     }
@@ -181,16 +165,13 @@ public class DonateService extends BaseService {
 
      // 사용자별 후원 조회
 
-    public DataCollectionResponse<DonateData> findDonateByUser(
-            Long userId) {
+    public DataCollectionResponse<DonateData> findDonateByUser(Long userId) {
 
         if (userId == null) {
-            throw new InvalidRequestException(
-                    "사용자 ID가 없습니다.");
+            throw new InvalidRequestException("사용자 ID가 없습니다.");
         }
 
-        List<Donate> donates =
-                donateRepository.findByUserId(userId);
+        List<Donate> donates = donateRepository.findByUserId(userId);
 
         return toCollection(donates);
     }
@@ -202,8 +183,7 @@ public class DonateService extends BaseService {
             Long rewardId) {
 
         if (rewardId == null) {
-            throw new InvalidRequestException(
-                    "리워드 ID가 없습니다.");
+            throw new InvalidRequestException("리워드 ID가 없습니다.");
         }
 
         List<Donate> result = new ArrayList<>();
@@ -211,8 +191,7 @@ public class DonateService extends BaseService {
         for (Donate donate : donateRepository.findAll()) {
             Reward reward = donate.getReward();
 
-            if (reward != null
-                    && rewardId.equals(reward.getId())) {
+            if (reward != null && rewardId.equals(reward.getId())) {
                 result.add(donate);
             }
         }
@@ -223,12 +202,10 @@ public class DonateService extends BaseService {
     /*
       프로젝트별 후원 조회
      */
-    public DataCollectionResponse<DonateData> findDonateByFunding(
-            Long projectId) {
+    public DataCollectionResponse<DonateData> findDonateByFunding(Long projectId) {
 
         if (projectId == null) {
-            throw new InvalidRequestException(
-                    "프로젝트 ID가 없습니다.");
+            throw new InvalidRequestException("프로젝트 ID가 없습니다.");
         }
 
         List<Donate> result = new ArrayList<>();
@@ -236,10 +213,8 @@ public class DonateService extends BaseService {
         for (Donate donate : donateRepository.findAll()) {
             Reward reward = donate.getReward();
 
-            if (reward != null
-                    && reward.getProject() != null
-                    && projectId.equals(
-                    reward.getProject().getId())) {
+            if (reward != null && reward.getProject() != null
+                    && projectId.equals(reward.getProject().getId())) {
                 result.add(donate);
             }
         }
@@ -254,7 +229,8 @@ public class DonateService extends BaseService {
             Long loginUserId,
             Optional<Long> userId,
             Optional<Long> rewardId,
-            Optional<Long> projectId) {
+            Optional<Long> projectId
+    ) {
 
         if (loginUserId == null) {
             throw new InvalidRequestException("필수사항을 입력하지않았습니다.");
@@ -267,8 +243,7 @@ public class DonateService extends BaseService {
         if (projectId.isPresent()) count++;
 
         if (count != 1) {
-            throw new InvalidRequestException(
-                    "조회 조건을 하나만 입력해야 합니다.");
+            throw new InvalidRequestException("조회 조건을 하나만 입력해야 합니다.");
         }
 
         // 사용자별 조회: 본인만 허용
@@ -282,17 +257,12 @@ public class DonateService extends BaseService {
 
         // 리워드별 조회: 프로젝트 메이커만 허용
         if (rewardId.isPresent()) {
-            Reward reward = rewardRepository
-                    .findById(rewardId.get())
-                    .orElseThrow(() -> new NotFoundException(
-                            "리워드를 찾을 수 없습니다."));
+            Reward reward = rewardRepository.findById(rewardId.get())
+                    .orElseThrow(() -> new NotFoundException("리워드를 찾을 수 없습니다."));
 
             Project project = reward.getProject();
 
-            if (project == null
-                    || project.getMaker() == null
-                    || !loginUserId.equals(
-                    project.getMaker().getId())) {
+            if (project == null || project.getMaker() == null || !loginUserId.equals(project.getMaker().getId())) {
                 throw new InvalidRequestException("필수값이 누락됐습니다.");
             }
 
@@ -300,14 +270,10 @@ public class DonateService extends BaseService {
         }
 
         // 프로젝트별 조회: 프로젝트 메이커만 허용
-        Project project = projectRepository
-                .findById(projectId.get())
-                .orElseThrow(() -> new NotFoundException(
-                        "프로젝트를 찾을 수 없습니다."));
+        Project project = projectRepository.findById(projectId.get())
+                .orElseThrow(() -> new NotFoundException("프로젝트를 찾을 수 없습니다."));
 
-        if (project.getMaker() == null
-                || !loginUserId.equals(
-                project.getMaker().getId())) {
+        if (project.getMaker() == null || !loginUserId.equals(project.getMaker().getId())) {
             throw new InvalidRequestException("필수값이 누락됐습니다.");
         }
 
@@ -317,21 +283,16 @@ public class DonateService extends BaseService {
 
      // 관리자 후원 ID 조회
 
-    public SingleDataResponse<DonateData> getDonateById(
-            Long donateId) {
+    public SingleDataResponse<DonateData> getDonateById(Long donateId) {
 
         if (donateId == null) {
-            throw new InvalidRequestException(
-                    "후원 ID가 없습니다.");
+            throw new InvalidRequestException("후원 ID가 없습니다.");
         }
 
-        Donate donate = donateRepository
-                .findById(donateId)
-                .orElseThrow(() -> new NotFoundException(
-                        "후원 내역을 찾을 수 없습니다."));
+        Donate donate = donateRepository.findById(donateId)
+                .orElseThrow(() -> new NotFoundException("후원 내역을 찾을 수 없습니다."));
 
-        DonateData dto = Serializer.toData(
-                donate, DonateData.class);
+        DonateData dto = Serializer.toData(donate, DonateData.class);
 
         return new SingleDataResponse<>(dto);
     }
@@ -346,17 +307,14 @@ public class DonateService extends BaseService {
 
      // 관리자 단건 또는 전체 조회
 
-    public DataCollectionResponse<DonateData> getAdminDonates(
-            Optional<Long> donateId) {
+    public DataCollectionResponse<DonateData> getAdminDonates(Optional<Long> donateId) {
 
         if (donateId.isEmpty()) {
             return getAllDonates();
         }
 
-        Donate donate = donateRepository
-                .findById(donateId.get())
-                .orElseThrow(() -> new NotFoundException(
-                        "후원 내역을 찾을 수 없습니다."));
+        Donate donate = donateRepository.findById(donateId.get())
+                .orElseThrow(() -> new NotFoundException("후원 내역을 찾을 수 없습니다."));
 
         return toCollection(List.of(donate));
     }
@@ -364,18 +322,14 @@ public class DonateService extends BaseService {
 
      // 해당 후원이 속한 프로젝트의 누적 후원 금액
 
-    public BigDecimal getProjectDonationTotalByDonateId(
-            Long donateId) {
+    public BigDecimal getProjectDonationTotalByDonateId(Long donateId) {
 
         if (donateId == null) {
-            throw new InvalidRequestException(
-                    "후원 ID가 없습니다.");
+            throw new InvalidRequestException("후원 ID가 없습니다.");
         }
 
-        Donate donate = donateRepository
-                .findById(donateId)
-                .orElseThrow(() -> new NotFoundException(
-                        "후원 내역을 찾을 수 없습니다."));
+        Donate donate = donateRepository.findById(donateId)
+                .orElseThrow(() -> new NotFoundException("후원 내역을 찾을 수 없습니다."));
 
         Reward reward = donate.getReward();
 
@@ -395,65 +349,49 @@ public class DonateService extends BaseService {
 
      // 후원 환불
 
-    public void refundDonate(
-            Long donateId,
-            Long userId) {
+    public void refundDonate(Long donateId, Long userId) {
 
         if (donateId == null || userId == null) {
             throw new InvalidRequestException("필수값이 누락됐습니다.");
         }
 
-        Donate donate = donateRepository
-                .findById(donateId)
-                .orElseThrow(() -> new NotFoundException(
-                        "후원 내역을 찾을 수 없습니다."));
+        Donate donate = donateRepository.findById(donateId)
+                .orElseThrow(() -> new NotFoundException("후원 내역을 찾을 수 없습니다."));
 
-        if (donate.getUser() == null
-                || !userId.equals(
-                donate.getUser().getId())) {
+        if (donate.getUser() == null || !userId.equals(donate.getUser().getId())) {
             throw new InvalidRequestException("필수값이 누락됐습니다.");
         }
 
         Reward reward = donate.getReward();
 
-        if (reward == null
-                || reward.getProject() == null) {
-            throw new NotFoundException(
-                    "리워드 또는 프로젝트가 없습니다.");
+        if (reward == null || reward.getProject() == null) {
+            throw new NotFoundException("리워드 또는 프로젝트가 없습니다.");
         }
 
         Project project = reward.getProject();
 
-        if (donate.getQuantity() == null
+        if (
+                donate.getQuantity() == null
                 || donate.getAmount() == null
                 || reward.getRemainQuantity() == null
-                || project.getDonateAmount() == null) {
-            throw new TransactionException(
-                    "후원 정보가 올바르지 않습니다.");
+                || project.getDonateAmount() == null
+        ) {
+            throw new TransactionException("후원 정보가 올바르지 않습니다.");
         }
 
-        Long newQuantity =
-                reward.getRemainQuantity()
-                        + donate.getQuantity();
+        Long newQuantity = reward.getRemainQuantity() + donate.getQuantity();
 
         // amount는 총액이므로 그대로 차감
-        BigDecimal newAmount =
-                project.getDonateAmount()
-                        .subtract(donate.getAmount());
+        BigDecimal newAmount = project.getDonateAmount().subtract(donate.getAmount());
 
         if (newAmount.compareTo(BigDecimal.ZERO) < 0) {
-            throw new TransactionException(
-                    "환불 금액이 누적 금액을 초과합니다.");
+            throw new TransactionException("환불 금액이 누적 금액을 초과합니다.");
         }
 
-        rewardRepository.update(
-                reward.getId(),
-                Map.of("remainQuantity", newQuantity)
-        ).orElseThrow(() -> new TransactionException(
-                "리워드 수량 복원에 실패했습니다."));
+        rewardRepository.update(reward.getId(), Map.of("remainQuantity", newQuantity))
+                .orElseThrow(() -> new TransactionException("리워드 수량 복원에 실패했습니다."));
 
-        projectRepository.updateByDonateAmount(
-                project.getId(), newAmount);
+        projectRepository.updateByDonateAmount(project.getId(), newAmount);
 
         donateRepository.delete(donateId);
     }
@@ -461,19 +399,16 @@ public class DonateService extends BaseService {
 
      // 사용자의 해당 후원 총금액 조회
 
-    public BigDecimal donateAmountSum(
-            Long donateId,
-            Long userId) {
+    public BigDecimal donateAmountSum(Long donateId, Long userId) {
 
-        Donate donate = donateRepository
-                .findById(donateId)
-                .orElseThrow(() -> new NotFoundException(
-                        "후원 내역을 찾을 수 없습니다."));
+        Donate donate = donateRepository.findById(donateId)
+                .orElseThrow(() -> new NotFoundException("후원 내역을 찾을 수 없습니다."));
 
-        if (userId == null
+        if (
+                userId == null
                 || donate.getUser() == null
-                || !userId.equals(
-                donate.getUser().getId())) {
+                || !userId.equals(donate.getUser().getId())
+        ) {
             throw new InvalidRequestException("필수값이 누락됐습니다.");
         }
 
@@ -484,13 +419,10 @@ public class DonateService extends BaseService {
 
      // 프로젝트 전체 누적 후원 금액
 
-    private BigDecimal donateAmountProject(
-            Long projectId) {
+    private BigDecimal donateAmountProject(Long projectId) {
 
-        Project project = projectRepository
-                .findById(projectId)
-                .orElseThrow(() -> new NotFoundException(
-                        "프로젝트를 찾을 수 없습니다."));
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new NotFoundException("프로젝트를 찾을 수 없습니다."));
 
         return project.getDonateAmount();
     }
@@ -498,12 +430,9 @@ public class DonateService extends BaseService {
 
      //Donate 목록을 DataCollectionResponse로 변환
 
-    private DataCollectionResponse<DonateData> toCollection(
-            List<Donate> donates) {
+    private DataCollectionResponse<DonateData> toCollection(List<Donate> donates) {
 
-        List<DonateData> dtoList =
-                Serializer.toDataList(
-                        donates, DonateData.class);
+        List<DonateData> dtoList = Serializer.toDataList(donates, DonateData.class);
 
         return DataCollectionResponse.<DonateData>builder()
                 .amount((long) dtoList.size())

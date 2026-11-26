@@ -1,12 +1,15 @@
 package service.external;
 
+import exception.EmptyImageException;
 import exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import model.Serializer;
+import model.domain.Project;
 import model.domain.Review;
 import model.domain.Reward;
 import model.dto.ReviewData;
 import model.dto.response.DataCollectionResponse;
+import model.dto.response.ImageResponse;
 import model.dto.response.SingleDataResponse;
 import repository.ReviewRepository;
 import repository.RewardRepository;
@@ -65,5 +68,13 @@ public class ReviewQueryService extends BaseService {
                 .amount((long) dtoList.size())
                 .build();
         });
+    }
+    public ImageResponse getReviewImage(Long projectId) {
+        Review review = reviewRepository.findById(projectId)
+                .orElseThrow(NotFoundException::new);
+        if (review.getImgFile() == null || review.getImgFile().length == 0) {
+            throw new EmptyImageException();
+        }
+        return new ImageResponse(review.getImgFile());
     }
 }

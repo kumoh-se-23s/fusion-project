@@ -4,7 +4,15 @@ package controller.external;
 import auth.CurrentUser;
 import com.minihttp.core.route.BaseRouter;
 import com.minihttp.core.route.annotation.*;
-
+import com.minihttp.packet.HttpResponse;
+import com.minihttp.packet.protocol.ContentType;
+import com.minihttp.packet.protocol.HttpHeaderField;
+import com.minihttp.packet.protocol.HttpStatus;
+import com.minihttp.packet.protocol.HttpVersion;
+import com.minihttp.packet.structure.DefaultHttpBody;
+import com.minihttp.packet.structure.DefaultHttpHeader;
+import com.minihttp.packet.structure.HttpBody;
+import com.minihttp.packet.structure.HttpHeader;
 import model.dto.RewardData;
 import model.dto.request.reward.CreateRewardDataRequest;
 import model.dto.response.DataCollectionResponse;
@@ -78,7 +86,19 @@ public class RewardRouter extends BaseRouter {
         return rewardService.getRewardFindByMaker(makerId);
     }
 
+    @Get("/image/{reward_id}")
+    public HttpResponse getImage(@Path("reward_id") Long rewardId) {
+        HttpHeader header = new DefaultHttpHeader();
+        HttpBody body = new DefaultHttpBody(rewardService.getRewardImage(rewardId).getImageBytes());
+        header.add(HttpHeaderField.CONTENT_TYPE, ContentType.IMAGE_PNG.headerValue());
 
+        return new HttpResponse(
+            HttpVersion.HTTP_1_1,
+            header,
+            body,
+            HttpStatus.OK
+        );
+    }
      // 리워드 수정
 
     @Patch("/{reward_id}")

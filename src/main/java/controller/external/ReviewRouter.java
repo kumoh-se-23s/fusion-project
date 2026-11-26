@@ -3,6 +3,15 @@ package controller.external;
 import auth.CurrentUser;
 import com.minihttp.core.route.BaseRouter;
 import com.minihttp.core.route.annotation.*;
+import com.minihttp.packet.HttpResponse;
+import com.minihttp.packet.protocol.ContentType;
+import com.minihttp.packet.protocol.HttpHeaderField;
+import com.minihttp.packet.protocol.HttpStatus;
+import com.minihttp.packet.protocol.HttpVersion;
+import com.minihttp.packet.structure.DefaultHttpBody;
+import com.minihttp.packet.structure.DefaultHttpHeader;
+import com.minihttp.packet.structure.HttpBody;
+import com.minihttp.packet.structure.HttpHeader;
 import model.dto.ReviewData;
 import model.dto.request.review.CreateReviewRequest;
 import model.dto.request.review.ReviewDataRequest;
@@ -52,6 +61,19 @@ public class ReviewRouter extends BaseRouter {
     @Get("/project/{project_id}")
     public DataCollectionResponse<ReviewData> getProjectReview(@Path("project_id") Long projectId) {
         return reviewQueryService.getProjectReview(projectId);
+    }
+    @Get("/image/{review_id}")
+    public HttpResponse getImage(@Path("review_id") Long reviewId) {
+        HttpHeader header = new DefaultHttpHeader();
+        HttpBody body = new DefaultHttpBody(reviewQueryService.getReviewImage(reviewId).getImageBytes());
+        header.add(HttpHeaderField.CONTENT_TYPE, ContentType.IMAGE_PNG.headerValue());
+
+        return new HttpResponse(
+            HttpVersion.HTTP_1_1,
+            header,
+            body,
+            HttpStatus.OK
+        );
     }
     @Patch("/{review_id}")
     public IdResponse updateReview(

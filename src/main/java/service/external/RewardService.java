@@ -12,6 +12,7 @@ import model.domain.Reward;
 import model.dto.RewardData;
 import model.dto.request.reward.CreateRewardDataRequest;
 import model.dto.response.DataCollectionResponse;
+import model.dto.response.ImageResponse;
 import model.dto.response.SingleDataResponse;
 import model.dto.response.IdResponse;
 
@@ -369,5 +370,14 @@ public class RewardService {
                 .amount((long) dtoList.size())
                 .datas(dtoList)
                 .build();
+    }
+
+    public ImageResponse getRewardImage(Long rewardId) {
+        Reward reward = rewardRepository.findById(rewardId)
+                .orElseThrow(NotFoundException::new);
+        if (reward.getImgFile() == null || reward.getImgFile().length == 0) {
+            throw new EmptyImageException();
+        }
+        return new ImageResponse(reward.getImgFile());
     }
 }

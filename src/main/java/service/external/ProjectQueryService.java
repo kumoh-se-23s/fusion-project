@@ -2,6 +2,7 @@ package service.external;
 
 import constant.ProjectSearchType;
 import constant.ProjectState;
+import exception.EmptyImageException;
 import exception.InvalidStateException;
 import exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +10,7 @@ import model.Serializer;
 import model.domain.*;
 import model.dto.ProjectData;
 import model.dto.response.DataCollectionResponse;
+import model.dto.response.ImageResponse;
 import model.dto.response.SingleDataResponse;
 import repository.*;
 import service.BaseService;
@@ -139,5 +141,13 @@ public class ProjectQueryService extends BaseService {
                 .build();
     }
 
+    public ImageResponse getProjectImage(Long projectId) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(NotFoundException::new);
+        if (project.getImgFile() == null || project.getImgFile().length == 0) {
+            throw new EmptyImageException();
+        }
+        return new ImageResponse(project.getImgFile());
+    }
 
 }
