@@ -1,6 +1,7 @@
 package controller.external;
 
 import auth.CurrentUser;
+import com.minihttp.core.response.ImageResponse;
 import com.minihttp.core.route.BaseRouter;
 import com.minihttp.core.route.annotation.*;
 import com.minihttp.packet.HttpResponse;
@@ -64,16 +65,7 @@ public class ReviewRouter extends BaseRouter {
     }
     @Get("/image/{review_id}")
     public HttpResponse getImage(@Path("review_id") Long reviewId) {
-        HttpHeader header = new DefaultHttpHeader();
-        HttpBody body = new DefaultHttpBody(reviewQueryService.getReviewImage(reviewId).getImageBytes());
-        header.add(HttpHeaderField.CONTENT_TYPE, ContentType.IMAGE_PNG.headerValue());
-
-        return new HttpResponse(
-            HttpVersion.HTTP_1_1,
-            header,
-            body,
-            HttpStatus.OK
-        );
+        return ImageResponse.PngResponse(HttpStatus.OK, reviewQueryService.getReviewImage(reviewId).getImageBytes());
     }
     @Patch("/{review_id}")
     public IdResponse updateReview(

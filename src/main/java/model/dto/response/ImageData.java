@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ImageResponse extends Response {
+public class ImageData extends Response {
     private byte[] imageBytes;
 }

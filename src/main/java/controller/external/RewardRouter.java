@@ -2,6 +2,7 @@
 package controller.external;
 
 import auth.CurrentUser;
+import com.minihttp.core.response.ImageResponse;
 import com.minihttp.core.route.BaseRouter;
 import com.minihttp.core.route.annotation.*;
 import com.minihttp.packet.HttpResponse;
@@ -88,19 +89,10 @@ public class RewardRouter extends BaseRouter {
 
     @Get("/image/{reward_id}")
     public HttpResponse getImage(@Path("reward_id") Long rewardId) {
-        HttpHeader header = new DefaultHttpHeader();
-        HttpBody body = new DefaultHttpBody(rewardService.getRewardImage(rewardId).getImageBytes());
-        header.add(HttpHeaderField.CONTENT_TYPE, ContentType.IMAGE_PNG.headerValue());
-
-        return new HttpResponse(
-            HttpVersion.HTTP_1_1,
-            header,
-            body,
-            HttpStatus.OK
-        );
+        return ImageResponse.PngResponse(HttpStatus.OK, rewardService.getRewardImage(rewardId).getImageBytes());
     }
-     // 리워드 수정
 
+     // 리워드 수정
     @Patch("/{reward_id}")
     public void updateReward(
             @Depends(CurrentUser.class) Long userId,

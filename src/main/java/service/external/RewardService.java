@@ -12,7 +12,7 @@ import model.domain.Reward;
 import model.dto.RewardData;
 import model.dto.request.reward.CreateRewardDataRequest;
 import model.dto.response.DataCollectionResponse;
-import model.dto.response.ImageResponse;
+import model.dto.response.ImageData;
 import model.dto.response.SingleDataResponse;
 import model.dto.response.IdResponse;
 
@@ -372,12 +372,12 @@ public class RewardService {
                 .build();
     }
 
-    public ImageResponse getRewardImage(Long rewardId) {
+    public ImageData getRewardImage(Long rewardId) {
         Reward reward = rewardRepository.findById(rewardId)
                 .orElseThrow(NotFoundException::new);
         if (reward.getImgFile() == null || reward.getImgFile().length == 0) {
             throw new EmptyImageException();
         }
-        return new ImageResponse(reward.getImgFile());
+        return new ImageData(reward.getImgFile());
     }
 }
