@@ -62,6 +62,7 @@ public class CreateDonateRequest extends BaseData {
     ) {
         this.user = user;
         this.reward = reward;
+        this.amount = reward.getRewardPerAmount().multiply(BigDecimal.valueOf(quantity));
 
         this.createdAt = LocalDateTime.now();
         this.state = false;

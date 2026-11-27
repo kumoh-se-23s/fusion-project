@@ -17,6 +17,8 @@ import java.time.LocalDateTime;
 @BindDomain(values = {Donate.class})
 public class DonateData extends BaseData {
 
+    private Long id;
+
     private AppUser user;
 
     private Reward reward;
